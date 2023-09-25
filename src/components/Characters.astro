@@ -1,0 +1,22 @@
+---
+import Character from './Character.astro';
+import { getCharacters } from "../services/rickandmorty.js";
+
+interface Props { lang: string; }
+const { lang } = Astro.params;
+const characters = await getCharacters();
+---
+
+<ul role="list" class="link-card-grid">
+    <!--{ data.results.map(character => <Character name={character.name} image={character.image}/>) }-->
+    { characters.map(character => <Character lang={lang} {...character}/>) }
+</ul>
+
+<style>
+    .link-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
+        gap: 2rem;
+        padding: 0;
+    }
+</style>

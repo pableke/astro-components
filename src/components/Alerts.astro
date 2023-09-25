@@ -1,0 +1,12 @@
+---
+import Alert from "./Alert.astro";
+import alerts from "../data/alerts.ts";
+---
+
+<div class="alerts">
+    { alerts.map(alert => <Alert {... alert}/>) }
+</div>
+
+<style>
+    .alerts { position: fixed; top: 3rem; right: 1em; width: 45%; z-index: 9; }
+</style>

@@ -1,0 +1,10 @@
+---
+import type { MenuItem } from "../types/MenuItem";
+
+interface Props extends MenuItem {};
+const { url, name } = Astro.props;
+---
+
+<li>
+    <a href={url}>{name}</a>
+</li>

@@ -1,0 +1,40 @@
+---
+import { getLangs, getLang } from "../i18n/langs.js";
+
+interface Props { lang: string; }
+const { lang } = Astro.props;
+const i18n = getLang(lang);
+const langs = getLangs();
+
+const pathname = Astro.url.pathname;
+const es = pathname.replace("/" + lang, "/es");
+const en = pathname.replace("/" + lang, "/en");
+---
+
+<div class="dropdown">
+    <button class="flex text-gray-600 dark:text-gray-400">
+        <img src={i18n.flag}/>
+        <svg class="w-6 h-6 rotate" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m1 1 4 4 4-4"/>
+        </svg>
+    </button>
+    <!-- Dropdown menu -->
+    <div class="hidden rounded-lg shadow border bg-gray-100 border-gray-400 dark:bg-gray-700">
+        <ul class="y-2 text-sm text-gray-700 dark:text-gray-400">
+            <li><a href={es} class="link"><img src={langs.es.flag}/><span>ES</span></a></li>
+            <li><a href={en} class="link"><img src={langs.en.flag}/><span>EN</span></a></li>
+        </ul>
+    </div>
+</div>
+
+<style>
+    .dropdown { position: relative; }
+    .dropdown img { display: inline-block; width: 26px; margin-right: .5rem; }
+    .dropdown > div { position: absolute; top: 100%; left: -14px; min-width: max-content; }
+
+    .dropdown:hover > div, .dropdown.active > div { display: block; }
+    .dropdown:hover .rotate, .dropdown.active .rotate { @apply rotate-180 text-gray-400 dark:text-white }
+    .dropdown .link {
+        @apply block px-4 py-2 text-sm no-underline rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 dark:hover:text-white
+    }
+</style>

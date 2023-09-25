@@ -1,0 +1,53 @@
+---
+import type { GetStaticPaths } from "astro";
+import Layout from '../../layouts/Layout.astro';
+import Characters from "../../components/Characters.astro";
+import { getPaths } from "../../i18n/langs.js";
+import Autocomplete from "../../components/Autocomplete.astro";
+
+export const getStaticPaths = getPaths satisfies GetStaticPaths;
+
+const { lang } = Astro.params;
+//const i18n = getLang(lang);
+---
+
+<Layout>
+    <Autocomplete label="Select a test" name="test" />
+	<table id="test" class="tb">
+		<thead>
+			<tr>
+				<th>Nº</th>
+				<th>Nombre<a href="#nombre" class="sort sort-none"></a></th>
+				<th>Padre<a href="#padre" class="sort sort-none"></a></th>
+				<th>Título<a href="#titulo" class="sort sort-none"></a></th>
+				<th>Enlace<a href="#enlace" class="sort sort-none"></a></th>
+				<th>Tipo<a href="#tipo" class="sort sort-none"></a></th>
+				<th>Orden<a href="#orden" class="sort sort-none"></a></th>
+				<th>Imp.<a href="#imp" class="sort sort-none"></a></th>
+				<th>F. Creación<a href="#creado" class="sort sort-none"></a></th>
+				<th>Acciones</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td class="text-center">@count;</td>
+				<td><a href="#find" class="link">@nombre;</a></td>
+				<td><a href="#find-padre" class="link">@padre;</a></td>
+				<td>@titulo;</td>
+				<td><a href="@enlace;" class="link" title="@titulo;">@enlace;</a></td>
+				<td>@tipo;</td>
+				<td class="text-right">@orden;</td>
+				<td class="text-right">@imp; €</td>
+				<td class="text-center">@creado;</td>
+				<td class="text-center">
+					<a href="#find" class="action action-blue"><i class="fas fa-search fa-lg"></i></a>
+					<a href="#remove" class="action action-red"><i class="fa fa-times fa-lg"></i></a>
+				</td>
+			</tr>
+		</tbody>
+		<tfoot>
+			<tr><td colspan="99">Filas: @size;</td></tr>
+		</tfoot>
+	</table>
+    <Characters lang={lang}/>
+</Layout>

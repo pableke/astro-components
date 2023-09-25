@@ -1,0 +1,6 @@
+---
+import { getIsoLang } from "../i18n/langs.js";
+
+const langs = Astro.request.headers.get("accept-language"); // require output: "hybrid"
+return Astro.redirect("/" + getIsoLang(langs)); // Redirect to defailt index lang
+---

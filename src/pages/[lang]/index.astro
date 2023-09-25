@@ -1,0 +1,18 @@
+---
+import type { GetStaticPaths } from "astro";
+import Layout from '../../layouts/Layout.astro';
+import CardList from "../../components/CardList.astro";
+import { getLang, getPaths } from "../../i18n/langs.js";
+import "../../styles/index.css";
+
+export const getStaticPaths = getPaths satisfies GetStaticPaths;
+
+const { lang } = Astro.params;
+const i18n = getLang(lang);
+---
+
+<Layout>
+	<h1 class="text-7xl text-center my-6"><span>{i18n.welcome}</span><span class="text-gradient">Astro</span></h1>
+	<p class="instructions" set:html={i18n.instructions}/>
+	<CardList/>
+</Layout>

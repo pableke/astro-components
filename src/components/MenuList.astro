@@ -1,0 +1,21 @@
+---
+import Langs from "./Langs.astro";
+import Theme from "./Theme.astro";
+import MenuItem from "./MenuItem.astro";
+import { getMenu } from "../data/menus.ts";
+
+interface Props { lang: string; }
+const { lang } = Astro.props;
+const menus = getMenu(lang);
+---
+
+<div class="flex flex-row justify-center items-center align-middle gap-2 p-2">
+    <div>
+        <ul class="flex flex-row justify-center items-center gap-2">
+            { menus.map(menu => <MenuItem {...menu} />) }
+        </ul>
+    </div>
+    <div class="grow"></div>
+    <Langs lang={lang}/>
+    <Theme/>
+</div>

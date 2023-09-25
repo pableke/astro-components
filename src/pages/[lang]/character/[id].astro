@@ -1,0 +1,19 @@
+---
+import type { GetStaticPaths } from "astro";
+import Layout from '../../../layouts/Layout.astro';
+import { getCharacters, getCharacterById } from "../../../services/rickandmorty.js";
+import { getPaths } from "../../../i18n/langs";
+
+interface Props { lang: string; id: string; }
+const { lang, id } = Astro.params;
+const character = await getCharacterById(id);
+
+export const getStaticPaths = (async () => {
+    const characters = await getCharacters(); // All characters
+    return getPaths(characters.map(character => character.id));
+}) satisfies GetStaticPaths;
+---
+
+<Layout lang={lang}>
+    <h1>{character.name}</h1>
+</Layout>

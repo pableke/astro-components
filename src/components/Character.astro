@@ -1,0 +1,17 @@
+---
+interface Props {
+    lang: string;
+    id: string;
+	name: string;
+	image: string;
+}
+
+const { lang, id, name, image } = Astro.props;
+---
+
+<li>
+    <img src={image}
+        class="inline-block w-24 h-24 m-2 border border-purple-800 rounded-full dark:border-purple-200"
+        alt="character image"/>
+    <a href=`/${lang}/character/${id}`>{name}</a>
+</li>

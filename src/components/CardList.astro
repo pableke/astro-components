@@ -1,0 +1,17 @@
+---
+import Card from './CardItem.astro';
+import cards from "../data/cards.ts";
+---
+
+<ul role="list" class="link-card-grid">
+    { cards.map(card => <Card {...card} />) }
+</ul>
+
+<style>
+    .link-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(24ch, 1fr));
+        gap: 2rem;
+        padding: 0;
+    }
+</style>
