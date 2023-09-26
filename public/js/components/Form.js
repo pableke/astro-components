@@ -1,5 +1,4 @@
 
-import ab from "../lib/array-box.js";
 import i18n from "../i18n/langs.js";
 import Autocomplete from "./Autocomplete.js";
 
@@ -7,25 +6,34 @@ const divNull = document.createElement("div");
 const isstr = val => (typeof(val) === "string") || (val instanceof String);
 const fnVisible = el => (el.offsetWidth || el.offsetHeight || el.getClientRects().length);
 
+HTMLCollection.prototype.find = Array.prototype.find;
+HTMLCollection.prototype.forEach = Array.prototype.forEach;
+
 export default function(form, opts) {
     opts = opts || {}; // default options
+	opts.pkName = opts.pkName || "id"; // primary key name
+	opts.hideClass = opts.hideClass || "hide"; // hidden class name
+	opts.defaultMsgOk = opts.defaultMsgOk || "saveOk"; // default message ok
 	opts.checkAllClass = opts.checkAllClass || "ui-check-all";
 	opts.floatFormatClass = opts.floatFormatClass || "ui-float";
 	opts.integerFormatClass = opts.integerFormatClass || "ui-integer";
 	opts.inputBlockClass = opts.inputBlockClass || "ui-block";
 	opts.inputErrorClass = opts.inputErrorClass || "ui-error";
-	opts.tipErrorClass = opts.tipErrorClass || "ui-tiperr";
+	opts.tipErrorClass = opts.tipErrorClass || "ui-errtip";
+	opts.updateOnlyClass = opts.updateOnlyClass || "update-only";
 
 	const self = this; //self instance
 	const FOCUSABLED = "[tabindex]:not([type=hidden],[readonly],[disabled])";
+	const updateOnly = document.getElementsByClassName(opts.updateOnlyClass);
 
 	this.focus = el => { el && el.focus(); return self; }
-	this.autofocus = () => self.focus(ab.find(form.elements, el => (el.matches(FOCUSABLED) && fnVisible(el))));
-	this.getInput = name => ab.find(form.elements, el => (el.name == name));
+	this.autofocus = () => self.focus(form.elements.find(el => (el.matches(FOCUSABLED) && fnVisible(el))));
+	this.getInput = name => form.elements.find(el => (el.name == name)); // find element by name prop
+	this.setValue = (el, value) => { /*if (el)*/ el.value = value; return self; }; // el must exists
 
 	this.render = data => {
-		ab.each(form.elements, el => {
-			let value = data[el.name];
+		form.elements.forEach(el => {
+			const value = data[el.name];
 			if ((el.type === "checkbox") || (el.type === "radio"))
 				el.checked = (el.value == value);
 			else if (el.type =="date")
@@ -37,11 +45,12 @@ export default function(form, opts) {
 			else if (el.name)
 				el.value = value || "";
 		});
+		updateOnly.forEach(el => el.classList.toggle(opts.hideClass, !data[opts.pkName]));
 		return self;
 	}
 	this.parser = () => {
 		const data = {};
-		ab.each(form.elements, el => {
+		form.elements.forEach(el => {
 			if (el.classList.contains(opts.floatFormatClass))
 				data[el.name] = i18n.toFloat(el.value);
 			else if (el.classList.contains(opts.integerFormatClass))
@@ -53,8 +62,8 @@ export default function(form, opts) {
 	}
 
 	// Inputs helpers
-	this.setAutocomplete = (name, opts) => {
-		const block = form.getElementById(name);
+	this.setAutocomplete = (selector, opts) => {
+		const block = form.querySelector(selector);
 		return new Autocomplete(block, opts);
 	}
 	this.setRangeDate = (f1, f2) => {
@@ -100,26 +109,26 @@ export default function(form, opts) {
 		if (msg) { // el has an error
 			el.classList.add(opts.inputErrorClass);
 			fnSetTip(el, msg);
-			el.focus();
 		}
 		else // el is not an error
 			fnSetInputOk(el);
 	}
 	self.closeAlerts = () => {
-		ab.each(form.elements, fnSetInputOk);
+		form.elements.forEach(fnSetInputOk);
 		window.alerts.closeAlerts();
 		return self;
 	}
 	self.setOk = msg => {
-		ab.each(form.elements, fnSetInputOk);
-		window.alerts.showOk(msg);
+		form.elements.forEach(fnSetInputOk);
+		window.alerts.showOk(msg || opts.defaultMsgOk);
 		return self;
 	}
 	self.setErrors = messages => {
 		if (isstr(messages)) // simple message text
 			window.alerts.showError(messages);
-		else { // Reverse iterator to focus first error
-			ab.reverse(form.elements, el => fnSetInputError(el, messages[el.name]));
+		else { // Style error inputs and set focus on first error
+			form.elements.forEach(el => fnSetInputError(el, messages[el.name]));
+			self.focus(form.elements.find(el => el.classList.contains(opts.inputErrorClass)));
 			window.alerts.showError(messages.msgError);
 		}
 		return self;
@@ -128,13 +137,13 @@ export default function(form, opts) {
 		const data = fnValidate(self.closeAlerts().parser(form));
 		return data || !self.setErrors(i18n.getMsgs());
 	}
-	this.validate = opts => {
+	this.validate = () => {
 		const data = self.isValid(opts.validate);
 		if (i18n.isError()) // Validate input data
 			return Promise.reject(i18n.getMsgs()); // Call a reject promise
-		const pk = data[opts.pkName || "id"]; // Get pk value
+		const insertion = (opts.insert && !data[opts.pkName]); // insert or update
 		const fnUpdate = (data, info) => self.setOk(info); // Default acction
-		const fnSave = ((opts.insert && !pk) ? opts.insert : opts.update) || fnUpdate;
+		const fnSave = (insertion ? opts.insert : opts.update) || fnUpdate; // action
 		return self.send(opts).then(info => { fnSave(data, info); }); // Lunch insert or update
 	}
 
@@ -164,18 +173,24 @@ export default function(form, opts) {
 		return self.fetch(opts).catch(data => { self.setErrors(data); throw data; });
 	}
 	this.setRequest = (selector, fn) => {
-		const link = form.querySelector(selector);
-		link.addEventListener("click", ev => {
-			const msg = link.dataset.confirm;
-			if (!msg || confirm(msg))
-				self.send({ action: link.href, method: link.dataset.method }).then(fn);
-			ev.preventDefault();
+		form.querySelectorAll(selector).forEach(link => {
+			link.onclick = ev => {
+				const msg = link.dataset.confirm;
+				if (!msg || confirm(msg))
+					self.send({ action: link.href, method: link.dataset.method }).then(fn);
+				ev.preventDefault();
+			};
 		});
 		return self;
 	}
+	this.clone = msg => {
+		window.alerts.showOk(msg || opts.defaultMsgOk); // show message
+		updateOnly.forEach(el => el.classList.add(opts.hideClass));
+		return self.setValue(self.getInput(opts.pkName), "");
+	}
 
 	// Form initialization
-	ab.each(form.elements, el => {
+	form.elements.forEach(el => {
 		if (el.classList.contains(opts.floatFormatClass))
 			el.addEventListener("change", ev => { el.value = i18n.fmtFloat(el.value); });
 		else if (el.classList.contains(opts.integerFormatClass))
@@ -183,7 +198,7 @@ export default function(form, opts) {
 		else if (el.classList.contains(opts.checkAllClass))
 			el.addEventListener("click", ev => {
 				const fnCheck = input => (input.type == "checkbox") && (input.name == el.id);
-				ab.each(form.elements, input => { if (fnCheck(input)) input.checked = el.checked; });
+				form.elements.forEach(input => { if (fnCheck(input)) input.checked = el.checked; });
 			});
 	});
 	self.autofocus().afterReset(ev => { self.closeAlerts().autofocus(); });

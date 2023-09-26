@@ -5,12 +5,14 @@ const RE_VAR = /@(\w+);/g;
 const fnVoid = () => {};
 const fnTrue = () => true;
 const format = (tpl, data) => tpl.replace(RE_VAR, (m, k) => data[k] ?? "");
+HTMLCollection.prototype.forEach = Array.prototype.forEach;
 
 export default function(table, opts) {
     opts = opts || {}; // default options
     opts.msgConfirmRemove = opts.msgConfirmRemove || "Remove current element?";
     opts.msgConfirmReset = opts.msgConfirmReset || "Remove all elements?";
     opts.msgEmptyTable = opts.msgEmptyTable || "Not found results";
+    opts.navItemClass = opts.navItemClass || "nav-item";
     opts.beforeRender = opts.beforeRender || fnVoid;
     opts.onRender = opts.onRender || fnVoid;
     opts.afterRender = opts.afterRender || fnVoid;
@@ -46,7 +48,7 @@ export default function(table, opts) {
         tbody.style.display = table.tFoot.style.display = "table-row-group";
 
         // Listeners for change, find and remove events
-        tbody.querySelectorAll("tr").forEach((tr, i) => {
+        tbody.children.forEach((tr, i) => {
             tr.dataset.index = i; // add current index
             tr.onchange = ev => {
                 _index = i; // current item
@@ -93,16 +95,17 @@ export default function(table, opts) {
         _index = (i < 0) ? 0 : Math.min(i, _rows.length - 1);
         return _rows[_index];
     }
-    this.first = () => fnMove(0);
-    this.prev = () => fnMove(_index - 1);
-    this.next = () => fnMove(_index + 1);
-    this.last = () => fnMove(_rows.length);
-    this.goto = i => fnMove(i);
+    this.firstItem = () => fnMove(0);
+    this.prevItem = () => fnMove(_index - 1);
+    this.nextItem = () => fnMove(_index + 1);
+    this.lastItem = () => fnMove(_rows.length);
+    this.getItem = i => _rows[i ?? _index];
 
     table.tFoot.onchange = ev => {
         const input = ev.target;
-        const fnChange = opts["change-" + input.name];
-        fnChange(input.closest("tr"), input, RESUME, _rows);
+        const fnChange = opts["change-" + input.name] || fnTrue;
+        if (fnChange(input, RESUME, input.closest("tr"), _rows))
+            table.tFoot.innerHTML = format(tplFoot, RESUME);
     }
 
     // Orderable columns system
@@ -115,8 +118,7 @@ export default function(table, opts) {
             // Update all sort icons
             links.forEach(link => {
                 // Reset all orderable columns
-                link.classList.remove("sort-asc");
-                link.classList.remove("sort-desc");
+                link.classList.remove("sort-asc", "sort-desc");
                 link.classList.add("sort-none");
             });
             link.classList.remove("sort-none");
@@ -129,5 +131,22 @@ export default function(table, opts) {
             fnSort = (dir == "desc") ? fnDesc : fnSort;
             fnRender(_rows.sort(fnSort));
         }
+    });
+
+    // Table items navigation
+    document.getElementsByClassName(opts.navItemClass).forEach(link => {
+        link.addEventListener("click", ev => { // Handle click event
+            const href = link.getAttribute("href") || "";
+            if (href == "#first-item")
+                return self.firstItem();
+            if (href == "#prev-item")
+                return self.prevItem();
+            if (href == "#next-item")
+                return self.nextItem();
+            if (href == "#last-item")
+                return self.lastItem();
+            if (href == "#remove-item")
+                return self.remove();
+        });
     });
 }

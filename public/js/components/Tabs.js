@@ -1,14 +1,20 @@
 
-const fnTrue = () => true;
+const fnTrue = () => true; // always true
 const mask = (val, i) => ((val >> i) & 1); // check bit at i position
+
+HTMLCollection.prototype.filter = Array.prototype.filter;
+HTMLCollection.prototype.forEach = Array.prototype.forEach;
 
 export default function(opts) {
     opts = opts || {}; // default optios
     opts.tabClass = opts.tabClass || "tab-content";
     opts.activeClass = opts.activeClass || "active";
+    opts.navbarClass = opts.navbarClass || "navbar";
+    opts.progressBarClass = opts.progressBarClass || "progress-bar";
 
 	const self = this; //self instance
-	const tabs = Array.from(document.getElementsByClassName(opts.tabClass));
+	const tabs = document.getElementsByClassName(opts.tabClass);
+	const progressbar = document.getElementsByClassName(opts.progressBarClass);
 
     let _tabIndex = tabs.filter(el => el.classList.contains(opts.activeClass)); //current index tab
     let _tabSize = tabs.length - 1; // max tabs size
@@ -19,23 +25,23 @@ export default function(opts) {
     this.setTabMask = mask => { _tabMask = mask; return self; } // set mask for tabs
 
     function fnShowTab(i) { //show tab by index
-        window.alerts.closeAlerts(); // always close alerts
         i = (i < 0) ? 0 : Math.min(i, _tabSize - 1);
         if (i == _tabIndex) // is current tab
             return self; // nothing to do
         const tab = tabs[i]; // get next tab
-        const fn = opts["tab-" + i] || fnTrue; // Event handler
-        if (fn(tab)) { // Validata change tab
-            const progressbar = document.getElementById("progressbar");
-            if (progressbar) { // progressbar is optional
-                const step = "step-" + i; //go to a specific step on progressbar
-                self.each(progressbar.children, li => self.toggle(li, opts.activeClass, li.id <= step));
-            }
+        const fnInit = opts["onInitTab" + i] || fnTrue; // Event handler fire once
+        const fnView = opts["onViewTab" + i] || fnTrue; // Event handler fire each access to tab
+        if (fnInit(tab) && fnView(tab)) { // Validata change tab
+            const step = "step-" + i; //go to a specific step on progressbar
+            progressbar.forEach(bar => { // progressbar is optional
+                bar.children.forEach(child => child.classList.toggle(opts.activeClass, child.id <= step));
+            });
             _backTab = _tabIndex; // save from
             _tabIndex = i; // set current index
-            self.removeClass(tabs, opts.activeClass).addClass(tab, opts.activeClass) // set active tab
-                .setFocus(tab); // Auto set focus and scroll
+            tabs.forEach(tab => tab.classList.remove(opts.activeClass));
+            tab.classList.add(opts.activeClass); // set active tab
         }
+        delete opts["onInitTab" + i];
         return self;
     }
 
@@ -51,11 +57,19 @@ export default function(opts) {
         return fnShowTab(i); // Show calculated next tab
     }
 
-	const lastId = str => +str.match(/\d+$/).pop();
-    const fnNav = (link, fn) => link.addEventListener("click", fn);
-    document.querySelectorAll("a[href='#back-tab']").forEach(link => fnNav(link, self.backTab));
-    document.querySelectorAll("a[href='#prev-tab']").forEach(link => fnNav(link, ev => { self.setTabMask(+(el.dataset.mask ?? _tabMask)).prevTab(); }));
-    document.querySelectorAll("a[href='#next-tab']").forEach(link => fnNav(link, ev => { self.setTabMask(+(el.dataset.mask ?? _tabMask)).nextTab(); }));
-    document.querySelectorAll("a[href^='#tab-']").forEach(link => fnNav(link, ev => { self.viewTab(lastId(el.href)); }));
-    document.querySelectorAll("a[href='#last-tab']").forEach(link => fnNav(link, self.lastTab));
+    document.getElementsByClassName(opts.navbarClass).forEach(link => {
+        link.addEventListener("click", ev => { // Handle click event
+            const href = link.getAttribute("href") || "";
+            if (href == "#back-tab")
+                return self.backTab();
+            if (href == "#prev-tab")
+                return self.setTabMask(+(link.dataset.mask ?? _tabMask)).prevTab();
+            if (href == "#next-tab")
+                return self.setTabMask(+(link.dataset.mask ?? _tabMask)).nextTab();
+            if (href.startsWith("#tab-"))
+                return self.viewTab(+href.match(/\d+$/).pop());
+            if (href == "#last-tab")
+                return self.lastTab();
+        });
+    });
 }

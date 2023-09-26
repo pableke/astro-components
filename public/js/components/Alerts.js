@@ -1,14 +1,16 @@
 
 import i18n from "../i18n/langs.js";
 
+HTMLCollection.prototype.forEach = Array.prototype.forEach;
+
 export default function(alerts, opts) {
     opts = opts || {};
     opts.alertTextClass = opts.alertTextClass || "alert-text";
     opts.alertCloseClass = opts.alertCloseClass || "alert-close";
 
 	const self = this; //self instance
-    const texts = Array.from(alerts.getElementsByClassName(opts.alertTextClass));
-    const close = Array.from(alerts.getElementsByClassName(opts.alertCloseClass));
+    const texts = alerts.getElementsByClassName(opts.alertTextClass);
+    const close = alerts.getElementsByClassName(opts.alertCloseClass);
 
     const setAlert = (el, txt) => {
         el.parentNode.classList.remove("hide", "fadeOut");

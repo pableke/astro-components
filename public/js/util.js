@@ -11,7 +11,6 @@ const initView = () => {
 	const _loading = document.body.firstChild;
 	window.loading = () => _loading.classList.remove("hide", "fadeOut");
 	window.working = () => _loading.classList.add("fadeOut");
-	// End loading div
 
 	// Scroll body to top on click and toggle back-to-top arrow
 	const _top = _loading.nextElementSibling;

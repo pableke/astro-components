@@ -3,6 +3,7 @@ const EMPTY = [];
 const fnEmpty = () => EMPTY;
 const fnParam = param => param;
 
+HTMLCollection.prototype.forEach = Array.prototype.forEach;
 const TR1 = "àáâãäåāăąÀÁÂÃÄÅĀĂĄÆßèéêëēĕėęěÈÉĒĔĖĘĚìíîïìĩīĭÌÍÎÏÌĨĪĬòóôõöōŏőøÒÓÔÕÖŌŎŐØùúûüũūŭůÙÚÛÜŨŪŬŮçÇñÑþÐŔŕÿÝ";
 const TR2 = "aaaaaaaaaAAAAAAAAAABeeeeeeeeeEEEEEEEiiiiiiiiIIIIIIIIoooooooooOOOOOOOOOuuuuuuuuUUUUUUUUcCnNdDRryY";
 
@@ -30,13 +31,14 @@ export default function(block, opts) {
 	opts.delay = opts.delay || 400; //milliseconds between keystroke occurs and when a search is performed
 	opts.minLength = opts.minLength || 3; //length to start
 	opts.maxResults = opts.maxResults || 10; //max showed rows (default = 10)
+    opts.activeClass = opts.activeClass || "active"; // name class
     opts.source = opts.source || fnEmpty; //empty source by default
     opts.render = opts.render || fnParam; //render label on input
 
 	const self = this; //self instance
     const inputValue = block.querySelector("[type=hidden]");
     const autocomplete = block.querySelector("[type=search]");
-    const resultsHTML = autocomplete.nextElementSibling;
+    const resultsHTML = block.querySelector("ul.results");
 
     let _searching, _time; // call and time indicator (reduce calls)
     let _results = EMPTY; // default = empty array
@@ -62,13 +64,10 @@ export default function(block, opts) {
         const size = fnSize(resultsHTML.children);
         if ((i < 0) || (i >= size))
             return null; // item not found
-        for (let i = 0; i < size; i++) {
-            const li = resultsHTML.children[i];
-            li.classList.remove("active");
-        }
+        resultsHTML.children.forEach(li => li.classList.remove(opts.activeClass));
         const li = resultsHTML.children[i];
+        li.classList.add(opts.activeClass);
         inputValue.value = _results[i];
-        li.classList.add("active");
         _index = i;
         return li;
     }
