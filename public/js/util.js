@@ -17,7 +17,7 @@ const initView = () => {
 	window.onscroll = function() { _top.classList.toggle("hide", this.scrollY < 80); }
 	_top.addEventListener("click", ev => document.body.scrollIntoView({ behavior: "smooth" }));
 
-	// Alerts and forms configuration
+	// Alerts instance and links toggle
 	window.alerts = new Alerts(_top.nextElementSibling); // Alerts messages is global
 	document.querySelectorAll("[href='#toggle']").forEach(link => { // Info links
 		link.addEventListener("click", ev => {
@@ -33,7 +33,6 @@ const initView = () => {
 			input && input.focus(); // set focus on input
 		});
 	});
-	//ab.each(document.forms, form => {});
 	document.querySelectorAll(".autocomplete").forEach(el => {
 		const ac = new Autocomplete(el, autocompletes[el.id]);
 	});

@@ -59,7 +59,7 @@ export default function(opts) {
 
     document.getElementsByClassName(opts.navbarClass).forEach(link => {
         link.addEventListener("click", ev => { // Handle click event
-            const href = link.getAttribute("href") || "";
+            const href = link.getAttribute("href");
             if (href == "#back-tab")
                 return self.backTab();
             if (href == "#prev-tab")

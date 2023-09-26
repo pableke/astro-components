@@ -136,7 +136,7 @@ export default function(table, opts) {
     // Table items navigation
     document.getElementsByClassName(opts.navItemClass).forEach(link => {
         link.addEventListener("click", ev => { // Handle click event
-            const href = link.getAttribute("href") || "";
+            const href = link.getAttribute("href");
             if (href == "#first-item")
                 return self.firstItem();
             if (href == "#prev-item")

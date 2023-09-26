@@ -29,9 +29,9 @@ export default function(form, opts) {
 	this.focus = el => { el && el.focus(); return self; }
 	this.autofocus = () => self.focus(form.elements.find(el => (el.matches(FOCUSABLED) && fnVisible(el))));
 	this.getInput = name => form.elements.find(el => (el.name == name)); // find element by name prop
-	this.setValue = (el, value) => { /*if (el)*/ el.value = value; return self; }; // el must exists
+	this.setValue = (el, value) => { /*if (el)*/ el.value = value; return self; }; // input must exists
 
-	this.render = data => {
+	this.render = data => { // JSON to View
 		form.elements.forEach(el => {
 			const value = data[el.name];
 			if ((el.type === "checkbox") || (el.type === "radio"))
@@ -48,7 +48,7 @@ export default function(form, opts) {
 		updateOnly.forEach(el => el.classList.toggle(opts.hideClass, !data[opts.pkName]));
 		return self;
 	}
-	this.parser = () => {
+	this.parser = () => { // View to JSON
 		const data = {};
 		form.elements.forEach(el => {
 			if (el.classList.contains(opts.floatFormatClass))
@@ -190,11 +190,15 @@ export default function(form, opts) {
 	}
 
 	// Form initialization
+	const fmtNumber = (el, value) => { // Show formatted value and style
+		el.classList.toggle("text-red", value && value.startsWith("-"));
+		el.value = value; // value formatted
+	}
 	form.elements.forEach(el => {
 		if (el.classList.contains(opts.floatFormatClass))
-			el.addEventListener("change", ev => { el.value = i18n.fmtFloat(el.value); });
+			el.addEventListener("change", ev => fmtNumber(el, i18n.fmtFloat(el.value)));
 		else if (el.classList.contains(opts.integerFormatClass))
-			el.addEventListener("change", ev => { el.value = i18n.fmtInt(el.value); });
+			el.addEventListener("change", ev => fmtNumber(el, i18n.fmtInt(el.value)));
 		else if (el.classList.contains(opts.checkAllClass))
 			el.addEventListener("click", ev => {
 				const fnCheck = input => (input.type == "checkbox") && (input.name == el.id);
