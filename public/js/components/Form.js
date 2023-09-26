@@ -13,7 +13,8 @@ export default function(form, opts) {
     opts = opts || {}; // default options
 	opts.pkName = opts.pkName || "id"; // primary key name
 	opts.hideClass = opts.hideClass || "hide"; // hidden class name
-	opts.defaultMsgOk = opts.defaultMsgOk || "saveOk"; // default message ok
+	opts.defaultMsgOk = opts.defaultMsgOk || "saveOk"; // default key for message ok
+	opts.defaultMsgError = opts.defaultMsgError || "errForm"; // default key error
 	opts.checkAllClass = opts.checkAllClass || "ui-check-all";
 	opts.floatFormatClass = opts.floatFormatClass || "ui-float";
 	opts.integerFormatClass = opts.integerFormatClass || "ui-integer";
@@ -129,7 +130,7 @@ export default function(form, opts) {
 		else { // Style error inputs and set focus on first error
 			form.elements.forEach(el => fnSetInputError(el, messages[el.name]));
 			self.focus(form.elements.find(el => el.classList.contains(opts.inputErrorClass)));
-			window.alerts.showError(messages.msgError);
+			window.alerts.showError(messages.msgError || opts.defaultMsgError);
 		}
 		return self;
 	}

@@ -22,7 +22,7 @@ function Langs() {
     this.getMsgs = () => MSGS;
 	this.getMsg = name => MSGS[name];
 	this.setMsg = (name, msg) => {
-		MSGS[name] = _lang[msg] || msg;
+		MSGS[name] = self.get(msg);
 		return self;
 	}
 

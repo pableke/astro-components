@@ -88,10 +88,10 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left
 .autocomplete { position: relative; }
 .autocomplete label { display: block; }
 .autocomplete .results { width: 98%; max-width: 500px; } /* same width than ui-input */
-.autocomplete ul { position: absolute; z-index: 3; color: white; background-color: rgb(55 65 81); }
+.autocomplete ul { position: absolute; z-index: 3; color: white; background-color: rgb(55 65 81)/* bg-gray-700 */; }
 .autocomplete li { cursor: pointer; }
 .autocomplete li:hover, .autocomplete  li.active {
-    color: rgb(55 65 81); background-color: white;
+    color: rgb(55 65 81)/* bg-gray-700 */; background-color: white;
 }
 /* Autocomplete */
 
