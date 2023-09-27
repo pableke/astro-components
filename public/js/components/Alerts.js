@@ -16,8 +16,10 @@ export default function(alerts, opts) {
 	const self = this; //self instance
     const texts = alerts.getElementsByClassName(opts.alertTextClass);
     const close = alerts.getElementsByClassName(opts.alertCloseClass);
+	const isstr = val => (typeof(val) === "string") || (val instanceof String);
 
     const setAlert = (el, txt) => {
+        el = isstr(el) ? texts.find(text => text.classList.contains(el)) : el;
         el.parentNode.classList.remove("hide", "fadeOut");
         el.parentNode.classList.add("fadeIn");
         el.innerHTML = i18n.get(txt);
@@ -29,10 +31,10 @@ export default function(alerts, opts) {
         return self;
     }
 
-    this.showOk = msg => setAlert(texts.find(opts.alertSuccessClass), msg); //green
-    this.showInfo = msg => setAlert(texts.find(opts.alertInfoClass), msg); //blue
-    this.showWarn = msg => setAlert(texts.find(opts.alertWarnClass), msg); //yellow
-    this.showError = msg => setAlert(texts.find(opts.alertErrorClass), msg); //red
+    this.showOk = msg => setAlert(opts.alertSuccessClass, msg); //green
+    this.showInfo = msg => setAlert(opts.alertInfoClass, msg); //blue
+    this.showWarn = msg => setAlert(opts.alertWarnClass, msg); //yellow
+    this.showError = msg => setAlert(opts.alertErrorClass, msg); //red
     this.showAlerts = function(msgs) { //show posible multiple messages types
         return msgs ? self.showOk(msgs.msgOk).showInfo(msgs.msgInfo).showWarn(msgs.msgWarn).showError(msgs.msgError) : self;
     }

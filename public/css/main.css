@@ -108,23 +108,20 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left
 /* Buttons */
 
 /* Actions */
-.action {
-    margin-left: 4px; padding: 2px;
-    font-weight: 700; font-size: 0.875rem/* 14px */; line-height: 1.25rem/* 20px */;
-}
-.action:hover { animation: resize 1s forwards; }
+.action { display: inline-block; width: 26px; margin-left: 4px; }
+.action:hover { animation: resize .5s forwards; }
 
-.action-blue { color: rgb(59 130 246)/*text-blue-500*/; }
-.action-blue:hover { color: rgb(530 64 175)/*text-blue-800*/; }
-:is(.dark .action-blue):hover { color: rgb(147 197 253)/*text-blue-300*/; }
+.action-blue { fill: rgb(59 130 246)/*text-blue-500*/; }
+.action-blue:hover { fill: rgb(530 64 175)/*text-blue-800*/; }
+:is(.dark .action-blue):hover { fill: rgb(147 197 253)/*text-blue-300*/; }
 
 .action-green { color: rgb(34 197 94)/*text-green-500*/; }
 .action-green:hover { color: rgb(22 101 52)/*text-green-800*/; }
 :is(.dark .action-green):hover { color: rgb(187 247 208)/*text-green-300*/; }
 
-.action-red {color: rgb(239 68 68)/*text-red-500*/; }
-.action-red:hover { color: rgb(153 27 27)/*text-red-800*/; }
-:is(.dark .action-red):hover { color: rgb(248 113 113)/*text-red-400*/; }
+.action-red { fill: rgb(239 68 68)/*text-red-500*/; }
+.action-red:hover { fill: rgb(153 27 27)/*text-red-800*/; }
+:is(.dark .action-red):hover { fill: rgb(248 113 113)/*text-red-400*/; }
 /* Actions */
 
 /* Specific styles */
@@ -163,7 +160,8 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left
 @keyframes slideRtl { 0% { transform: translateX(100%); } 100% { transform: translateX(0%); } }
 @keyframes slideLtr { 0% { transform: translateX(0%); } 100% { transform: translateX(100%); display: none; } }
 
-@keyframes resize { from {} to { font-size: 18px; } }
+/*@keyframes resize { from {} to { font-size: 18px; } }*/
+@keyframes resize { 0% { transform: scale(1.0); } 100% { transform: scale(1.2); } }
 /* Animations */
 
 /* Extra small devices (portrait phones, less than 576px) */
