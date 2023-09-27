@@ -80,10 +80,16 @@ export default function(form, opts) {
 	this.submit = fn => form.addEventListener("submit", fn);
 	this.beforeReset = fn => form.addEventListener("reset", fn);
 	this.afterReset = fn => form.addEventListener("reset", ev => setTimeout(() => fn(ev), 1));
+
+	this.onChangeInput = (name, fn) => {
+		const el = self.getInput(name);
+		el.addEventListener("change", fn);
+		return self;
+	}
 	this.onChangeFile = (name, fn) => {
 		const reader = new FileReader();
-		const el = self.getInput(name);
-		el.addEventListener("change", ev => {
+		return self.onChangeInput(name, ev => {
+			const el = ev.target; // file input elem
 			let index = 0; // position
 			let file = el.files[index];
 			const fnRead = () => reader.readAsBinaryString(file); //reader.readAsText(file, "UTF-8");
@@ -94,7 +100,6 @@ export default function(form, opts) {
 			}
 			file ? fnRead() : fn(el);
 		});
-		return self;
 	}
 
 	// Form Validator

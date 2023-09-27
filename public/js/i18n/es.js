@@ -16,10 +16,9 @@ export default {
     errDateGt: "La fecha debe ser mayor a la actual",
     errNumber: "Valor no numérico",
     errGt0: "El importe debe ser mayor de 0,00 &euro;", 
-    errRegex: "Formato incorrecto",
+    errFormat: "¡Formato incorrecto!",
     errReclave: "Las claves introducidas no coinciden",
     errRange: "Valor fuera del rango permitido",
-    errRefCircular: "Referencia circular",
 
     //confirm cuestions
     saveOk: "Datos actualizados correctamente",

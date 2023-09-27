@@ -1,8 +1,7 @@
 
 import sb from "../lib/string-box.js";
+import valid from "../lib/validator-box.js";
 import i18n from "../i18n/langs.js";
-
-const sysdate = (new Date()).toISOString(); // current date
 
 function Test() {
 	const self = this; //self instance
@@ -33,17 +32,13 @@ function Test() {
         return data;
     }
     this.validate = function(data) {
-        if (!data.nombre)
-            i18n.setError("errRequired", "nombre");
-        if (!data.titulo)
-            i18n.setError("errRequired", "titulo");
-        if (!data.imp || (data.imp < 0))
-            i18n.setError("errGt0", "imp");
-        if (!data.creado) // iso date validation (multiple errors)
-            i18n.setError("errRequired", "creado"); // required
-        else if (data.creado < sysdate.substring(0, 10))
-            i18n.setError("errDateGt", "creado"); // not valid
-        return i18n.isOk() || !i18n.setError("¡Error al validar los datos del formulario de test!");
+        let ok = valid.reset().gt0("imp", data.imp); //required
+        ok &= valid.ge0("padre", data.padre); //optional
+        ok &= valid.geToday("creado", data.creado); //required
+        ok &= valid.size("nombre", data.nombre, 200); //required
+        ok &= valid.size("enlace", data.enlace, 200); //required
+        ok &= valid.max("titulo", data.titulo, 200); //optional
+        return ok || !i18n.setError("¡Error al validar los datos del formulario de test!");
     }
 }
 

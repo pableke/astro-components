@@ -15,10 +15,9 @@ export default {
     errDateGt: "Date must be greater than current",
     errNumber: "Wrong number format",
     errGt0: "Price must be great than 0.00 &euro;", 
-    errRegex: "Wrong format",
+    errFormat: "Wrong format!",
     errReclave: "Passwords typed do not match",
     errRange: "Value out of allowed range",
-    errRefCircular: "Circular reference",
 
     //confirm cuestions
     saveOk: "Element saved successfully!",

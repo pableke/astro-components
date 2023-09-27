@@ -1,11 +1,16 @@
 
 import i18n from "../i18n/langs.js";
 
+HTMLCollection.prototype.find = Array.prototype.find;
 HTMLCollection.prototype.forEach = Array.prototype.forEach;
 
 export default function(alerts, opts) {
     opts = opts || {};
     opts.alertTextClass = opts.alertTextClass || "alert-text";
+    opts.alertSuccessClass = opts.alertSuccessClass || "alert-text-success";
+    opts.alertInfoClass = opts.alertInfoClass || "alert-text-info";
+    opts.alertWarnClass = opts.alertWarnClass || "alert-text-warn";
+    opts.alertErrorClass = opts.alertErrorClass || "alert-text-error";
     opts.alertCloseClass = opts.alertCloseClass || "alert-close";
 
 	const self = this; //self instance
@@ -24,10 +29,10 @@ export default function(alerts, opts) {
         return self;
     }
 
-    this.showOk = msg => setAlert(texts[0], msg); //green
-    this.showInfo = msg => setAlert(texts[1], msg); //blue
-    this.showWarn = msg => setAlert(texts[2], msg); //yellow
-    this.showError = msg => setAlert(texts[3], msg); //red
+    this.showOk = msg => setAlert(texts.find(opts.alertSuccessClass), msg); //green
+    this.showInfo = msg => setAlert(texts.find(opts.alertInfoClass), msg); //blue
+    this.showWarn = msg => setAlert(texts.find(opts.alertWarnClass), msg); //yellow
+    this.showError = msg => setAlert(texts.find(opts.alertErrorClass), msg); //red
     this.showAlerts = function(msgs) { //show posible multiple messages types
         return msgs ? self.showOk(msgs.msgOk).showInfo(msgs.msgInfo).showWarn(msgs.msgWarn).showError(msgs.msgError) : self;
     }

@@ -58,11 +58,11 @@ function Langs() {
     const esFormatter = Intl.NumberFormat("es");
     
     function fnToFloat(str, d) { //String to Float
-        let separator = str.lastIndexOf(d);
-        let sign = ((str.charAt(0) == "-") ? "-" : ""); // Get sign number + or -
-        let whole = (separator < 0) ? str : str.substr(0, separator); //extract whole part
-        let decimal = (separator < 0) ? "" : ("." + str.substr(separator + 1)); //decimal part
-        let num = parseFloat(sign + whole.replace(/\D+/g, "") + decimal); //float value
+        const separator = str.lastIndexOf(d);
+        const sign = ((str.charAt(0) == "-") ? "-" : ""); // Get sign number + or -
+        const whole = (separator < 0) ? str : str.substr(0, separator); //extract whole part
+        const decimal = (separator < 0) ? "" : ("." + str.substr(separator + 1)); //decimal part
+        const num = parseFloat(sign + whole.replace(/\D+/g, "") + decimal); //float value
         return isNaN(num) ? null : num;
     }
     function fnIsoFloat(formatter, num, n) {
@@ -104,12 +104,12 @@ function Langs() {
     }
     
     en.toInt = str => str && fnToInt(str);  // String to Int
-    en.isoInt = (num, n) => isNaN(num) ? null : fnIsoInt(enFormatter, num); // Int to String formated
-    en.fmtInt = (str, n) => str && fnFmtInt(enFormatter, str); // String to EN String formated
+    en.isoInt = num => isNaN(num) ? null : fnIsoInt(enFormatter, num); // Int to String formated
+    en.fmtInt = str => str && fnFmtInt(enFormatter, str); // String to EN String formated
     
     es.toInt = str => str && fnToInt(str);  // String to Int
-    es.isoInt = (num, n) => isNaN(num) ? null : fnIsoInt(esFormatter, num); // Int to String formated
-    es.fmtInt = (str, n) => str && fnFmtInt(esFormatter, str); // String to EN String formated
+    es.isoInt = num => isNaN(num) ? null : fnIsoInt(esFormatter, num); // Int to String formated
+    es.fmtInt = str => str && fnFmtInt(esFormatter, str); // String to EN String formated
     
     this.toInt = str => _lang.toInt(str);
     this.isoInt = num => _lang.isoInt(num);

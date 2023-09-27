@@ -1,16 +1,9 @@
 
-import nb from "./number-box.js";
-import sb from "./string-box.js";
+import i18n from "./string-box.js";
 
-/**
- * ValidatorBox module require
- * StringBox (sb) and NumberBox (nb)
- * 
- * @module ValidatorBox
- */
 function ValidatorBox() {
 	const self = this; //self instance
-	const EMPTY = ""; //empty string
+	const sysdate = (new Date()).toISOString();
 
 	//HTML special chars
 	const ESCAPE_HTML = /"|'|&|<|>|\\/g;
@@ -20,19 +13,12 @@ function ValidatorBox() {
 	const RE_DIGITS = /^[1-9]\d*$/;
 	const RE_WORDS = /^\w+(,\w+)*$/;
 	const RE_ARRAY = /^\d+(,\d+)*$/;
-	const RE_MAIL = /\w+[^\s@]+@[^\s@]+\.[^\s@]+/;
-	const RE_DATE = /^\d{4}-[01]\d-[0-3]\d/;
 	const RE_TIME = /[0-2]\d:[0-5]\d:[0-5]\d[\.\d{1,3}]?$/;
 	const RE_DATE_TIME = /^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d[\.\d{1,3}]?$/;
 	const RE_LOGIN = /^[\w#@&°!§%;:=\^\/\(\)\?\*\+\~\.\,\-\$]{6,}$/;
 	const RE_IPv4 = /^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
 	const RE_IPv6 = /^([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}$/;
-	const RE_SWIFT = /^[A-Z]{6,6}[A-Z2-9][A-NP-Z0-9]([A-Z0-9]{3,3}){0,1}$/; //SWIFT / BIC
 	const RE_URL = /(http|fttextp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?/;
-	// Spanish Id's
-	const RE_DNI = /^(\d{8})([A-Z])$/;
-	const RE_CIF = /^([ABCDEFGHJKLMNPQRSUVW])(\d{7})([0-9A-J])$/;
-	const RE_NIE = /^[XYZ]\d{7,8}[A-Z]$/;
 	// Cards Numbers
 	const RE_VISA = /^(?:4[0-9]{12}(?:[0-9]{3})?)$/;
 	const RE_MASTER_CARD = /^(?:5[1-5][0-9]{14})$/;
@@ -41,99 +27,92 @@ function ValidatorBox() {
 	const RE_DINER_CLUB = /^(?:3(?:0[0-5]|[68][0-9])[0-9]{11})$/;
 	const RE_JCB = /^(?:(?:2131|1800|35\d{3})\d{11})$/;
 
-	const minify = sb.toCode;
-	const fnRange = (num, min, max) => nb.between(+num, min, max) ? num : null; // NaN comparator always false
-	const between = (str, min, max) => nb.between(sb.size(str), min, max) ? str : null; // for String and Arrays
-	const fnSplit = (re, value) => sb.test(value, re) ? value.split(",") : null; // validate and split input
-
+    this.reset = () => { i18n.reset(); return self; }
 	this.unescape = str => str ? str.replace(/&#(\d+);/g, (key, num) => String.fromCharCode(num)) : null;
 	this.escape = str => str ? str.trim().replace(ESCAPE_HTML, (matched) => ESCAPE_MAP[matched]) : null;
 
-	// Validators
-	this.intval = num => { num = parseInt(num); return isNaN(aux) ? null : aux; }
-	this.intval3 = num => fnRange(nb.intval(num), 1, 3);
-	this.intval5 = num => fnRange(nb.intval(num), 1, 5);
-	this.intval9 = num => fnRange(nb.intval(num), 1, 9);
-	this.range = (num, min, max) => fnRange(num, min, max);
-	this.gt0 = num => fnRange(num, .0001, 1e9); // Float
+	//this.time = value => self.regex(RE_TIME, value);
+	//this.isoDateTime = value => self.regex(RE_DATE_TIME, value);
+	//this.word = value => self.regex(/\w+/, self.size50(value));
+	//this.digits = value => self.regex(RE_DIGITS, self.size50(value));
 
-	this.size = (str, min, max) => between(self.escape(str), min, max);
-	this.required = value => self.size(value, 1, 1000);
-	this.required10 = value => self.size(value, 1, 10);
-	this.required50 = value => self.size(value, 1, 50);
-	this.required100 = value => self.size(value, 1, 100);
-	this.required200 = value => self.size(value, 1, 200);
-	this.required500 = value => self.size(value, 1, 500);
-
-	this.size10 = str => self.size(str, 0, 10);
-	this.size50 = str => self.size(str, 0, 50);
-	this.size100 = str => self.size(str, 0, 100);
-	this.size200 = str => self.size(str, 0, 200);
-	this.size300 = str => self.size(str, 0, 300);
-	this.size500 = str => self.size(str, 0, 500);
-
-	this.text = (str, min, max) => between(self.escape(str), min, max);
-	this.text10 = str => self.text(str, 0, 10);
-	this.text50 = str => self.text(str, 0, 50);
-	this.text100 = str => self.text(str, 0, 100);
-	this.text200 = str => self.text(str, 0, 200);
-	this.text300 = str => self.text(str, 0, 300);
-	this.text500 = str => self.text(str, 0, 500);
-	this.text1000 = str => self.text(str, 0, 1000);
-	this.text2000 = str => self.text(str, 0, 1000);
-
-	this.regex = (re, value) => sb.test(sb.trim(value), re);
-	this.date = value => self.regex(RE_DATE, value);
-	this.time = value => self.regex(RE_TIME, value);
-	this.isoDateTime = value => self.regex(RE_DATE_TIME, value);
-	this.word = value => self.regex(/\w+/, self.size50(value));
-	this.words = value => between(fnSplit(RE_WORDS, sb.clean(value)), 1, 100);
-	this.array = value => between(fnSplit(RE_ARRAY, sb.clean(value)), 1, 100);
-	this.numbers = value => {
-		const arr = fnSplit(RE_ARRAY, sb.clean(value));
-		return between(arr, 1, 100) ? arr.map(nb.intval) : null;
+    this.gt0 = (name, value, msg) => (value && (value > 0)) || !i18n.setError(msg || "errGt0", name); // required gt0
+    this.ge0 = (name, value, msg) => !value || (value > 0) || !i18n.setError(msg || "errGt0", name); // optional or gt0
+	this.max = (name, value, max, msg) => !value || (value.length <= max) || !i18n.setError(msg || "errMaxlength", name); // optional or length <= max
+	this.size = (name, value, max, msg) => { // required and length <= max
+        if (!value) // String length validations
+            return !i18n.setError("errRequired", name);
+        if (value.length > max)
+            return !i18n.setError(msg || "errMaxlength", name);
+        return true;
+    }
+	this.isEmail = (name, value, msg) => {
+        if (!self.size(name, value, 200))
+            return false;
+		if (!value.test(/\w+[^\s@]+@[^\s@]+\.[^\s@]+/)) // RE_MAIL format
+            return !i18n.setError(msg || "errCorreo", name); // not valid
+		return true;
+	}
+	this.isLogin = (name, value, msg) => { // Loggin / Password
+        if (!self.size(name, value, 200))
+            return false;
+		if (value.length < 8)
+			return !i18n.setError("errMinlength8", name); // min length
+		if (!value.test(/^[\w#@&°!§%;:=\^\/\(\)\?\*\+\~\.\,\-\$]{6,}$/)) // RE_LOGIN format
+            return !i18n.setError(msg || "errFormat", name); // not valid
+		return true;
 	}
 
-	this.digits = value => self.regex(RE_DIGITS, self.size50(value));
-	this.login = value => self.regex(RE_LOGIN, self.size200(value));
-	this.password = value => self.regex(RE_LOGIN, self.size200(value));
-	this.swift = value => self.regex(RE_SWIFT, value);
-	this.email = value => sb.lower(self.regex(RE_MAIL, self.size200(value)));
-	this.code = value => sb.upper(self.regex(RE_LOGIN, self.size50(value)));
-
 	// Date validations in string iso format (ej: "2022-05-11T12:05:01")
-	const systime = (new Date()).toISOString().substring(0, 19); // exclude ms
-	const sysdate = systime.substring(0, 10);
-	const eqSize = (s1, s2) => (sb.size(s1) == sb.size(s2));
-	this.past = str => (eqSize(str, sysdate) && (str < sysdate)) ? str : null;
-	this.dtPast = str => (eqSize(str, systime) && (str < systime)) ? str : null;
-	this.leToday = str => (eqSize(str, sysdate) && (str <= sysdate)) ? str : null;
-	this.future = str => (eqSize(str, sysdate) && (str > sysdate)) ? str : null;
-	this.dtFuture = str => (eqSize(str, systime) && (str > systime)) ? str : null;
-	this.geToday = str => (eqSize(str, sysdate) && (str >= sysdate)) ? str : null;
+	this.isDate = (name, value, msg) => {
+        if (!value) // iso date validation
+            return !i18n.setError("errRequired", name); // required
+		if (!value.test(/^\d{4}-[01]\d-[0-3]\d/)) // RE_DATE format
+            return !i18n.setError(msg || "errDate", name); // not valid
+        return true;
+    }
+	this.leToday = (name, value, msg) => {
+        if (!self.isDate(name, value))
+            return false;
+        if (value.substring(0, 10) > sysdate.substring(0, 10))
+            return !i18n.setError(msg || "errDateLe", name); // not in time
+        return true;
+	}
+    this.geToday = (name, value, msg) => {
+        if (!self.isDate(name, value))
+            return false;
+        if (value.substring(0, 10) < sysdate.substring(0, 10))
+            return !i18n.setError(msg || "errDateGe", name); // not in time
+        return true;
+    }
 
 	// Persons ID's
 	function fnLetraDni(value) {
 		const letras = "TRWAGMYFPDXBNJZSQVHLCKE";
 		let letra = letras.charAt(parseInt(value, 10) % 23);
-		return (letra == value.charAt(8)) ? value : null;
+		return (letra == value.charAt(8));
 	}
-	this.dni = function(value) {
-		value = sb.test(minify(value), RE_DNI);
-		return value && fnLetraDni(value);
+	this.dni = function(name, value) {
+		if (!value)
+			return !i18n.setError("errRequired", name);
+		if (!value.test(/^(\d{8})([A-Z])$/) || !fnLetraDni(value)) // RE_DNI
+			return !i18n.setError("errNif", name);
+		return true;
 	}
-	this.cif = function(value) {
-		value = sb.test(minify(value), RE_CIF);
-		if (!value) return null;
+	this.cif = function(name, value) {
+		if (!value)
+			return !i18n.setError("errRequired", name);
+		const match = value.match(/^([ABCDEFGHJKLMNPQRSUVW])(\d{7})([0-9A-J])$/); // RE_CIF
+		if (!match || (match.length < 2))
+			return !i18n.setError("errNif", name);
 
-		var match = value.match(RE_CIF);
 		var letter = match[1];
 		var number  = match[2];
 		var control = match[3];
 		var sum = 0;
 
-		for (var i = 0; i < number.length; i++) {
-			var n = parseInt(number[i], 10);
+		for (let i = 0; i < number.length; i++) {
+			let n = parseInt(number[i], 10);
 			//Odd positions (Even index equals to odd position. i=0 equals first position)
 			if ((i % 2) === 0) {
 				n *= 2; //Odd positions are multiplied first
@@ -149,22 +128,21 @@ function ValidatorBox() {
 		var ok = letter.match(/[ABEH]/) ? (control == control_digit) //Control must be a digit
 								: letter.match(/[KPQS]/) ? (control == control_letter) //Control must be a letter
 								: ((control == control_digit) || (control == control_letter)); //Can be either
-		return ok ? value : null;
+		return ok || !i18n.setError("errNif", name);
 	}
-	this.nie = function(value) {
-		value = sb.test(minify(value), RE_NIE);
-		if (!value) return null;
-
-		let prefix = value.charAt(0); //Change the initial letter for the corresponding number and validate as DNI
+	this.nie = function(name, value) {
+		if (!value) // RE_NIE = /^[XYZ]\d{7,8}[A-Z]$/;
+			return !i18n.setError("errRequired", name);
+		const prefix = value.charAt(0); //Change the initial letter for the corresponding number and validate as DNI
 		let p0 = (prefix == "X") ? 0 : ((prefix == "Y") ? 1 : ((prefix == "Z") ? 2 : prefix));
-		return fnLetraDni(p0 + value.substr(1));
+		return fnLetraDni(p0 + value.substr(1)) || !i18n.setError("errNif", name);
 	}
-	this.idES = function(value) {
-		return self.dni(value) || self.cif(value) || self.nie(value);
+	this.idES = function(name, value) {
+		return self.dni(name, value) || self.cif(name, value) || self.nie(name, value);
 	}
 
 	// Bancks entities and credit cards
-	this.iban = function(IBAN) {
+	this.isIban = function(name, iban) {
 		const CODE_LENGTHS = {
 			AD: 24, AE: 23, AT: 20, AZ: 28, BA: 20, BE: 16, BG: 22, BH: 22, BR: 29,
 			CH: 21, CR: 21, CY: 28, CZ: 24, DE: 22, DK: 18, DO: 28, EE: 20, ES: 24,
@@ -177,10 +155,9 @@ function ValidatorBox() {
 			SV: 28, TL: 23, UA: 29, VA: 22, VG: 24, XK: 20
 		};
 
-		IBAN = minify(IBAN);
-		let code = IBAN && IBAN.match(/^([A-Z]{2})(\d{2})([A-Z\d]+)$/);
-		if (!code || (sb.size(IBAN) !== CODE_LENGTHS[code[1]]))
-			return null;
+		let code = iban && iban.match(/^([A-Z]{2})(\d{2})([A-Z\d]+)$/);
+		if (!code || (iban.length !== CODE_LENGTHS[code[1]]))
+			return !i18n.setError("errRequired", name);
 
 		let digits = (code[3] + code[1] + code[2]).replace(/[A-Z]/g, letter => (letter.charCodeAt(0) - 55));
 		let digital = digits.toString();
@@ -189,7 +166,14 @@ function ValidatorBox() {
 			let fragment = checksum + digital.substring(offset, offset + 7);
 			checksum = parseInt(fragment, 10) % 97;
 		}
-		return (checksum === 1) ? IBAN : null; //save reformat
+		return (checksum === 1) || !i18n.setError("errFormat", name);
+	}
+	this.isSwift = (name, value, msg) => {
+        if (!value) // iso date validation
+            return !i18n.setError("errRequired", name); // required
+		if (!value.test(/^[A-Z]{6,6}[A-Z2-9][A-NP-Z0-9]([A-Z0-9]{3,3}){0,1}$/)) // RE_SWIFT / RE_BIC format
+            return !i18n.setError(msg || "errDate", name); // not valid
+        return true;
 	}
 
 	const ENTIDADES = {
@@ -201,22 +185,16 @@ function ValidatorBox() {
 		"0487": "Banco Mare Nostrum", "2090": "Caja de Ahorros Mediterraneo", "0030": "Banco Español de Crédito", "0146": "Citibank"
 	};
 	this.getEntidades = () => ENTIDADES;
-	this.getIban1 = iban => sb.substr(iban, 0, 4);
-	this.getIban2 = iban => sb.substr(iban, 4, 4);
+	this.getIban1 = iban => iban && iban.substring(0, 4);
+	this.getIban2 = iban => iban && iban.substring(4, 8);
 	this.getEntidad = iban => ENTIDADES[self.getIban2(iban)];
-	this.getIban3 = iban => sb.substr(iban, 8, 4);
-	this.getOficina = iban => sb.substr(iban, 8, 4);
-	this.getDC = iban => sb.substr(iban, 12, 2);
-	this.getIban4 = iban => sb.substr(iban, 12, 4);
-	this.getIban5 = iban => sb.substr(iban, 16, 4);
-	this.getIban6 = iban => sb.substr(iban, 20, 4);
-	this.getIban7 = iban => sb.substr(iban, 24, 4);
-	this.getIban8 = iban => sb.substr(iban, 28, 4);
+	this.getIban3 = iban => iban && iban.substring(8, 12);
+	this.getOficina = iban => iban && iban.substring(8, 12);
+	this.getDC = iban => iban && iban.substring(12, 14);
 
-	this.creditCardNumber = function(cardNo) { //Luhn check algorithm
-		cardNo = minify(cardNo);
-		if (sb.size(cardNo) != 16)
-			return null;
+	this.isCreditCardNumber = function(name, cardNo) { //Luhn check algorithm
+		if (!cardNo || (cardNo.length != 16))
+			return !i18n.setError("errRequired", name);
 
 		let s = 0;
 		let doubleDigit = false;
@@ -229,12 +207,12 @@ function ValidatorBox() {
 			s += digit;
 			doubleDigit = !doubleDigit;
 		}
-		return ((s % 10) == 0) ? cardNo : null;
+		return ((s % 10) == 0) || !i18n.setError("errFormat", name);;
 	}
 
 	this.generatePassword = function(size, charSet) {
 		charSet = charSet || "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_#@&°!§%;:=^/()?*+~.,-$";
-		return Array.apply(null, Array(size || 10)).map(() => charSet.charAt(Math.random() * charSet.length)).join(EMPTY); 
+		return Array.apply(null, Array(size || 10)).map(() => charSet.charAt(Math.random() * charSet.length)).join(""); 
 	}
 	this.testPassword = function(pass) {
 		let strength = 0;
@@ -244,7 +222,7 @@ function ValidatorBox() {
 		strength += /[0-9]+/.test(pass) ? 1 : 0;
 		strength += /[\W]+/.test(pass) ? 1 : 0;
 		//Validation for length of password
-		strength += ((strength > 2) && (sb.size(pass) > 8));
+		strength += ((strength > 2) && (pass.length > 8));
 		return strength; //0 = bad, 1 = week, 2-3 = good, 4 = strong, 5 = very strong
 	}
 }

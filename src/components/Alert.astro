@@ -5,12 +5,13 @@ interface Props extends Alert {};
 const { type, msg, icon } = Astro.props;
 
 const alertClass = `alert alert-${type} ` + (msg ? "" : "hide");
+const alertText = `alert-text alert-text-${type}`;
 const alertClose = `alert-close alert-close-${type}`;
 ---
 
 <div class={alertClass}>
     <svg class="alert-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" set:html={icon}></svg>
-    <div class="grow mx-3 text-sm font-medium" set:html={msg}></div>
+    <div class={alertText} set:html={msg}></div>
     <button type="button" class={alertClose}>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
@@ -20,8 +21,6 @@ const alertClose = `alert-close alert-close-${type}`;
 
 <style>
     .alert { display: flex; align-items: center; margin: 1rem/* 16px */; padding: 1rem/* 16px */; border-radius: 0.5rem/* 8px */; border-width: 1px; }
-    .alert-icon { width: 1.5rem/* 24px */; height: 1.5rem/* 24px */; }
-
     .alert-success { @apply text-green-800 border-green-300 bg-green-50 dark:bg-gray-800 dark:text-green-400 }
     .alert-info { @apply text-blue-800 border-blue-300 bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:bg-gray-800 }
     .alert-note { @apply text-sky-800 border-sky-300 bg-sky-50 dark:text-sky-400 dark:border-sky-800 dark:bg-gray-800 }
@@ -30,7 +29,10 @@ const alertClose = `alert-close alert-close-${type}`;
     .alert-danger { @apply text-mexican-red-800 border-mexican-red-300 bg-mexican-red-50 dark:text-mexican-red-400 dark:border-mexican-red-800 dark:bg-gray-800 }
     .alert-dark { @apply text-gray-800 border-gray-400 bg-gray-50 dark:text-gray-300 dark:bg-gray-800 }
 
+    .alert-icon { width: 1.5rem/* 24px */; height: 1.5rem/* 24px */; }
+    .alert-text { flex-grow: 1; margin: 0 0.75rem/* 12px */; font-weight: 500; }
     .alert-close { @apply h-8 w-8 p-2 rounded-lg }
+
     .alert-close-success { @apply bg-green-50 text-green-500 focus:ring-green-400 hover:bg-green-200 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700 }
     .alert-close-info { @apply bg-blue-50 text-blue-500 focus:ring-blue-400 hover:bg-blue-200 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-gray-700 }
     .alert-close-note { @apply bg-sky-50 text-sky-500 focus:ring-sky-400 hover:bg-sky-200 dark:bg-gray-800 dark:text-sky-400 dark:hover:bg-gray-700 }
