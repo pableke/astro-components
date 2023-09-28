@@ -8,44 +8,24 @@ function StringBox() {
 	const TR2 = "aaaaaaaaaAAAAAAAAAABeeeeeeeeeEEEEEEEiiiiiiiiIIIIIIIIoooooooooOOOOOOOOOuuuuuuuuUUUUUUUUcCnNdDRryY";
 
 	// Helpers
+	const fnLower = str => tr(str).toLowerCase(); // translate and lower
+	const isstr = val => (typeof(val) === "string") || (val instanceof String);
+	const iiOf = (str1, str2) => fnLower(str1).indexOf(fnLower(str2));
+	const fnWord = str => str.replace(/\W+/g, EMPTY); //remove no alfanum
+	const fnSize = str => str ? str.length : 0; //string o array
+	const replaceAt = (str1, str2, i) => str1.substring(0, i) + str2 + str1.substring(i + str2.length);
+	
 	function tr(str) {
 		const size = fnSize(str);
 		var output = str || EMPTY;
 		for (let i = 0; i < size; i++) {
 			let j = TR1.indexOf(str.charAt(i)); // is char remplazable
-			output = (j < 0) ? output : output.replaceAt(TR2.charAt(j), i);
+			output = (j < 0) ? output : replaceAt(output, TR2.charAt(j), i);
 		}
 		return output;
 	}
 
-	const fnLower = str => tr(str).toLowerCase(); // translate and lower
-	const isset = val => (typeof(val) !== "undefined") && (val !== null);
-	const isstr = val => (typeof(val) === "string") || (val instanceof String);
-	const iiOf = (str1, str2) => fnLower(str1).indexOf(fnLower(str2));
-	const fnWord = str => str.replace(/\W+/g, EMPTY); //remove no alfanum
-	const fnSize = str => str ? str.length : 0; //string o array
-
-	// Extends String prototype
-	String.prototype.insert = function(str, i) {
-		return this.substring(0, i) + str + this.substring(i);
-	}
-	String.prototype.replaceAt = function(str, i) {
-		return this.substring(0, i) + str + this.substring(i + str.length);
-	}
-	String.prototype.wrap = function(str, open, close) {
-		if (str) {
-			const i = iiOf(this, str);
-			const j = i + str.length;
-			return (i < 0) ? this : (this.substring(0, i) + (open || "<u><b>") + this.substring(i, j) + (close || "</b></u>") + this.substring(j));
-		}
-		return this;
-	}
-	String.prototype.remove = function(i, n) {
-		return this.substring(0, i) + this.substring(i + n);
-	}
-
 	// Module functions
-	this.isset = isset;
 	this.isstr = isstr;
 	this.size = fnSize;
 	this.trLower = fnLower;
@@ -64,15 +44,12 @@ function StringBox() {
 	this.trunc = (str, size) => (fnSize(str) > size) ? (str.substr(0, size).trim() + "...") : str;
 
 	this.trim = str => str ? str.trim() : str;
-	this.ltrim = (str, sep) => str ? str.replace(new RegExp("^" + sep + "+"), EMPTY) : str;
-	this.rtrim = (str, sep) => str ? str.replace(new RegExp(sep + "+$"), EMPTY) : str;
+	this.ltrim = (str, str2) => str ? str.replace(new RegExp("^" + str2 + "+"), EMPTY) : str;
+	this.rtrim = (str, str2) => str ? str.replace(new RegExp(str2 + "+$"), EMPTY) : str;
+	this.rand = size => Math.random().toString(36).substring(2, 2 + (size || 8)); //random char
 
 	this.escape = str => str && str.replace(ESCAPE_HTML, matched => ESCAPE_MAP[matched]);
 	this.unescape = str => str && str.replace(/&#(\d+);/g, (key, num) => String.fromCharCode(num));
-
-	this.iwrap = (str1, str2, open, close) => str1 && str1.wrap(str2, open, close);
-	this.rand = size => Math.random().toString(36).substr(2, size || 8); //random char
-	this.lopd = str => str && ("***" + str.substr(3, 4) + "**"); //hide protect chars
 
 	//chunk string in multiple parts
 	this.test = (str, re) => re.test(str) ? str : null;
@@ -97,14 +74,6 @@ function StringBox() {
 	this.isoTime = str => str && str.substring(11, 19); //hh:MM:ss
 	this.isoDateTime = (date, time) => (date + "T" + time + ".0"); //yyyy-mm-ddThh:MM:ss.0
 	this.esDate = str => str && (str.substring(8, 10) + "/" + str.substring(5, 7) + "/" + str.substring(0, 4)); //Iso string to dd/mm/yyyy
-	this.inDates = (str, min, max) => {
-		if (!str)
-			return true;
-		str = str.substring(0, 19);
-		min = min ? (min + "T00:00:00") : str;
-		max = max ? (max + "T00:00:00") : str;
-		return fnBetween(str, min, max);
-	}
 	/****************** End Date helpers ******************/
 
 	this.clean = str => str ? str.replace(/\s+/g, EMPTY) : str;

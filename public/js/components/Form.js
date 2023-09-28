@@ -29,7 +29,7 @@ export default function(form, opts) {
 
 	this.focus = el => { el && el.focus(); return self; }
 	this.autofocus = () => self.focus(form.elements.find(el => (el.matches(FOCUSABLED) && fnVisible(el))));
-	this.getInput = name => form.elements.find(el => (el.name == name)); // find element by name prop
+	this.getInput = selector => form.elements.find(el => el.matches(selector)); // find an element
 	this.setValue = (el, value) => { /*if (el)*/ el.value = value; return self; }; // input must exists
 
 	this.render = data => { // JSON to View
@@ -81,14 +81,14 @@ export default function(form, opts) {
 	this.beforeReset = fn => form.addEventListener("reset", fn);
 	this.afterReset = fn => form.addEventListener("reset", ev => setTimeout(() => fn(ev), 1));
 
-	this.onChangeInput = (name, fn) => {
-		const el = self.getInput(name);
+	this.onChangeInput = (selector, fn) => {
+		const el = self.getInput(selector);
 		el.addEventListener("change", fn);
 		return self;
 	}
-	this.onChangeFile = (name, fn) => {
+	this.onChangeFile = (selector, fn) => {
 		const reader = new FileReader();
-		return self.onChangeInput(name, ev => {
+		return self.onChangeInput(selector, ev => {
 			const el = ev.target; // file input elem
 			let index = 0; // position
 			let file = el.files[index];
@@ -139,51 +139,48 @@ export default function(form, opts) {
 		}
 		return self;
 	}
-	this.isValid = fnValidate => {
-		const data = fnValidate(self.closeAlerts().parser(form));
-		return data || !self.setErrors(i18n.getMsgs());
-	}
-	this.validate = () => {
-		const data = self.isValid(opts.validate);
-		if (i18n.isError()) // Validate input data
-			return Promise.reject(i18n.getMsgs()); // Call a reject promise
-		const insertion = (opts.insert && !data[opts.pkName]); // insert or update
-		const fnUpdate = (data, info) => self.setOk(info); // Default acction
-		const fnSave = (insertion ? opts.insert : opts.update) || fnUpdate; // action
-		return self.send(opts).then(info => { fnSave(data, info); }); // Lunch insert or update
+	this.validate = async () => {
+		const data = self.closeAlerts().parser();
+		if (opts.validate(data)) { // Form validation
+			const insertar = (opts.insert && !data[opts.pkName]); // insert or update
+			const fnUpdate = (data, info) => self.setOk(info); // Default acction
+			const fnSave = (insertar ? opts.insert : opts.update) || fnUpdate; // action
+			const info = await self.send(opts); // get server response
+			return info && fnSave(data, info);
+		}
+		return false; // Validation error
 	}
 
 	// Form actions
-	this.fetch = async function(opts) {
-		window.loading(); //show loading..., and close loading...
+	this.send = async opts => {
+		window.loading(); //show loading... div
+		const fd = new FormData(form); // Data container
+
+		opts = opts || {}; // Settings
 		opts.headers = opts.headers || {};
 		opts.headers["x-requested-with"] = "XMLHttpRequest";
-		const res = await globalThis.fetch(opts.action, opts);
-		const type = res.headers.get("content-type") || "";
-		const promise = type.includes("application/json") ? res.json() : res.text();
-		promise.finally(window.working); // always force to hide loadin div
-		// Promises has implicit try ... catch, throw => run next catch, avoid intermediate then
-		return res.ok ? promise : promise.then(data => Promise.reject(data));
-	}
-	this.send = opts => {
-		opts = opts || {}; // Settings
 		opts.action = opts.action || form.action; //action-override
 		opts.method = opts.method || form.method; //method-override
-
-		const fd = new FormData(form); // Data container
 		if (opts.method == "get") // Form get => prams in url
 			opts.action += "?" + (new URLSearchParams(fd)).toString();
 		else
 			opts.body = (form.enctype == "multipart/form-data") ? fd : new URLSearchParams(fd);
 		//opts.headers = { "Content-Type": form.enctype || "application/x-www-form-urlencoded" };
-		return self.fetch(opts).catch(data => { self.setErrors(data); throw data; });
+
+		const res = await globalThis.fetch(opts.action, opts);
+		const type = res.headers.get("content-type") || "";
+		const data = await (type.includes("application/json") ? res.json() : res.text());
+		window.working(); // always force to hide loadin div
+		return res.ok ? data : !self.setErrors(data);
 	}
 	this.setRequest = (selector, fn) => {
 		form.querySelectorAll(selector).forEach(link => {
-			link.onclick = ev => {
+			link.onclick = async ev => {
 				const msg = link.dataset.confirm;
-				if (!msg || confirm(msg))
-					self.send({ action: link.href, method: link.dataset.method }).then(fn);
+				if (!msg || confirm(msg)) { // has confirmation?
+					const data = await self.send({ action: link.href, method: link.dataset.method });
+					data && fn(data, link); // callbak if no errors
+				}
 				ev.preventDefault();
 			};
 		});
@@ -192,7 +189,7 @@ export default function(form, opts) {
 	this.clone = msg => {
 		window.alerts.showOk(msg || opts.defaultMsgOk); // show message
 		updateOnly.forEach(el => el.classList.add(opts.hideClass));
-		return self.setValue(self.getInput(opts.pkName), "");
+		return self.setValue(self.getInput("[name='" + opts.pkName + "']"), "");
 	}
 
 	// Form initialization

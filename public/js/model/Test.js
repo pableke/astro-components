@@ -32,12 +32,12 @@ function Test() {
         return data;
     }
     this.validate = function(data) {
-        let ok = valid.reset().gt0("imp", data.imp); //required
-        ok &= valid.ge0("padre", data.padre); //optional
-        ok &= valid.geToday("creado", data.creado); //required
-        ok &= valid.size("nombre", data.nombre, 200); //required
-        ok &= valid.size("enlace", data.enlace, 200); //required
-        ok &= valid.max("titulo", data.titulo, 200); //optional
+        let ok = valid.reset().gt0("imp", data.imp); //required float
+        ok &= valid.ge0("padre", data.padre); //optional number
+        ok &= valid.geToday("creado", data.creado); //required iso date
+        ok &= valid.size("nombre", data.nombre, 200); //required string
+        ok &= valid.size("enlace", data.enlace, 200); //required string
+        ok &= valid.max("titulo", data.titulo, 200); //optional string
         return ok || !i18n.setError("¡Error al validar los datos del formulario de test!");
     }
 }

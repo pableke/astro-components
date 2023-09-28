@@ -2,21 +2,21 @@
 const fnTrue = () => true; // always true
 const mask = (val, i) => ((val >> i) & 1); // check bit at i position
 
-HTMLCollection.prototype.filter = Array.prototype.filter;
 HTMLCollection.prototype.forEach = Array.prototype.forEach;
+HTMLCollection.prototype.findIndex = Array.prototype.findIndex;
 
 export default function(opts) {
     opts = opts || {}; // default optios
     opts.tabClass = opts.tabClass || "tab-content";
     opts.activeClass = opts.activeClass || "active";
-    opts.navbarClass = opts.navbarClass || "navbar";
+    opts.tabActionClass = opts.tabActionClass || "tab-action";
     opts.progressBarClass = opts.progressBarClass || "progress-bar";
 
 	const self = this; //self instance
 	const tabs = document.getElementsByClassName(opts.tabClass);
 	const progressbar = document.getElementsByClassName(opts.progressBarClass);
 
-    let _tabIndex = tabs.filter(el => el.classList.contains(opts.activeClass)); //current index tab
+    let _tabIndex = tabs.findIndex(el => el.classList.contains(opts.activeClass)); //current index tab
     let _tabSize = tabs.length - 1; // max tabs size
     let _backTab = _tabIndex; // back to previous tab
     let _tabMask = ~0; // all 11111....
@@ -57,7 +57,7 @@ export default function(opts) {
         return fnShowTab(i); // Show calculated next tab
     }
 
-    document.getElementsByClassName(opts.navbarClass).forEach(link => {
+    document.getElementsByClassName(opts.tabActionClass).forEach(link => {
         link.addEventListener("click", ev => { // Handle click event
             const href = link.getAttribute("href");
             if (href == "#back-tab")
@@ -70,6 +70,19 @@ export default function(opts) {
                 return self.viewTab(+href.match(/\d+$/).pop());
             if (href == "#last-tab")
                 return self.lastTab();
+            if (href == "#toggle-tab") {
+                const toggle = link.dataset.css || "hide";
+                const selector = link.dataset.target || (".info-" + link.id);
+                document.querySelectorAll(selector).forEach(el => el.classList.toggle(toggle));
+
+                const icon = link.getElementById("icon-" + link.id);
+                if (icon && link.dataset.toggle) // change link icon class?
+                    link.dataset.toggle.split(/\s+/).forEach(name => icon.classList.toggle(name));
+
+                const input = link.dataset.focus && document.querySelector(link.dataset.focus);
+                input && input.focus(); // set focus on input
+            }
+            ev.preventDefault();
         });
     });
 }

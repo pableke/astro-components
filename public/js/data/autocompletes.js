@@ -6,6 +6,7 @@ export default {
     test: {
         minLength: 3,
         source: term => test.filterByTerm(data, term),
-        render: test.autocomplete
+        render: test.autocomplete, 
+        select: data => data.tipo
     }
 }

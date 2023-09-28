@@ -11,7 +11,7 @@ export default function(table, opts) {
     opts = opts || {}; // default options
     opts.msgConfirmRemove = opts.msgConfirmRemove || "Remove current element?";
     opts.msgConfirmReset = opts.msgConfirmReset || "Remove all elements?";
-    opts.msgEmptyTable = opts.msgEmptyTable || "Not found results";
+    opts.msgEmptyTable = opts.msgEmptyTable || "No results found";
     opts.navItemClass = opts.navItemClass || "nav-item";
     opts.beforeRender = opts.beforeRender || fnVoid;
     opts.onRender = opts.onRender || fnVoid;
@@ -126,10 +126,8 @@ export default function(table, opts) {
 
             // Sort data by function and build table
             const fnAsc = (a, b) => ((a[column] < b[column]) ? -1 : ((a[column] > b[column]) ? 1 : 0));
-            const fnDesc = (a, b) => ((b[column] < a[column]) ? -1 : ((b[column] > a[column]) ? 1 : 0));
-            let fnSort = opts["sort-" + column] || fnAsc; // Specific sort function
-            fnSort = (dir == "desc") ? fnDesc : fnSort;
-            fnRender(_rows.sort(fnSort));
+            const fnSort = opts["sort-" + column] || fnAsc; // Specific sort function
+            fnRender(_rows.sort((dir == "desc") ? ((a, b) => fnSort(b, a)) : fnSort));
         }
     });
 
@@ -147,6 +145,7 @@ export default function(table, opts) {
                 return self.lastItem();
             if (href == "#remove-item")
                 return self.remove();
+            ev.preventDefault();
         });
     });
 }

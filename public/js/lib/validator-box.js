@@ -1,5 +1,5 @@
 
-import i18n from "./string-box.js";
+import i18n from "../i18n/langs.js";
 
 function ValidatorBox() {
 	const self = this; //self instance
@@ -12,7 +12,7 @@ function ValidatorBox() {
 	//RegEx for validating
 	const RE_DIGITS = /^[1-9]\d*$/;
 	const RE_WORDS = /^\w+(,\w+)*$/;
-	const RE_ARRAY = /^\d+(,\d+)*$/;
+	const RE_NUMBERS = /^\d+(,\d+)*$/;
 	const RE_TIME = /[0-2]\d:[0-5]\d:[0-5]\d[\.\d{1,3}]?$/;
 	const RE_DATE_TIME = /^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d[\.\d{1,3}]?$/;
 	const RE_LOGIN = /^[\w#@&°!§%;:=\^\/\(\)\?\*\+\~\.\,\-\$]{6,}$/;

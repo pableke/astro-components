@@ -17,22 +17,9 @@ const initView = () => {
 	window.onscroll = function() { _top.classList.toggle("hide", this.scrollY < 80); }
 	_top.addEventListener("click", ev => document.body.scrollIntoView({ behavior: "smooth" }));
 
-	// Alerts instance and links toggle
+	// Alerts instance
 	window.alerts = new Alerts(_top.nextElementSibling); // Alerts messages is global
-	document.querySelectorAll("[href='#toggle']").forEach(link => { // Info links
-		link.addEventListener("click", ev => {
-			const toggle = link.dataset.css || "hide";
-			const selector = link.dataset.target || (".info-" + link.id);
-			document.querySelectorAll(selector).forEach(el => el.classList.toggle(toggle));
 
-			const icon = link.getElementById("icon-" + link.id);
-			if (icon && link.dataset.toggle) // change link icon class?
-				link.dataset.toggle.split(/\s+/).forEach(name => icon.classList.toggle(name));
-
-			const input = link.dataset.focus && document.querySelector(link.dataset.focus);
-			input && input.focus(); // set focus on input
-		});
-	});
 	document.querySelectorAll(".autocomplete").forEach(el => {
 		const ac = new Autocomplete(el, autocompletes[el.id]);
 	});
