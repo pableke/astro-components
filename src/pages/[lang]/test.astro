@@ -28,7 +28,7 @@ const { lang } = Astro.params;
 				<th>Acciones</th>
 			</tr>
 		</thead>
-		<tbody>
+		<tbody class="hide">
 			<tr class="tb-data">
 				<td class="text-center">@count;</td>
 				<td><a href="#find" class="link">@nombre;</a></td>
@@ -45,8 +45,8 @@ const { lang } = Astro.params;
 				</td>
 			</tr>
 		</tbody>
-		<tfoot>
-			<tr><td colspan="99">Filas: @size;</td></tr>
+		<tfoot class="hide">
+			<tr><td colspan="7">Filas: @size;</td><td class="text-right">@imp;</td><td></td><td></td></tr>
 		</tfoot>
 	</table>
     <Characters lang={lang}/>

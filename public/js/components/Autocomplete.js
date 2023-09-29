@@ -3,14 +3,17 @@ const EMPTY = [];
 const fnEmpty = () => EMPTY;
 const fnParam = param => param;
 
-HTMLCollection.prototype.forEach = Array.prototype.forEach;
 const TR1 = "àáâãäåāăąÀÁÂÃÄÅĀĂĄÆßèéêëēĕėęěÈÉĒĔĖĘĚìíîïìĩīĭÌÍÎÏÌĨĪĬòóôõöōŏőøÒÓÔÕÖŌŎŐØùúûüũūŭůÙÚÛÜŨŪŬŮçÇñÑþÐŔŕÿÝ";
 const TR2 = "aaaaaaaaaAAAAAAAAAABeeeeeeeeeEEEEEEEiiiiiiiiIIIIIIIIoooooooooOOOOOOOOOuuuuuuuuUUUUUUUUcCnNdDRryY";
 
-const fnSize = str => str ? str.length : 0; //string o array
+const fnSize = data => data ? data.length : 0; //string o array
 const inRange = (num, min, max) => (min <= num) && (num <= max);
 const insertAt = (str1, str2, i) => str1.substring(0, i) + str2 + str1.substring(i)
 const replaceAt = (str1, str2, i) => str1.substring(0, i) + str2 + str1.substring(i + str2.length);
+
+JSON.size = fnSize;
+JSON.read = data => data && JSON.parse(data);
+HTMLCollection.prototype.forEach = Array.prototype.forEach;
 
 function tr(str) {
     var output = str || "";
@@ -51,8 +54,13 @@ export default function(block, opts) {
     this.getAutocomplete = () => autocomplete;
     this.find = selector => block.querySelector(selector);
 
+    this.reset = () => {
+        _index = -1;
+        resultsHTML.innerHTML = "";
+        return self;
+    }
     this.render = data => {
-        clearItems();
+        self.reset();
         inputValue.value = "";
         _results = data || EMPTY; // Force not unset var
         _results.slice(0, opts.maxResults).forEach((data, i) => {
@@ -65,10 +73,6 @@ export default function(block, opts) {
 
     function isItem(i) {
         return ((i > -1) && (i < fnSize(resultsHTML.children)))
-    }
-    function clearItems() {
-        _index = -1;
-        resultsHTML.innerHTML = "";
     }
     function loadItem(i) {
         if (isItem(i)) {
@@ -87,7 +91,7 @@ export default function(block, opts) {
             autocomplete.value = li ? li.innerText : "";
             inputValue.value = opts.select(_results[i]);
         }
-        clearItems();
+        self.reset();
         return null; // item not found
     }
     function fnSearch() {
@@ -112,7 +116,7 @@ export default function(block, opts) {
     }
     autocomplete.onkeyup = ev => { // Event fired after char is writen in text
         if (fnSize(autocomplete.value) < opts.minLength)
-            return clearItems();
+            return self.reset();
         // Reduce server calls, only for backspace, alfanum or not is searching
         const search = (ev.keyCode == 8) || inRange(ev.keyCode, 46, 111) || inRange(ev.keyCode, 160, 223);
         if (search && !_searching) {
@@ -121,6 +125,6 @@ export default function(block, opts) {
         }
     }
     autocomplete.onchange = ev => opts.onChange(ev, self);
-    autocomplete.onblur = ev => setTimeout(clearItems, 150);
+    autocomplete.onblur = ev => setTimeout(self.reset, 150);
     resultsHTML.onclick = ev => selectItem(+ev.target.dataset.index);
 }

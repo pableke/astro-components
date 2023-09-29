@@ -16,17 +16,13 @@ function Test() {
         return "" + (i + 1) + ".- " + data.nombre + " / " + data.titulo;
     }
 
-    this.format = function(data, output) {
+    this.render = function(data, output) {
         Object.assign(output, data);
         output.imp = i18n.isoFloat(data.imp);
         output.creado = i18n.isoDate(data.creado);
         return output;
     }
-    this.render = function(data, output, i) {
-        output.count = i + 1; // base 0 index
-        return self.format(data, output);
-    }
-    this.parser = function(input, data) {
+    this.parse = function(input, data) {
         data.imp = i18n.toFloat(input.imp);
         data.creado = input.creado;
         return data;

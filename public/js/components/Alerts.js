@@ -6,6 +6,9 @@ HTMLCollection.prototype.forEach = Array.prototype.forEach;
 
 export default function(alerts, opts) {
     opts = opts || {};
+    opts.hideClass = opts.hideClass || "hide";
+    opts.showInClass = opts.showInClass || "fadeIn";
+    opts.hideOutClass = opts.hideOutClass || "fadeOut";
     opts.alertTextClass = opts.alertTextClass || "alert-text";
     opts.alertSuccessClass = opts.alertSuccessClass || "alert-text-success";
     opts.alertInfoClass = opts.alertInfoClass || "alert-text-info";
@@ -20,14 +23,14 @@ export default function(alerts, opts) {
 
     const setAlert = (el, txt) => {
         el = isstr(el) ? texts.find(text => text.classList.contains(el)) : el;
-        el.parentNode.classList.remove("hide", "fadeOut");
-        el.parentNode.classList.add("fadeIn");
+        el.parentNode.classList.remove(opts.hideClass, opts.hideOutClass);
+        el.parentNode.classList.add(opts.showInClass);
         el.innerHTML = i18n.get(txt);
         return self;
     }
     const closeAlert = el => {
-        el.parentNode.classList.remove("fadeIn");
-        el.parentNode.classList.add("fadeOut");
+        el.parentNode.classList.remove(opts.showInClass);
+        el.parentNode.classList.add(opts.hideOutClass);
         return self;
     }
 

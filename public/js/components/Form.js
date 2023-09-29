@@ -49,15 +49,19 @@ export default function(form, opts) {
 		updateOnly.forEach(el => el.classList.toggle(opts.hideClass, !data[opts.pkName]));
 		return self;
 	}
-	this.parser = () => { // View to JSON
-		const data = {};
+	this.parse = () => { // View to JSON
+		const data = {}; // Results container
 		form.elements.forEach(el => {
 			if (el.classList.contains(opts.floatFormatClass))
-				data[el.name] = i18n.toFloat(el.value);
+				data[el.name] = i18n.toFloat(el.value); // Float
 			else if (el.classList.contains(opts.integerFormatClass))
-				data[el.name] = i18n.toInt(el.value);
+				data[el.name] = i18n.toInt(el.value); // Integer
+			if ((el.type === "checkbox") && el.checked) {
+				data[el.name] = data[el.name] || [];
+				data[el.name].push(el.value); // Array type
+			}
 			else if (el.name)
-				data[el.name] = el.value;
+				data[el.name] = el.value; // String
 		});
 		return data;
 	}
@@ -140,7 +144,7 @@ export default function(form, opts) {
 		return self;
 	}
 	this.validate = async () => {
-		const data = self.closeAlerts().parser();
+		const data = self.closeAlerts().parse();
 		if (opts.validate(data)) { // Form validation
 			const insertar = (opts.insert && !data[opts.pkName]); // insert or update
 			const fnUpdate = (data, info) => self.setOk(info); // Default acction

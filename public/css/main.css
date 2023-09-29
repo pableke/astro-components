@@ -22,7 +22,6 @@ table { margin: 20px auto; width: 98%; border-collapse: collapse; opacity: .9; }
 thead { border-bottom: 1px dashed black; }
 :is(.dark thead) { border: white; }
 
-tbody { display: none; }
 tbody td.no-data { padding: 1rem; text-align: center; }
 tr.tb-data:nth-child(odd) { background-color: rgb(249 250 251)/* bg-gray-50 */; }
 :is(.dark tr.tb-data:nth-child(odd)) { background-color: rgb(55 65 81)/* bg-gray-700 */; }
@@ -31,7 +30,7 @@ tr.tb-data:nth-child(even) { background-color: rgb(229 231 235)/* bg-gray-200 */
 tr.tb-data:hover { background-color: rgb(209 213 219)/* bg-gray-300 */ }
 :is(.dark tr.tb-data:hover) { background-color: rgb(75 85 99)/* bg-gray-600 */; }
 
-tfoot { display: none; font-weight: bold; border-top: 1px dashed black; }
+tfoot { font-weight: bold; border-top: 1px dashed black; }
 :is(.dark tfoot) { border: white; }
 
 .sort {
