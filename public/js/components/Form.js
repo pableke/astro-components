@@ -68,6 +68,7 @@ export default function(form, opts) {
 		return el.value; // String
 	}
 	this.getValue = el => el && fnParseValue(el);
+	this.valueOf = selector => self.getValue(self.getInput(selector));
 	this.parse = () => { // View to JSON
 		const data = {}; // Results container
 		form.elements.forEach(el => {
@@ -93,15 +94,21 @@ export default function(form, opts) {
 		f2.addEventListener( "blur", ev => f1.setAttribute("max", f2.value));
 		return self;
 	}
-	this.setSelectMask = function(selector, mask) {
-		form.elements.forEach((el, i) => { //iterate over all selects
-			if (el.options && el.matches(selector)) {
-				const option = el.options[el.selectedIndex]; //get current option
-				el.options.forEach(option => option.classList.toggle(opts.hideClass, !((mask >> i) & 1)));
-				if (option && option.classList.contains(opts.hideClass)) // is current option hidden?
-					el.selectedIndex = el.options.findIndex(el => !el.classList.contains(opts.hideClass));
-			}
-		});
+
+	this.setSelect = function(selector, keys, values) {
+		const select = self.getInput(selector);
+		if (select)
+			select.innerHTML = values.map((val, i) => `<option value="${keys[i]}">${val}</option>`).join("");
+		return self;
+	}
+	this.toggleSelectOptions = function(selector, fn) {
+		const select = form.elements.find((el.options && el.matches(selector)));
+		if (select) {
+			const option = select.options[select.selectedIndex]; //get current option
+			select.options.forEach((option, i) => option.classList.toggle(opts.hideClass, fn(option, i, select)));
+			if (option && option.classList.contains(opts.hideClass)) // is current option hidden?
+				select.selectedIndex = select.options.findIndex(el => !select.classList.contains(opts.hideClass));
+		}
 		return self;
 	}
 

@@ -19,6 +19,12 @@ JSON.render = (tpl, data, fnRender) => {
     });
     return output;
 }
+JSON.entries = function(tpl, data) {
+	let output = ""; //result buffer
+	for (const k in data)
+		output += tpl.replace("@value;", k).replace("@label;", data[k]);
+	return output;
+}
 
 export default function(table, opts) {
     opts = opts || {}; // default options
