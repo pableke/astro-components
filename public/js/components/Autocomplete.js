@@ -35,7 +35,8 @@ export default function(block, opts) {
 	opts.delay = opts.delay || 400; //milliseconds between keystroke occurs and when a search is performed
 	opts.minLength = opts.minLength || 3; //length to start
 	opts.maxResults = opts.maxResults || 10; //max showed rows (default = 10)
-    opts.activeClass = opts.activeClass || "active"; // name class
+    opts.optionClass = opts.optionClass || "option"; // child name class
+    opts.activeClass = opts.activeClass || "active"; // active option class
     opts.source = opts.source || fnEmpty; //empty source by default
     opts.render = opts.render || fnParam; //render label on autocomplete
     opts.select = opts.select || fnParam; //set value in id input
@@ -50,49 +51,47 @@ export default function(block, opts) {
     let _results = EMPTY; // default = empty array
     let _index = -1 // current item position in results
 
+    this.getData = () => _results;
+    this.getIndex = () => _index;
+    this.getItem = i => _results[i ?? _index];
+    this.getCurrentItem = () => _results[_index];
+    this.getCurrentOption = () => resultsHTML.children[_index];
+
     this.getInputValue = () => inputValue;
     this.getAutocomplete = () => autocomplete;
     this.find = selector => block.querySelector(selector);
 
+    const isChildren = i => inRange(i, 0, fnSize(resultsHTML.children) - 1);
+    const removeList = () => { _index = -1; resultsHTML.innerHTML = ""; return self; }
+
     this.reset = () => {
-        _index = -1;
-        resultsHTML.innerHTML = "";
-        return self;
+        inputValue.value = "";
+        return removeList();
     }
     this.render = data => {
         self.reset();
-        inputValue.value = "";
         _results = data || EMPTY; // Force not unset var
         _results.slice(0, opts.maxResults).forEach((data, i) => {
             const label = wrap(opts.render(data, i, _results), autocomplete.value);
-            resultsHTML.innerHTML += `<li class="option" data-index="${i}">${label}</li>`;
+            resultsHTML.innerHTML += `<li class="${opts.optionClass}">${label}</li>`;
         });
-        //resultsHTML.style.display = "block";
+        resultsHTML.children.forEach((li, i) => {
+            li.onclick = ev => selectItem(li, i);
+        });
         return self;
     }
 
-    function isItem(i) {
-        return ((i > -1) && (i < fnSize(resultsHTML.children)))
+    function activeItem(i) {
+        _index = isChildren(i) ? i : _index; // current item
+        resultsHTML.children.forEach((li, i) => li.classList.toggle(opts.activeClass, i == _index));
     }
-    function loadItem(i) {
-        if (isItem(i)) {
-            resultsHTML.children.forEach(li => li.classList.remove(opts.activeClass));
-            const li = resultsHTML.children[i];
-            li.classList.add(opts.activeClass);
-            inputValue.value = opts.select(_results[i]);
+    function selectItem(li, i) {
+        if (li && isChildren(i)) {
             _index = i;
-            return li;
-        }
-        return null; // item not found
-    }
-    function selectItem(i) {
-        if (isItem(i)) {
-            const li = resultsHTML.children[i];
-            autocomplete.value = li ? li.innerText : "";
+            autocomplete.value = li.innerText;
             inputValue.value = opts.select(_results[i]);
+            removeList();
         }
-        self.reset();
-        return null; // item not found
     }
     function fnSearch() {
         _searching = true; // Avoid new searchs
@@ -108,11 +107,11 @@ export default function(block, opts) {
         const ENTER = 13;
 
         if (ev.keyCode == UP)
-            loadItem(_index - 1);
+            activeItem(_index - 1);
         else if (ev.keyCode == DOWN)
-            loadItem(_index + 1);
+            activeItem(_index + 1);
         else if ((ev.keyCode == TAB) || (ev.keyCode == ENTER))
-            selectItem(_index);
+            selectItem(self.getCurrentOption(), _index);
     }
     autocomplete.onkeyup = ev => { // Event fired after char is writen in text
         if (fnSize(autocomplete.value) < opts.minLength)
@@ -124,7 +123,11 @@ export default function(block, opts) {
             _time = setTimeout(fnSearch, opts.delay);
         }
     }
+
     autocomplete.onchange = ev => opts.onChange(ev, self);
-    autocomplete.onblur = ev => setTimeout(self.reset, 150);
-    resultsHTML.onclick = ev => selectItem(+ev.target.dataset.index);
+    autocomplete.onblur = ev => {
+        if (!autocomplete.value || !inputValue.value)
+            autocomplete.value = inputValue.value = "";
+        setTimeout(removeList, 150);
+    }
 }

@@ -3,11 +3,13 @@ import i18n from "../i18n/langs.js";
 import Autocomplete from "./Autocomplete.js";
 
 const divNull = document.createElement("div");
+const isset = val => (typeof(val) !== "undefined") && (val !== null);
 const isstr = val => (typeof(val) === "string") || (val instanceof String);
 const fnVisible = el => (el.offsetWidth || el.offsetHeight || el.getClientRects().length);
 
 HTMLCollection.prototype.find = Array.prototype.find;
 HTMLCollection.prototype.forEach = Array.prototype.forEach;
+HTMLCollection.prototype.findIndex = Array.prototype.findIndex;
 
 export default function(form, opts) {
     opts = opts || {}; // default options
@@ -22,6 +24,7 @@ export default function(form, opts) {
 	opts.inputErrorClass = opts.inputErrorClass || "ui-error";
 	opts.tipErrorClass = opts.tipErrorClass || "ui-errtip";
 	opts.updateOnlyClass = opts.updateOnlyClass || "update-only";
+	opts.negativeNumClass = opts.negativeNumClass || "text-red";
 
 	const self = this; //self instance
 	const FOCUSABLED = "[tabindex]:not([type=hidden],[readonly],[disabled])";
@@ -30,22 +33,29 @@ export default function(form, opts) {
 	this.focus = el => { el && el.focus(); return self; }
 	this.autofocus = () => self.focus(form.elements.find(el => (el.matches(FOCUSABLED) && fnVisible(el))));
 	this.getInput = selector => form.elements.find(el => el.matches(selector)); // find an element
-	this.setValue = (el, value) => { /*if (el)*/ el.value = value; return self; }; // input must exists
 
+	function fnSetValue(el, value) {
+		if (el.type =="date") // input type = date
+			el.value = value && value.substrng(0, 10);
+		else if (el.classList.contains(opts.floatFormatClass))
+			data[el.name] = i18n.isoFloat(value); // Float format
+		else if (el.classList.contains(opts.integerFormatClass))
+			data[el.name] = i18n.isoInt(value); // Integer format
+		else if (el.type === "checkbox") // Array type
+			el.checked = value && value.includes(el.value);
+		else if (el.type === "radio")
+			el.checked = (el.value == value);
+		else if (el.name)
+			el.value = value || ""; // String
+		return self;
+	}
+	this.setValue = (el, value) => fnSetValue(el.value, value); // input must exists
+	this.setValues = data => { // update element value only if data exists
+		form.elements.forEach(el => (isset(data[el.name]) && fnSetValue(el, data[el.name])));
+		return self;
+	}
 	this.render = data => { // JSON to View
-		form.elements.forEach(el => {
-			const value = data[el.name];
-			if ((el.type === "checkbox") || (el.type === "radio"))
-				el.checked = (el.value == value);
-			else if (el.type =="date")
-				el.value = value && value.substrng(0, 10);
-			else if (el.classList.contains(opts.floatFormatClass))
-				data[el.name] = i18n.isoFloat(value);
-			else if (el.classList.contains(opts.integerFormatClass))
-				data[el.name] = i18n.isoInt(value);
-			else if (el.name)
-				el.value = value || "";
-		});
+		form.elements.forEach(el => fnSetValue(el, data[el.name]));
 		updateOnly.forEach(el => el.classList.toggle(opts.hideClass, !data[opts.pkName]));
 		return self;
 	}
@@ -71,11 +81,22 @@ export default function(form, opts) {
 		const block = form.querySelector(selector);
 		return new Autocomplete(block, opts);
 	}
-	this.setRangeDate = (f1, f2) => {
+	this.setDateRange = (f1, f2) => {
 		f1 = self.getInput(f1);
 		f2 = self.getInput(f2);
 		f1.addEventListener("blur", ev => f2.setAttribute("min", f1.value));
 		f2.addEventListener( "blur", ev => f1.setAttribute("max", f2.value));
+		return self;
+	}
+	this.setSelectMask = function(selector, mask) {
+		form.elements.forEach((el, i) => { //iterate over all selects
+			if (el.options && el.matches(selector)) {
+				const option = el.options[el.selectedIndex]; //get current option
+				el.options.forEach(option => option.classList.toggle(opts.hideClass, !((mask >> i) & 1)));
+				if (option && option.classList.contains(opts.hideClass)) // is current option hidden?
+					el.selectedIndex = el.options.findIndex(el => !el.classList.contains(opts.hideClass));
+			}
+		});
 		return self;
 	}
 
@@ -198,7 +219,7 @@ export default function(form, opts) {
 
 	// Form initialization
 	const fmtNumber = (el, value) => { // Show formatted value and style
-		el.classList.toggle("text-red", value && value.startsWith("-"));
+		el.classList.toggle(opts.negativeNumClass, value && value.startsWith("-"));
 		el.value = value; // value formatted
 	}
 	form.elements.forEach(el => {

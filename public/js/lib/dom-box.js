@@ -75,15 +75,6 @@ function DomBox() {
 	this.toggleHide = (list, force) => self.toggle(list, HIDE, force);
 	this.hasClass = (el, name) => el && el.classList.contains(name);
 
-	this.toggleInfo = selector => {
-		return self.click(selector, (ev, el) => {
-			const names = sb.split(el.dataset.toggle, /\s+/);
-			const target = self.getAll(el.dataset.target || (".info-" + el.id));
-			self.eachChild(el, "i", child => ab.each(names, name => fnToggle(child, name)))
-				.toggle(target, el.dataset.css || HIDE).setFocus(target[0]);
-		});
-	}
-
 	// Format and parse contents
 	const TEMPLATES = {}; //container
 	function fnContents(el, value) { fnToggle(el, HIDE, !value); return self; }
@@ -229,31 +220,6 @@ function DomBox() {
 		return fnCheck();
 	}
 
-	this.isValid = (form, fnValidate) => {
-		const data = fnValidate(self.closeAlerts().toObject(form));
-		return data || !self.setErrors(form, i18n.getMsgs());
-	}
-	this.validate = (form, opts) => {
-		const data = self.isValid(form, opts.validate);
-		if (i18n.isError()) // Validate input data
-			return Promise.reject(i18n.getMsgs()); // Call a reject promise
-		const pk = data[opts.pkName || "id"]; // Get pk value
-		const fnUpdate = (data, info) => self.setOk(form, info); // Default acction
-		const fnSave = ((opts.insert && !pk) ? opts.insert : opts.update) || fnUpdate;
-		return self.send(form, opts).then(info => { fnSave(data, info); }); // Lunch insert or update
-	}
-
-	this.mask = (list, mask, name) => self.each(list, (el, i) => fnToggle(el, name, nb.mask(mask, i))); //toggle class by mask
-	this.view = (list, mask) => self.mask(list, ~mask, HIDE); //toggle hide class by mask
-	this.getSelectHtml = select => select && self.getInnerHtml(select.options[select.selectedIndex]);
-	this.select = function(list, mask) {
-		return self.each(list, el => { //iterate over all selects
-			const option = el.options[el.selectedIndex]; //get current option
-			if (self.view(el.options, mask).hasClass(option, HIDE)) //option hidden => force change
-				el.selectedIndex = self.findIndex(":not(.hide)", el.options);
-		});
-	}
-
 	// Events
 	const ON_CHANGE = "change";
 	const fnOnclick = (el, fn) => { el.onclick = ev => fn(ev, el); }
@@ -286,116 +252,6 @@ function DomBox() {
 	this.submit = (form, fn) => fnAddEvent(form, "submit", fn);
 	this.beforeReset = (form, fn) => fnAddEvent(form, "reset", fn);
 	this.afterReset = (form, fn) => fnAddEvent(form, "reset", ev => setTimeout(() => fn(ev), 1));
-
-	this.tabs = function(tabs, opts) {
-		tabs = fnQueryAll(tabs); // Get all tabs
-		opts = opts || {}; // default optios
-		opts.classActive = opts.classActive || "active";
-
-		let _tabIndex = self.findIndex("." + opts.classActive, tabs); //current index tab
-		let _tabSize = tabs.length - 1; // max tabs size
-		let _backTab = _tabIndex; // back to previous tab
-		let _tabMask = ~0; // all 11111....
-
-		self.getTab = id => self.find("#tab-" + id, tabs); // Find by id selector
-		self.setTabMask = mask => { _tabMask = mask; return self; } // set mask for tabs
-
-		function fnShowTab(i) { //show tab by index
-			self.closeAlerts(); // always close alerts
-			i = nb.range(i, 0, _tabSize); // Force range
-			if (i == _tabIndex) // is current tab
-				return self; // nothing to do
-			const tab = tabs[i]; // get next tab
-			const fn = opts["tab-" + i] || fnSelf; // Event handler
-			if (fn(tab)) { // Validata change tab
-				const progressbar = self.get("#progressbar");
-				if (progressbar) { // progressbar is optional
-					const step = "step-" + i; //go to a specific step on progressbar
-					self.each(progressbar.children, li => self.toggle(li, opts.classActive, li.id <= step));
-				}
-				_backTab = _tabIndex; // save from
-				_tabIndex = i; // set current index
-				self.removeClass(tabs, opts.classActive).addClass(tab, opts.classActive) // set active tab
-					.setFocus(tab); // Auto set focus and scroll
-			}
-			return self;
-		}
-
-		self.viewTab = id => fnShowTab(self.findIndex("#tab-" + id, tabs)); //find by id selector
-		self.lastTab = () => fnShowTab(_tabSize);
-		self.backTab = () => fnShowTab(_backTab);
-		self.prevTab = () => { // Ignore 0's mask tab
-			for (var i = _tabIndex - 1; !nb.mask(_tabMask, i) && (i > 0); i--);
-			return fnShowTab(i); // Show calculated prev tab
-		}
-		self.nextTab = () => { // Ignore 0's mask tab
-			for (var i = _tabIndex + 1; !nb.mask(_tabMask, i) && (i < _tabSize); i++);
-			return fnShowTab(i); // Show calculated next tab
-		}
-
-		if (_tabSize > 0) { // Has view tabs?
-			self.click("a[href='#back-tab']", () => !self.backTab())
-			.click("a[href='#prev-tab']", (ev, el) => !self.setTabMask(+(el.dataset.mask ?? _tabMask)).prevTab())
-			.click("a[href='#next-tab']", (ev, el) => !self.setTabMask(+(el.dataset.mask ?? _tabMask)).nextTab())
-			.click("a[href='#last-tab']", ev => !self.lastTab())
-			.click("a[href^='#tab-']", (ev, el) => !self.viewTab(sb.lastId(el.href)));
-		}
-		return self;
-	}
-
-	this.alerts = function(alerts, opts) {
-		opts = opts || {};
-		opts.classAlertText = opts.classAlertText || "alert-text";
-		opts.classAlertClose = opts.classAlertClose || "alert-close";
-		opts.classTipError = opts.classTipError || "ui-errtip";
-		opts.classInputError = opts.classInputError || "ui-error";
-
-		const texts = self.getAll("." + opts.classAlertText, alerts);
-		const showAlert = el => { el.parentNode.classList.remove("hide", "fadeOut"); el.parentNode.classList.add("fadeIn"); return self; }
-		const closeAlert = el => { el.parentNode.classList.replace("fadeIn", "fadeOut"); return self; }
-		const setAlert = (el, txt) => txt ? showAlert(el).setInnerHtml(el, i18n.tr(txt)) : self;
-
-		self.showOk = msg => setAlert(texts[0], msg); //green
-		self.showInfo = msg => setAlert(texts[1], msg); //blue
-		self.showWarn = msg => setAlert(texts[2], msg); //yellow
-		self.showError = msg => setAlert(texts[3], msg); //red
-		self.showAlerts = function(msgs) { //show posible multiple messages types
-			return msgs ? self.showOk(msgs.msgOk).showInfo(msgs.msgInfo).showWarn(msgs.msgWarn).showError(msgs.msgError) : self;
-		}
-
-		const fnGetTiperr = el => self.sibling(el, "." + opts.classTipError); // tip error
-		const fnClearError = el => {
-			const tip = fnGetTiperr(el);
-			self.setInnerHtml(tip, EMPTY).hide(tip).removeClass(el, opts.classInputError);
-		}
-		self.closeAlerts = function() { // Hide all alerts
-			i18n.reset(); // Clear previos messages
-			return self.each(texts, closeAlert).each(INPUTS, fnClearError);
-		}
-		self.setOk = (form, msg) => {
-			return self.each(alerts.children, fnHide).each(form.elements, fnClearError).showOk(msg);
-		}
-		self.setErrors = (form, messages) => {
-			if (isstr(messages)) // simple message text
-				return self.showError(messages);
-			self.reverse(form.elements, el => { // Reverse iterator
-				const msg = messages[el.name]; // message to show
-				if (msg) {
-					const tip = fnGetTiperr(el);
-					const partner = self.sibling(el, INPUTS); // Partner element
-					self.setInnerHtml(tip, msg).show(tip)
-						.addClass(el, opts.classInputError).addClass(partner, opts.classInputError)
-						.focus(fnVisible(el) ? el : partner);
-				}
-			});
-			return self.showError(messages.msgError);
-		}
-
-		// Show posible server messages and close click event
-		const close = self.getAll("." + opts.classAlertClose, alerts);
-		return self.each(texts, el => { el.firstChild && showAlert(el); })
-					.click(close, (ev, el) => closeAlert(el));
-	}
 }
 
 export default new DomBox();

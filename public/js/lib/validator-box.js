@@ -10,12 +10,6 @@ function ValidatorBox() {
 	const ESCAPE_MAP = { '"': "&#34;", "'": "&#39;", "&": "&#38;", "<": "&#60;", ">": "&#62;", "\\": "&#92;" };
 
 	//RegEx for validating
-	const RE_DIGITS = /^[1-9]\d*$/;
-	const RE_WORDS = /^\w+(,\w+)*$/;
-	const RE_NUMBERS = /^\d+(,\d+)*$/;
-	const RE_TIME = /[0-2]\d:[0-5]\d:[0-5]\d[\.\d{1,3}]?$/;
-	const RE_DATE_TIME = /^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d[\.\d{1,3}]?$/;
-	const RE_LOGIN = /^[\w#@&°!§%;:=\^\/\(\)\?\*\+\~\.\,\-\$]{6,}$/;
 	const RE_IPv4 = /^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
 	const RE_IPv6 = /^([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}$/;
 	const RE_URL = /(http|fttextp|https):\/\/[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:\/~+#-]*[\w@?^=%&amp;\/~+#-])?/;
@@ -31,11 +25,6 @@ function ValidatorBox() {
 	this.unescape = str => str ? str.replace(/&#(\d+);/g, (key, num) => String.fromCharCode(num)) : null;
 	this.escape = str => str ? str.trim().replace(ESCAPE_HTML, (matched) => ESCAPE_MAP[matched]) : null;
 
-	//this.time = value => self.regex(RE_TIME, value);
-	//this.isoDateTime = value => self.regex(RE_DATE_TIME, value);
-	//this.word = value => self.regex(/\w+/, self.size50(value));
-	//this.digits = value => self.regex(RE_DIGITS, self.size50(value));
-
     this.gt0 = (name, value, msg) => (value && (value > 0)) || !i18n.setError(msg || "errGt0", name); // required gt0
     this.ge0 = (name, value, msg) => !value || (value > 0) || !i18n.setError(msg || "errGt0", name); // optional or gt0
 	this.max = (name, value, max, msg) => !value || (value.length <= max) || !i18n.setError(msg || "errMaxlength", name); // optional or length <= max
@@ -46,6 +35,7 @@ function ValidatorBox() {
             return !i18n.setError(msg || "errMaxlength", name);
         return true;
     }
+
 	this.isEmail = (name, value, msg) => {
         if (!self.size(name, value, 200))
             return false;
@@ -53,7 +43,7 @@ function ValidatorBox() {
             return !i18n.setError(msg || "errCorreo", name); // not valid
 		return true;
 	}
-	this.isLogin = (name, value, msg) => { // Loggin / Password
+	this.isLogin = (name, value, msg) => { // Loggin / Password / Code
         if (!self.size(name, value, 200))
             return false;
 		if (value.length < 8)
@@ -63,11 +53,54 @@ function ValidatorBox() {
 		return true;
 	}
 
+	this.word = (name, value, msg) => {
+        if (!self.size(name, value, 50))
+            return false;
+		if (!value.test(/\w+/)) // RE_WORD format
+            return !i18n.setError(msg || "errFormat", name); // not valid
+		return true;
+	}
+	this.words = (name, value, msg) => {
+        if (!self.size(name, value, 200))
+            return false;
+		if (!value.test(/^\w+(,\w+)*$/)) // RE_WORDS format
+            return !i18n.setError(msg || "errFormat", name); // not valid
+		return true;
+	}
+	this.digits = (name, value, msg) => {
+        if (!self.size(name, value, 20))
+            return false;
+		if (!value.test(/^[1-9]\d*$/)) // RE_DIGITS format
+            return !i18n.setError(msg || "errFormat", name); // not valid
+		return true;
+	}
+	this.numbers = (name, value, msg) => {
+        if (!self.size(name, value, 200))
+            return false;
+		if (!value.test(/^\d+(,\d+)*$/)) // RE_NUMBERS format
+            return !i18n.setError(msg || "errFormat", name); // not valid
+		return true;
+	}
+
 	// Date validations in string iso format (ej: "2022-05-11T12:05:01")
 	this.isDate = (name, value, msg) => {
         if (!value) // iso date validation
             return !i18n.setError("errRequired", name); // required
 		if (!value.test(/^\d{4}-[01]\d-[0-3]\d/)) // RE_DATE format
+            return !i18n.setError(msg || "errDate", name); // not valid
+        return true;
+    }
+	this.isTime = (name, value, msg) => {
+        if (!value) // iso date validation
+            return !i18n.setError("errRequired", name); // required
+		if (!value.test(/[0-2]\d:[0-5]\d:[0-5]\d[\.\d{1,3}]?$/)) // RE_TIME format
+            return !i18n.setError(msg || "errDate", name); // not valid
+        return true;
+    }
+	this.isDateTime = (name, value, msg) => {
+        if (!value) // iso date validation
+            return !i18n.setError("errRequired", name); // required
+		if (!value.test(/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d[\.\d{1,3}]?$/)) // RE_DATE_TIME format
             return !i18n.setError(msg || "errDate", name); // not valid
         return true;
     }

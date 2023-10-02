@@ -45,7 +45,7 @@ export default function(table, opts) {
     let _index = -1 // current item position in data
 
     this.getResume = () => RESUME;
-    this.getRows = () => _rows;
+    this.getData = () => _rows;
     this.getIndex = () => _index;
     this.getItem = i => _rows[i ?? _index];
     this.getCurrentItem = () => _rows[_index];
