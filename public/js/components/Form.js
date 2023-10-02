@@ -49,7 +49,7 @@ export default function(form, opts) {
 			el.value = value || ""; // String
 		return self;
 	}
-	this.setValue = (el, value) => fnSetValue(el.value, value); // input must exists
+	this.setValue = (el, value) => el && fnSetValue(el.value, value);
 	this.setValues = data => { // update element value only if data exists
 		form.elements.forEach(el => (isset(data[el.name]) && fnSetValue(el, data[el.name])));
 		return self;
@@ -59,19 +59,24 @@ export default function(form, opts) {
 		updateOnly.forEach(el => el.classList.toggle(opts.hideClass, !data[opts.pkName]));
 		return self;
 	}
+
+	function fnParseValue(el) {
+		if (el.classList.contains(opts.floatFormatClass))
+			return i18n.toFloat(el.value); // Float
+		if (el.classList.contains(opts.integerFormatClass))
+			return i18n.toInt(el.value); // Integer
+		return el.value; // String
+	}
+	this.getValue = el => el && fnParseValue(el);
 	this.parse = () => { // View to JSON
 		const data = {}; // Results container
 		form.elements.forEach(el => {
-			if (el.classList.contains(opts.floatFormatClass))
-				data[el.name] = i18n.toFloat(el.value); // Float
-			else if (el.classList.contains(opts.integerFormatClass))
-				data[el.name] = i18n.toInt(el.value); // Integer
 			if ((el.type === "checkbox") && el.checked) {
 				data[el.name] = data[el.name] || [];
 				data[el.name].push(el.value); // Array type
 			}
 			else if (el.name)
-				data[el.name] = el.value; // String
+				data[el.name] = fnParseValue(el);
 		});
 		return data;
 	}
@@ -213,8 +218,8 @@ export default function(form, opts) {
 	}
 	this.clone = msg => {
 		window.alerts.showOk(msg || opts.defaultMsgOk); // show message
-		updateOnly.forEach(el => el.classList.add(opts.hideClass));
-		return self.setValue(self.getInput("[name='" + opts.pkName + "']"), "");
+		updateOnly.forEach(el => el.classList.add(opts.hideClass)); // inserting mode
+		return fnSetValue(self.getInput("[name='" + opts.pkName + "']"), ""); // input must exists
 	}
 
 	// Form initialization

@@ -242,16 +242,6 @@ function DomBox() {
 	this.change = (list, fn) => self.each(list, el => fnEvent(el, ON_CHANGE, fn));
 	this.keyup = (list, fn) => self.each(list, el => fnEvent(el, "keyup", fn));
 	this.keydown = (list, fn) => self.each(list, el => fnEvent(el, "keydown", fn));
-
-	const fnLink = (el, fn) => self.ajax(el.href).then(fn);
-	const fnConfirm = (el, fn) => i18n.confirm(el.dataset.confirm) && fn(el);
-	this.confirm = (list, fn) => self.click(list, (ev, el) => fnConfirm(el, fn));
-	this.link = (list, fn) => self.click(list, (ev, el) => fnConfirm(el, el => !fnLink(el, fn)));
-	this.call = (list, fn) => self.click(list, (ev, el) => !fnLink(el, fn));
-
-	this.submit = (form, fn) => fnAddEvent(form, "submit", fn);
-	this.beforeReset = (form, fn) => fnAddEvent(form, "reset", fn);
-	this.afterReset = (form, fn) => fnAddEvent(form, "reset", ev => setTimeout(() => fn(ev), 1));
 }
 
 export default new DomBox();
