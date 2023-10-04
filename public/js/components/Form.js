@@ -49,7 +49,7 @@ export default function(form, opts) {
 			el.value = value || ""; // String
 		return self;
 	}
-	this.setValue = (el, value) => el && fnSetValue(el.value, value);
+	this.setValue = (el, value) => el ? fnSetValue(el.value, value) : self;
 	this.setValues = data => { // update element value only if data exists
 		form.elements.forEach(el => (isset(data[el.name]) && fnSetValue(el, data[el.name])));
 		return self;
@@ -101,11 +101,11 @@ export default function(form, opts) {
 			select.innerHTML = values.map((val, i) => `<option value="${keys[i]}">${val}</option>`).join("");
 		return self;
 	}
-	this.toggleSelectOptions = function(selector, fn) {
-		const select = form.elements.find((el.options && el.matches(selector)));
-		if (select) {
+	this.toggleOptions = function(selector, fn) {
+		const select = form.elements.find(el => (el.options && el.matches(selector)));
+		if (fn && select) { // update select options
 			const option = select.options[select.selectedIndex]; //get current option
-			select.options.forEach((option, i) => option.classList.toggle(opts.hideClass, fn(option, i, select)));
+			select.options.forEach((option, i) => option.classList.toggle(opts.hideClass, !fn(option, i, select)));
 			if (option && option.classList.contains(opts.hideClass)) // is current option hidden?
 				select.selectedIndex = select.options.findIndex(el => !select.classList.contains(opts.hideClass));
 		}
