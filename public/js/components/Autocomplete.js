@@ -11,9 +11,10 @@ const inRange = (num, min, max) => (min <= num) && (num <= max);
 const insertAt = (str1, str2, i) => str1.substring(0, i) + str2 + str1.substring(i)
 const replaceAt = (str1, str2, i) => str1.substring(0, i) + str2 + str1.substring(i + str2.length);
 
-JSON.size = fnSize;
+JSON.size = fnSize; // Mute JSON
 JSON.read = data => data && JSON.parse(data);
 HTMLCollection.prototype.forEach = Array.prototype.forEach;
+String.ilike = (str1, str2) => tr(str1).toLowerCase().indexOf(tr(str2).toLowerCase()); // Mute String class with an insensitive search
 
 function tr(str) {
     var output = str || "";
@@ -26,7 +27,7 @@ function tr(str) {
 }
 function wrap(str1, str2) {
     const open = "<u><b>"; // open tag indicator
-    const i = tr(str1).toLowerCase().indexOf(tr(str2).toLowerCase()); // Insensitive search
+    const i = String.ilike(str1, str2); // Use extended insensitive search
     return (i < 0) ? str1 : insertAt(insertAt(str1, open, i), "</b></u>", i + str2.length + open.length);
 }
 

@@ -50,6 +50,7 @@ export default function(form, opts) {
 		return self;
 	}
 	this.setValue = (el, value) => el ? fnSetValue(el.value, value) : self;
+	this.setValueOf = selector => self.setValue(self.getInput(selector));
 	this.setValues = data => { // update element value only if data exists
 		form.elements.forEach(el => (isset(data[el.name]) && fnSetValue(el, data[el.name])));
 		return self;

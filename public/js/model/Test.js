@@ -1,16 +1,15 @@
 
-import sb from "../lib/string-box.js";
 import valid from "../lib/validator-box.js";
 import i18n from "../i18n/langs.js";
 
 function Test() {
-	const self = this; //self instance
+	//const self = this; //self instance
 
     this.filter = (data, params) => {
-        return data.filter(test => (sb.ilike(test.nombre, params.nombre) || sb.ilike(test.titulo, params.titulo)));
+        return data.filter(test => (String.ilike(test.nombre, params.nombre) || String.ilike(test.titulo, params.titulo)));
     }
     this.filterByTerm = (data, term) => {
-        return data.filter(test => (sb.ilike(test.nombre, term) || sb.ilike(test.titulo, term)));
+        return data.filter(test => (String.ilike(test.nombre, term) || String.ilike(test.titulo, term)));
     }
     this.autocomplete = (data, i) => {
         return "" + (i + 1) + ".- " + data.nombre + " / " + data.titulo;
