@@ -13,8 +13,9 @@ const replaceAt = (str1, str2, i) => str1.substring(0, i) + str2 + str1.substrin
 
 JSON.size = fnSize; // Mute JSON
 JSON.read = data => data && JSON.parse(data);
-HTMLCollection.prototype.forEach = Array.prototype.forEach;
-String.ilike = (str1, str2) => tr(str1).toLowerCase().indexOf(tr(str2).toLowerCase()); // Mute String class with an insensitive search
+HTMLCollection.prototype.forEach = Array.prototype.forEach; // Extends HTMLCollection prototype
+String.iIndexOf = (str1, str2) => tr(str1).toLowerCase().indexOf(tr(str2).toLowerCase()); // Mute String class with insensitive index
+String.ilike = (str1, str2) => (String.iIndexOf(str1, str2) > -1); // Mute String class with an insensitive search
 
 function tr(str) {
     var output = str || "";
@@ -27,7 +28,7 @@ function tr(str) {
 }
 function wrap(str1, str2) {
     const open = "<u><b>"; // open tag indicator
-    const i = String.ilike(str1, str2); // Use extended insensitive search
+    const i = String.iIndexOf(str1, str2); // Use extended insensitive search
     return (i < 0) ? str1 : insertAt(insertAt(str1, open, i), "</b></u>", i + str2.length + open.length);
 }
 
@@ -120,7 +121,7 @@ export default function(block, opts) {
         // Reduce server calls, only for backspace, alfanum or not is searching
         const search = (ev.keyCode == 8) || inRange(ev.keyCode, 46, 111) || inRange(ev.keyCode, 160, 223);
         if (search && !_searching) {
-            clearTimeout(_time);
+            clearTimeout(_time); // Clear previous searches
             _time = setTimeout(fnSearch, opts.delay);
         }
     }
