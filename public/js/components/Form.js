@@ -18,8 +18,9 @@ export default function(form, opts) {
 	opts.defaultMsgOk = opts.defaultMsgOk || "saveOk"; // default key for message ok
 	opts.defaultMsgError = opts.defaultMsgError || "errForm"; // default key error
 	opts.checkAllClass = opts.checkAllClass || "ui-check-all";
-	opts.floatFormatClass = opts.floatFormatClass || "ui-float";
-	opts.integerFormatClass = opts.integerFormatClass || "ui-integer";
+	opts.floatFormatClass = opts.floatFormatClass || "ui-float"; // Float i18n
+	opts.integerFormatClass = opts.integerFormatClass || "ui-integer"; // Integer i18n
+	opts.numberFormatClass = opts.numberFormatClass || "ui-number"; // Number type
 	opts.inputBlockClass = opts.inputBlockClass || "ui-block";
 	opts.inputErrorClass = opts.inputErrorClass || "ui-error";
 	opts.tipErrorClass = opts.tipErrorClass || "ui-errtip";
@@ -33,6 +34,16 @@ export default function(form, opts) {
 	this.focus = el => { el && el.focus(); return self; }
 	this.autofocus = () => self.focus(form.elements.find(el => (el.matches(FOCUSABLED) && fnVisible(el))));
 	this.getInput = selector => form.elements.find(el => el.matches(selector)); // find an element
+	this.reset = () => { form.reset(); return self.autofocus(); } // clear inputs and autofocus
+
+	// Actions to update form view (inputs, texts, ...)
+	const fnSetText = (el, text) => { el.innerHTML = text; return self; }
+	this.text = (selector, text) => fnSetText(form.querySelector(selector), text);
+	this.show = selector => { form.querySelector(selector).classList.remove(opts.hideClass); return self; }
+	this.hide = selector => { form.querySelector(selector).classList.add(opts.hideClass); return self; }
+	this.toggle = (selector, force) => { form.querySelector(selector).classList.toggle(opts.hideClass, force); return self; }
+	this.disabled = (selector, force) => { self.getInput(selector).toggleAttribute("disabled", force); return self; }
+	this.readonly = (selector, force) => { self.getInput(selector).toggleAttribute("readonly", force); return self; }
 
 	function fnSetValue(el, value) {
 		if (el.type =="date") // input type = date
@@ -49,8 +60,8 @@ export default function(form, opts) {
 			el.value = value || ""; // String
 		return self;
 	}
-	this.setValue = (el, value) => el ? fnSetValue(el.value, value) : self;
-	this.setValueOf = selector => self.setValue(self.getInput(selector));
+	this.setValue = (el, value) => el ? fnSetValue(el, value) : self;
+	this.setval = (selector, value) => self.setValue(self.getInput(selector), value);
 	this.setValues = data => { // update element value only if data exists
 		form.elements.forEach(el => (isset(data[el.name]) && fnSetValue(el, data[el.name])));
 		return self;
@@ -66,6 +77,8 @@ export default function(form, opts) {
 			return i18n.toFloat(el.value); // Float
 		if (el.classList.contains(opts.integerFormatClass))
 			return i18n.toInt(el.value); // Integer
+		if (el.classList.contains(opts.numberFormatClass))
+			return +el.value; // Number type directly
 		return el.value; // String
 	}
 	this.getValue = el => el && fnParseValue(el);
@@ -96,21 +109,25 @@ export default function(form, opts) {
 		return self;
 	}
 
-	this.setSelect = function(selector, keys, values) {
-		const select = self.getInput(selector);
-		if (select)
-			select.innerHTML = values.map((val, i) => `<option value="${keys[i]}">${val}</option>`).join("");
-		return self;
+	this.setSelect = function(selector, values, keys, emptyOption) {
+		const select = self.getInput(selector); // Get select element
+		emptyOption = emptyOption ? "" : `<option>${emptyOption}</option>`; // Text for empty first option
+		const fnKeys = (val, i) => `<option value="${keys[i]}">${val}</option>`; // Default options template
+		const fnDefault = (val, i) => `<option value="${i+1}">${val}</option>`; // 1, 2, 3... Number array
+		return fnSetText(select, emptyOption + values.map(keys ? fnKeys : fnDefault).join(""));
 	}
 	this.toggleOptions = function(selector, fn) {
 		const select = form.elements.find(el => (el.options && el.matches(selector)));
-		if (fn && select) { // update select options
-			const option = select.options[select.selectedIndex]; //get current option
-			select.options.forEach((option, i) => option.classList.toggle(opts.hideClass, !fn(option, i, select)));
-			if (option && option.classList.contains(opts.hideClass)) // is current option hidden?
-				select.selectedIndex = select.options.findIndex(el => !select.classList.contains(opts.hideClass));
-		}
+		const option = select.options[select.selectedIndex]; //get current option
+		select.options.forEach((option, i) => option.classList.toggle(opts.hideClass, !fn(option, i, select)));
+		if (option && option.classList.contains(opts.hideClass)) // is current option hidden?
+			select.selectedIndex = select.options.findIndex(el => !el.classList.contains(opts.hideClass));
 		return self;
+	}
+	this.getOptionText = function(selector) {
+		const select = self.getInput(selector); // Get select element
+		const option = select.options[select.selectedIndex]; //get current option
+		return option && option.innerHTML; //get current option text
 	}
 
 	// Events handlers
@@ -118,6 +135,7 @@ export default function(form, opts) {
 	this.submit = fn => form.addEventListener("submit", fn);
 	this.beforeReset = fn => form.addEventListener("reset", fn);
 	this.afterReset = fn => form.addEventListener("reset", ev => setTimeout(() => fn(ev), 1));
+	this.click = selector => { form.querySelector(selector).click(); return self; } // Fire event
 
 	this.onChangeInput = (selector, fn) => {
 		const el = self.getInput(selector);
@@ -141,14 +159,8 @@ export default function(form, opts) {
 	}
 
 	// Form Validator
-	const fnSetTip = (el, msg) => {
-		const tip = form.getElementById("tip-" + el.name) || divNull;
-		tip.innerHTML = msg;
-	}
-	const fnSetInputOk = el => {
-		el.classList.remove(opts.inputErrorClass);
-		fnSetTip(el, "");
-	}
+	const fnSetTip = (el, msg) => fnSetText(form.querySelector("#tip-" + el.name) || divNull, msg);
+	const fnSetInputOk = el => { el.classList.remove(opts.inputErrorClass); fnSetTip(el, ""); }
 	const fnSetInputError = (el, msg) => {
 		if (msg) { // el has an error
 			el.classList.add(opts.inputErrorClass);

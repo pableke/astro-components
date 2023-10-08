@@ -30,8 +30,12 @@ export default function(table, opts) {
     opts = opts || {}; // default options
     opts.hideClass = opts.hideClass || "hide";
     opts.showClass = opts.showClass || "fadeIn";
-    opts.navItemClass = opts.navItemClass || "nav-item";
-    opts.navItemClass = opts.navItemClass || "nav-item";
+    opts.sortClass = opts.sortClass || "sort";
+    opts.sortAscClass = opts.sortAscClass || "sort-asc";
+    opts.sortDescClass = opts.sortDescClass || "sort-desc";
+    opts.sortNoneClass = opts.sortNoneClass || "sort-none";
+    opts.rowActionClass = opts.rowActionClass || "row-action";
+    opts.tableActionClass = opts.tableActionClass || "table-action";
     opts.msgConfirmRemove = opts.msgConfirmRemove || "Remove current element?";
     opts.msgConfirmReset = opts.msgConfirmReset || "Remove all elements?";
     opts.msgEmptyTable = opts.msgEmptyTable || "No results found";
@@ -57,6 +61,10 @@ export default function(table, opts) {
     this.getCurrentItem = () => _rows[_index];
     this.getCurrentRow = () => tbody.children[_index];
 
+    this.clear = () => { _index = -1; return self; }
+    this.set = (name, fn) => { opts[name] = fn; return self; }
+	this.read = selector => table.querySelector(selector).innerHTML;
+
     function fnRender(data) {
         _rows = data || EMPTY;
         RESUME.size = _rows.length;
@@ -73,26 +81,21 @@ export default function(table, opts) {
         table.tFoot.classList.remove(opts.hideClass);
         table.tFoot.classList.add(opts.showClass);
 
-        // Listeners for change, find and remove events
+        // Row listeners for change, find and remove items
         tbody.children.forEach((tr, i) => {
-            //tr.dataset.index = i; // add current index
             tr.onchange = ev => {
                 _index = i; // current item
                 const fnChange = opts["change-" + ev.target.name];
                 fnChange(ev.target, self);
             };
-            tr.querySelectorAll("a[href^='#find']").forEach(link => {
+            tr.getElementsByClassName(opts.rowActionClass).forEach(link => {
                 link.onclick = ev => {
                     _index = i; // current item
-                    const name = link.getAttribute("href");
-                    const fnFind = opts[name.substring(1)];
-                    fnFind(link, self); // call event
-                };
-            });
-            tr.querySelectorAll("a[href='#remove']").forEach(link => {
-                link.onclick = ev => {
-                    _index = i; // current item
-                    opts.remove(); // call event
+                    ev.preventDefault(); // avoid navigation
+                    const href = link.getAttribute("href");
+                    if (href == "#remove") // Remove action
+                        return self.remove(); // Remove row
+                    opts[href](link, self); // Call action
                 };
             });
         });
@@ -131,43 +134,49 @@ export default function(table, opts) {
     }
 
     // Orderable columns system
-    const links = table.tHead.querySelectorAll(".sort");
+    const links = table.tHead.getElementsByClassName(opts.sortClass);
     links.forEach(link => {
         link.onclick = ev => {
-            const dir = link.classList.contains("sort-asc") ? "desc" : "asc"; // Toggle sort direction
+            const dir = link.classList.contains(opts.sortAscClass) ? opts.sortDescClass : opts.sortAscClass; // Toggle sort direction
             const column = link.getAttribute("href").substring(1); // Column name
 
             // Update all sort icons
-            links.forEach(link => {
-                // Reset all orderable columns
-                link.classList.remove("sort-asc", "sort-desc");
-                link.classList.add("sort-none");
+            links.forEach(link => { // Reset all orderable columns
+                link.classList.remove(opts.sortAscClass, opts.sortDescClass);
+                link.classList.add(opts.sortNoneClass);
             });
-            link.classList.remove("sort-none");
-            link.classList.add("sort-" + dir);
+            link.classList.remove(opts.sortNoneClass);
+            link.classList.add(dir);
 
-            // Sort data by function and build table
-            const fnAsc = (a, b) => ((a[column] < b[column]) ? -1 : ((a[column] > b[column]) ? 1 : 0));
-            const fnSort = opts["sort-" + column] || fnAsc; // Specific sort function
-            fnRender(_rows.sort((dir == "desc") ? ((a, b) => fnSort(b, a)) : fnSort));
+            // Sort data by function and rebuild table
+            const fnAsc = (a, b) => ((a[column] < b[column]) ? -1 : ((a[column] > b[column]) ? 1 : 0)); // Default sort
+            const fnAux = opts["sort-" + column] || fnAsc; // Load specific sort function
+            const fnSort = (dir == opts.sortDescClass) ? ((a, b) => fnAux(b, a)) : fnAux; // Set direction
+            fnRender(_rows.sort(fnSort)); // render sorted table
         }
     });
 
-    // Table items navigation
-    document.getElementsByClassName(opts.navItemClass).forEach(link => {
-        link.addEventListener("click", ev => { // Handle click event
-            const href = link.getAttribute("href");
-            if (href == "#first-item")
-                return self.firstItem();
-            if (href == "#prev-item")
-                return self.prevItem();
-            if (href == "#next-item")
-                return self.nextItem();
-            if (href == "#last-item")
-                return self.lastItem();
-            if (href == "#remove-item")
-                return self.remove();
-            ev.preventDefault();
+    this.setActions = el => { // Table acctions over data
+        el.getElementsByClassName(opts.tableActionClass).forEach(link => {
+            link.addEventListener("click", ev => { // Handle click event
+                ev.preventDefault(); // avoid navigation
+                const href = link.getAttribute("href");
+                if (href == "#first")
+                    return self.firstItem();
+                if (href == "#prev")
+                    return self.prevItem();
+                if (href == "#next")
+                    return self.nextItem();
+                if (href == "#last")
+                    return self.lastItem();
+                if (href == "#remove")
+                    return self.remove();
+                const fnAction = opts[href];
+                if (fnAction)
+                    return fnAction(link, self);
+            });
         });
-    });
+        return self;
+    }
+    self.setActions(table);
 }

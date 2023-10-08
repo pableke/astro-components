@@ -46,8 +46,9 @@ tfoot { font-weight: bold; border-top: 1px dashed black; }
 .ui-row { display: flex; align-items: center; vertical-align: middle; gap: 4px; }
 .ui-block { width: 100%; max-width: 500px; }
 
-label { font-weight: 700; font-size: 0.875rem/* 14px */; line-height: 1.25rem/* 20px */; color: rgb(17 24 39)/* text-gray-900 */; }
+label { display: block; font-weight: 700; font-size: 0.875rem/* 14px */; line-height: 1.25rem/* 20px */; color: rgb(17 24 39)/* text-gray-900 */; }
 label.required:after { color: #e32; content: " *"; }
+label.inline { display: inline-block; }
 :is(.dark label) { color: white; }
 
 .ui-input {
@@ -63,7 +64,10 @@ label.required:after { color: #e32; content: " *"; }
 :is(.dark .ui-input):focus { border-color: rgb(147 197 253)/* border-blue-300 */; }
 
 .ui-check { margin: 0 1px; }
+.ui-select { width: max-content; }
 .ui-date { width: 10rem/* w-40 = 160px */; }
+.ui-ta { width: 98%; height: 90px; } /*height: 90px = 5 rows aprox.*/
+.ui-ta-2r { width: 98%; height: 45px; } /*height: 45px = 2 rows aprox.*/
 .ui-integer, .ui-float { width: 10rem/* w-40 = 160px */; text-align: right; }
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left: .5em; }
 .disabled { opacity: 0.5; pointer-events: none; text-decoration: none; }
@@ -105,20 +109,46 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left
 /* Autocomplete */
 
 /* Buttons */
-.btn { @apply inline-block border font-medium rounded-lg text-sm px-5 py-2 ml-2 focus:ring-4 focus:outline-none }
-.btn-primary { @apply text-white bg-blue-700 border-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 }
+.btn {
+	display: inline-flex; align-items: center; margin-left: 0.5rem/* 8px */; padding: .5rem 1rem; height: 40px;
+	font-weight: 500; font-size: 0.875rem/* 14px */; line-height: 1.25rem/* 20px */;
+	border-width: 1px; border-radius: 0.25rem/* 4px */; outline: 2px solid transparent; outline-offset: 2px;
+}
+.btn-primary { color: white; background-color: rgb(37 99 235)/* bg-blue-600 */; border-color: rgb(37 99 235)/* bg-blue-600 */; }
+.btn-primary:hover { background-color: rgb(30 64 175)/* bg-blue-800 */; }
+:is(.dark .btn-primary) { background-color: rgb(37 99 235)/* bg-blue-600 */; }
+:is(.dark .btn-primary:hover) { background-color: rgb(29 78 216)/* bg-blue-700 */; }
+
+.btn-info { color: white; background-color: rgb(514 165 233)/* bg-sky-500 */; border-color: rgb(14 165 233)/* bg-sky-500 */; }
+.btn-info:hover { background-color: rgb(7 89 133)/* bg-sky-800 */; }
+:is(.dark .btn-info) { background-color: rgb(2 132 199)/* bg-sky-600 */; }
+:is(.dark .btn-info:hover) { background-color: rgb(3 105 161)/* bg-sky-700 */; }
+
 .btn-secondary { @apply text-gray-900 bg-white border-gray-300 hover:bg-gray-100 focus:ring-gray-200 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700 }
 .btn-light { @apply text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-gray-200 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700 }
-.btn-green { @apply text-white bg-green-700 border-green-700 hover:bg-green-800 focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 }
+
+.btn-green { color: white; background-color: rgb(22 163 74)/* bg-green-600 */; border-color: rgb(22 163 74)/* bg-green-600 */; }
+.btn-green:hover { background-color: rgb(21 128 61)/* bg-green-700 */; }
+:is(.dark .btn-green) { background-color: rgb(22 163 74)/* bg-green-600 */; }
+:is(.dark .btn-green:hover) { background-color: rgb(21 128 61)/* bg-green-700 */; }
+
+.btn-success { color: white; background-color: rgb(5 150 105)/* bg-emerald-600 */; border-color: rgb(5 150 105)/* bg-emerald-600 */; }
+.btn-success:hover { background-color: rgb(6 95 70)/* bg-emerald-800 */; }
+:is(.dark .btn-success) { background-color: rgb(5 150 105)/* bg-emerald-600 */; }
+:is(.dark .btn-success:hover) { background-color: rgb(4 120 87)/* bg-emerald-700 */; }
+
 .btn-warn { @apply text-yellow-100 bg-yellow-800 hover:bg-yellow-900 focus:ring-yellow-300 dark:bg-yellow-800 dark:hover:bg-yellow-700 dark:focus:ring-yellow-700 dark:border-yellow-700 }
 .btn-error { @apply text-white bg-red-700 border-red-700 hover:bg-red-800 focus:ring-red-300 dark:bg-red-600 dark:border-red-800 dark:hover:bg-red-700 dark:focus:ring-red-900 }
 .btn-danger { @apply text-white bg-mexican-red-700 border-mexican-red-700 hover:bg-mexican-red-800 focus:ring-mexican-red-300 dark:bg-mexican-red-600 dark:border-mexican-red-800 dark:hover:bg-mexican-red-700 dark:focus:ring-mexican-red-900 }
 .btn-dark { @apply text-white bg-gray-800 hover:bg-gray-900 focus:ring-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 }
+
+.btn-icon-left { margin-right: 6px; }
+.btn-icon-right { margin-left: 6px; }
 /* Buttons */
 
 /* Tabs classes */
 .tab-content { display: none; width: 100%; min-height: 70vh; max-height: 90vh; padding: 2px; }
-.tab-content.active { display: inherit; }
+.tab-content.active { display: inherit; animation: fadeIn 1s forwards; }
 /* Tabs classes */
 
 /* Actions */
@@ -126,20 +156,22 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left
 .action:hover { animation: resize .5s forwards; }
 
 .action-blue { fill: rgb(59 130 246)/*text-blue-500*/; }
-.action-blue:hover { fill: rgb(530 64 175)/*text-blue-800*/; }
-:is(.dark .action-blue):hover { fill: rgb(147 197 253)/*text-blue-300*/; }
+.action-blue:hover { fill: rgb(30 64 175)/*text-blue-800*/; }
+:is(.dark .action-blue:hover) { fill: rgb(147 197 253)/*text-blue-300*/; }
 
 .action-green { color: rgb(34 197 94)/*text-green-500*/; }
 .action-green:hover { color: rgb(22 101 52)/*text-green-800*/; }
-:is(.dark .action-green):hover { color: rgb(187 247 208)/*text-green-300*/; }
+:is(.dark .action-green:hover) { color: rgb(187 247 208)/*text-green-300*/; }
 
 .action-red { fill: rgb(239 68 68)/*text-red-500*/; }
 .action-red:hover { fill: rgb(153 27 27)/*text-red-800*/; }
-:is(.dark .action-red):hover { fill: rgb(248 113 113)/*text-red-400*/; }
+:is(.dark .action-red:hover) { fill: rgb(248 113 113)/*text-red-400*/; }
 /* Actions */
 
 /* Specific styles */
 .hide { display: none !important; } /* force display none */
+.navbar { margin: 1px 4px; padding: 4px; display: inline-block; width: 98%; clear: both; }
+
 .text-red { color: red; }
 .text-center { text-align: center; }
 .text-right { text-align: right; }

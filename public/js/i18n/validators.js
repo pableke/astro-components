@@ -1,7 +1,7 @@
 
-import i18n from "../i18n/langs.js";
+import i18n from "./langs.js";
 
-function ValidatorBox() {
+function Validators() {
 	const self = this; //self instance
 	const sysdate = (new Date()).toISOString();
 
@@ -260,4 +260,4 @@ function ValidatorBox() {
 	}
 }
 
-export default new ValidatorBox();
+export default new Validators();

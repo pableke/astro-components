@@ -44,7 +44,7 @@ export default function(alerts, opts) {
 
     this.closeAlerts = function() {
         i18n.reset(); // Clear previos messages
-        texts.each(closeAlert); // fadeOut all alerts
+        texts.forEach(closeAlert); // fadeOut all alerts
         return self;
     }
 

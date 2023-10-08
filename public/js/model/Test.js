@@ -1,6 +1,6 @@
 
-import valid from "../lib/validator-box.js";
 import i18n from "../i18n/langs.js";
+import valid from "../i18n/validators.js";
 
 function Test() {
 	//const self = this; //self instance
