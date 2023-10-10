@@ -1,4 +1,6 @@
 
+import alerts from "./Alerts.js";
+
 const fnTrue = () => true; // always true
 const mask = (val, i) => ((val >> i) & 1); // check bit at i position
 
@@ -37,6 +39,7 @@ export default function(opts) {
         const fnInit = opts["onInitTab" + i] || fnTrue; // Event handler fire once
         const fnShow = opts["onShowTab" + i] || fnTrue; // Event handler fire each access to tab
         if (fnInit(tab) && fnShow(tab)) { // Validata change tab
+            alerts.closeAlerts(); // Close all previous messages
             const step = "step-" + i; //go to a specific step on progressbar
             progressbar.forEach(bar => { // progressbar is optional
                 bar.children.forEach(child => child.classList.toggle(opts.activeClass, child.id <= step));

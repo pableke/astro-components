@@ -43,7 +43,7 @@ tfoot { font-weight: bold; border-top: 1px dashed black; }
 /* TABLES */
 
 /* Inputs */
-.ui-row { display: flex; align-items: center; vertical-align: middle; gap: 4px; }
+.ui-row { display: flex; align-items: center; vertical-align: middle; gap: .5rem; }
 .ui-block { width: 100%; max-width: 500px; }
 
 label { display: block; font-weight: 700; font-size: 0.875rem/* 14px */; line-height: 1.25rem/* 20px */; color: rgb(17 24 39)/* text-gray-900 */; }
@@ -58,7 +58,6 @@ label.inline { display: inline-block; }
     font-size: 0.875rem/* 14px */; line-height: 1.25rem/* 20px */;
     color: rgb(17 24 39)/* text-gray-900 */;
 }
-.ui-input:disabled, .ui-input.disabled { opacity: 0.75; }
 .ui-input:focus { border-color: rgb(147 197 253)/* border-blue-300 */; }
 :is(.dark .ui-input) { color: white; background-color: rgb(55 65 81)/* bg-gray-700 */; border-color: rgb(75 85 99)/* border-gray-600 */; }
 :is(.dark .ui-input):focus { border-color: rgb(147 197 253)/* border-blue-300 */; }
@@ -70,7 +69,7 @@ label.inline { display: inline-block; }
 .ui-ta-2r { width: 98%; height: 45px; } /*height: 45px = 2 rows aprox.*/
 .ui-integer, .ui-float { width: 10rem/* w-40 = 160px */; text-align: right; }
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left: .5em; }
-.disabled { opacity: 0.5; pointer-events: none; text-decoration: none; }
+.disabled { opacity: .5; pointer-events: none; text-decoration: none; }
 
 .ui-icon-block {
     position: relative; display: flex; width: 100%; flex-wrap: wrap; align-items: stretch
@@ -145,6 +144,15 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left
 .btn-icon-left { margin-right: 6px; }
 .btn-icon-right { margin-left: 6px; }
 /* Buttons */
+
+/* Alerts */
+.alerts { position: fixed; top: 3rem; right: 1em; width: 45%; z-index: 9; }
+.alert { display: flex; gap: .5rem; align-items: center; margin: 1rem/* 16px */; padding: 1rem/* 16px */; border-radius: 0.5rem/* 8px */; border-width: 1px; }
+
+.alert-icon { width: 1.5rem/* 24px */; height: 1.5rem/* 24px */; }
+.alert-text { flex-grow: 1; margin: 0 0.75rem/* 12px */; font-weight: 500; }
+.alert-close { height: 2rem/* 32px */; width: 2rem/* 32px */; padding: 0.5rem/* 8px */; border-radius: 0.5rem/* 8px */; }
+/* Alerts */
 
 /* Tabs classes */
 .tab-content { display: none; width: 100%; min-height: 70vh; max-height: 90vh; padding: 2px; }

@@ -1,6 +1,7 @@
 
-import i18n from "../i18n/langs.js";
 import Autocomplete from "./Autocomplete.js";
+import alerts from "./Alerts.js";
+import i18n from "../i18n/langs.js";
 
 const divNull = document.createElement("div");
 const isset = val => (typeof(val) !== "undefined") && (val !== null);
@@ -35,6 +36,8 @@ export default function(form, opts) {
 	this.autofocus = () => self.focus(form.elements.find(el => (el.matches(FOCUSABLED) && fnVisible(el))));
 	this.getInput = selector => form.elements.find(el => el.matches(selector)); // find an element
 	this.reset = () => { form.reset(); return self.autofocus(); } // clear inputs and autofocus
+	this.showOk = msg => { setTimeout(() => alerts.showOk(msg), 1); return self; } // show message onFinish (afterReset)
+	this.showAlerts = data => { setTimeout(() => alerts.showAlerts(data), 1); return self; } // show messages onFinish (afterReset)
 
 	// Actions to update form view (inputs, texts, ...)
 	const fnSetText = (el, text) => { el.innerHTML = text; return self; }
@@ -43,7 +46,11 @@ export default function(form, opts) {
 	this.hide = selector => { form.querySelector(selector).classList.add(opts.hideClass); return self; }
 	this.toggle = (selector, force) => { form.querySelector(selector).classList.toggle(opts.hideClass, force); return self; }
 	this.disabled = (selector, force) => { self.getInput(selector).toggleAttribute("disabled", force); return self; }
-	this.readonly = (selector, force) => { self.getInput(selector).toggleAttribute("readonly", force); return self; }
+	this.readonly = (selector, force) => {
+		const el = self.getInput(selector); // Update attribute and style
+		el.classList.toggle("disabled", el.toggleAttribute("readonly", force));
+		return self;
+	}
 
 	function fnSetValue(el, value) {
 		if (el.type =="date") // input type = date
@@ -171,21 +178,21 @@ export default function(form, opts) {
 	}
 	self.closeAlerts = () => {
 		form.elements.forEach(fnSetInputOk);
-		window.alerts.closeAlerts();
+		alerts.closeAlerts();
 		return self;
 	}
 	self.setOk = msg => {
 		form.elements.forEach(fnSetInputOk);
-		window.alerts.showOk(msg || opts.defaultMsgOk);
+		alerts.showOk(msg || opts.defaultMsgOk);
 		return self;
 	}
 	self.setErrors = messages => {
 		if (isstr(messages)) // simple message text
-			window.alerts.showError(messages);
+			alerts.showError(messages);
 		else { // Style error inputs and set focus on first error
 			form.elements.forEach(el => fnSetInputError(el, messages[el.name]));
 			self.focus(form.elements.find(el => el.classList.contains(opts.inputErrorClass)));
-			window.alerts.showError(messages.msgError || opts.defaultMsgError);
+			alerts.showError(messages.msgError || opts.defaultMsgError);
 		}
 		return self;
 	}
@@ -237,7 +244,7 @@ export default function(form, opts) {
 		return self;
 	}
 	this.clone = msg => {
-		window.alerts.showOk(msg || opts.defaultMsgOk); // show message
+		alerts.showOk(msg || opts.defaultMsgOk); // show message
 		updateOnly.forEach(el => el.classList.add(opts.hideClass)); // inserting mode
 		return fnSetValue(self.getInput("[name='" + opts.pkName + "']"), ""); // input must exists
 	}

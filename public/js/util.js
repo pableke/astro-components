@@ -1,5 +1,4 @@
 
-import Alerts from "./components/Alerts.js";
 import Table from "./components/Table.js";
 import tables from "./data/tables.js";
 
@@ -16,9 +15,6 @@ const initView = () => {
 	const _top = _loading.nextElementSibling;
 	window.onscroll = function() { _top.classList.toggle("hide", this.scrollY < 80); }
 	_top.addEventListener("click", ev => document.body.scrollIntoView({ behavior: "smooth" }));
-
-	// Alerts instance
-	window.alerts = new Alerts(_top.nextElementSibling); // Alerts messages is global
 
 	document.querySelectorAll(".autocomplete").forEach(el => {
 		const ac = new Autocomplete(el, autocompletes[el.id]);

@@ -5,13 +5,12 @@ interface Props extends Alert {};
 const { type, msg, icon } = Astro.props;
 
 const alertClass = `alert alert-${type} ` + (msg ? "" : "hide");
-const alertText = `alert-text alert-text-${type}`;
 const alertClose = `alert-close alert-close-${type}`;
 ---
 
 <div class={alertClass}>
     <svg class="alert-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" set:html={icon}></svg>
-    <div class={alertText} set:html={msg}></div>
+    <div class="alert-text" set:html={msg}></div>
     <button type="button" class={alertClose}>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
@@ -31,7 +30,7 @@ const alertClose = `alert-close alert-close-${type}`;
 
     .alert-icon { width: 1.5rem/* 24px */; height: 1.5rem/* 24px */; }
     .alert-text { flex-grow: 1; margin: 0 0.75rem/* 12px */; font-weight: 500; }
-    .alert-close { @apply h-8 w-8 p-2 rounded-lg }
+    .alert-close { height: 2rem/* 32px */; width: 2rem/* 32px */; padding: 0.5rem/* 8px */; border-radius: 0.5rem/* 8px */; }
 
     .alert-close-success { @apply bg-green-50 text-green-500 focus:ring-green-400 hover:bg-green-200 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700 }
     .alert-close-info { @apply bg-blue-50 text-blue-500 focus:ring-blue-400 hover:bg-blue-200 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-gray-700 }
