@@ -12,8 +12,8 @@ const { label, name } = Astro.props;
             </svg>
         </div>
         <input type="search" id=`ac-${name}` name=`ac-${name}` class="ui-input pl-9" placeholder="Select an option..." autocomplete="off" />
+        <input type="hidden" name={name}/>
     </div>
     <ul role="list" class="results"></ul>
-    <input type="hidden" name={name}/>
     <span id=`tip-${name}` class="ui-errtip"></span>
 </div>

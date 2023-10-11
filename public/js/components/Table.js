@@ -1,4 +1,6 @@
 
+import i18n from "../i18n/langs.js";
+
 const EMPTY = [];
 const RE_VAR = /@(\w+);/g;
 
@@ -36,9 +38,9 @@ export default function(table, opts) {
     opts.sortNoneClass = opts.sortNoneClass || "sort-none";
     opts.rowActionClass = opts.rowActionClass || "row-action";
     opts.tableActionClass = opts.tableActionClass || "table-action";
-    opts.msgConfirmRemove = opts.msgConfirmRemove || "Remove current element?";
-    opts.msgConfirmReset = opts.msgConfirmReset || "Remove all elements?";
-    opts.msgEmptyTable = opts.msgEmptyTable || "No results found";
+    opts.msgConfirmRemove = opts.msgConfirmRemove || "remove";
+    opts.msgConfirmReset = opts.msgConfirmReset || "removeAll";
+    opts.msgEmptyTable = opts.msgEmptyTable || "noResults";
     opts.beforeRender = opts.beforeRender || fnVoid;
     opts.onRender = opts.onRender || fnVoid;
     opts.afterRender = opts.afterRender || fnVoid;
@@ -72,7 +74,7 @@ export default function(table, opts) {
         opts.beforeRender(RESUME);
         tbody.innerHTML = RESUME.size
                                 ? JSON.render(tplBody, _rows, (row, fmt, i) => opts.onRender(row, fmt, RESUME, i))
-                                : '<tr><td class="no-data" colspan="99">' + opts.msgEmptyTable + '</td></tr>';
+                                : '<tr><td class="no-data" colspan="99">' + i18n.get(opts.msgEmptyTable) + '</td></tr>';
         const fmt = opts.afterRender(RESUME); // get formatted resume
         table.tFoot.innerHTML = format(tplFoot, fmt || RESUME); // render resume
 
@@ -103,14 +105,14 @@ export default function(table, opts) {
     }
 
     this.remove = () => {
-        if (confirm(opts.msgConfirmRemove) && opts.onRemove(self)) {
+        if (confirm(i18n.get(opts.msgConfirmRemove)) && opts.onRemove(self)) {
             _rows.splice(_index, 1); // Remove data row
             return fnRender(_rows); // Build table rows
         }
         return false;
     }
     this.reset = () => {
-        return confirm(opts.msgConfirmReset) && opts.onReset(self) && fnRender(EMPTY);
+        return confirm(i18n.get(opts.msgConfirmReset)) && opts.onReset(self) && fnRender(EMPTY);
     }
 
     this.render = fnRender;

@@ -31,6 +31,11 @@ export default function(opts) {
     this.setShowEvent = (tab, fn) => { opts["onShowTab" + tab] = fn; return self; }
     this.setViewEvent = (tab, fn) => { opts["onViewTab" + tab] = fn; return self; }
 
+	// Alerts helpers
+	this.showOk = msg => { alerts.showOk(msg); return self; } // Encapsule showOk message
+	this.showError = msg => { alerts.showError(msg); return self; } // Encapsule showError message
+	this.showAlerts = data => { alerts.showAlerts(data); return self; } // Encapsule showAlerts message
+
     function fnShowTab(i) { //show tab by index
         i = (i < 0) ? 0 : Math.min(i, _tabSize);
         if (i == _tabIndex) // is current tab

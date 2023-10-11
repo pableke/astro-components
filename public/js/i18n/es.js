@@ -19,11 +19,11 @@ export default {
     errFormat: "¡Formato incorrecto!",
     errReclave: "Las claves introducidas no coinciden",
     errRange: "Valor fuera del rango permitido",
+    noSelect: "No ha seleccionado el elemento correctamente",
 
     //confirm cuestions
     saveOk: "Datos actualizados correctamente",
     remove: "¿Confirma que desea eliminar este registro?",
-    removeSolicitud: "¿Confirma que desea eliminar esta solicitud?",
     removeAll: "¿Confirma que desea eliminar todos los elementos?",
     removeOk: "Registro eliminado correctamente.",
     cancel: "¿Confirma que desea cancelar este registro?",
@@ -31,6 +31,7 @@ export default {
     unlink: "¿Confirma que desea desasociar estos registros?",
     unlinkOk: "Registros desasociados correctamente",
     linkOk: "Registros asociados correctamente.",
+    noResults: "No se han encontrado registros asociados",
 
     //datepicker language
     monthNames: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],

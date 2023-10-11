@@ -22,7 +22,7 @@ export default function(form, opts) {
 	opts.floatFormatClass = opts.floatFormatClass || "ui-float"; // Float i18n
 	opts.integerFormatClass = opts.integerFormatClass || "ui-integer"; // Integer i18n
 	opts.numberFormatClass = opts.numberFormatClass || "ui-number"; // Number type
-	opts.inputBlockClass = opts.inputBlockClass || "ui-block";
+	opts.inputBlockClass = opts.inputBlockClass || "ui-block"; // Inputs block styles
 	opts.inputErrorClass = opts.inputErrorClass || "ui-error";
 	opts.tipErrorClass = opts.tipErrorClass || "ui-errtip";
 	opts.updateOnlyClass = opts.updateOnlyClass || "update-only";
@@ -36,15 +36,18 @@ export default function(form, opts) {
 	this.autofocus = () => self.focus(form.elements.find(el => (el.matches(FOCUSABLED) && fnVisible(el))));
 	this.getInput = selector => form.elements.find(el => el.matches(selector)); // find an element
 	this.reset = () => { form.reset(); return self.autofocus(); } // clear inputs and autofocus
-	this.showOk = msg => { setTimeout(() => alerts.showOk(msg), 1); return self; } // show message onFinish (afterReset)
-	this.showAlerts = data => { setTimeout(() => alerts.showAlerts(data), 1); return self; } // show messages onFinish (afterReset)
+
+	// Alerts helpers
+	this.showOk = msg => { alerts.showOk(msg); return self; } // Encapsule showOk message
+	this.showError = msg => { alerts.showError(msg); return self; } // Encapsule showError message
+	this.showAlerts = data => { alerts.showAlerts(data); return self; } // Encapsule showAlerts message
 
 	// Actions to update form view (inputs, texts, ...)
 	const fnSetText = (el, text) => { el.innerHTML = text; return self; }
 	this.text = (selector, text) => fnSetText(form.querySelector(selector), text);
 	this.show = selector => { form.querySelector(selector).classList.remove(opts.hideClass); return self; }
 	this.hide = selector => { form.querySelector(selector).classList.add(opts.hideClass); return self; }
-	this.toggle = (selector, force) => { form.querySelector(selector).classList.toggle(opts.hideClass, force); return self; }
+	this.toggle = (selector, force) => { form.querySelector(selector).classList.toggle(opts.hideClass, !force); return self; }
 	this.disabled = (selector, force) => { self.getInput(selector).toggleAttribute("disabled", force); return self; }
 	this.readonly = (selector, force) => {
 		const el = self.getInput(selector); // Update attribute and style
@@ -176,17 +179,17 @@ export default function(form, opts) {
 		else // el is not an error
 			fnSetInputOk(el);
 	}
-	self.closeAlerts = () => {
+	this.closeAlerts = () => {
 		form.elements.forEach(fnSetInputOk);
 		alerts.closeAlerts();
 		return self;
 	}
-	self.setOk = msg => {
+	this.setOk = msg => {
 		form.elements.forEach(fnSetInputOk);
 		alerts.showOk(msg || opts.defaultMsgOk);
 		return self;
 	}
-	self.setErrors = messages => {
+	this.setErrors = messages => {
 		if (isstr(messages)) // simple message text
 			alerts.showError(messages);
 		else { // Style error inputs and set focus on first error
@@ -196,9 +199,13 @@ export default function(form, opts) {
 		}
 		return self;
 	}
-	this.validate = async () => {
+	this.isValid = fnValidate => {
 		const data = self.closeAlerts().parse();
-		if (opts.validate(data)) { // Form validation
+		return fnValidate(data) ? data : !self.setErrors(i18n.getMsgs());
+	}
+	this.validate = async fnValidate => {
+		const data = self.isValid(fnValidate);
+		if (data) { // Is valid data?
 			const insertar = (opts.insert && !data[opts.pkName]); // insert or update
 			const fnUpdate = (data, info) => self.setOk(info); // Default acction
 			const fnSave = (insertar ? opts.insert : opts.update) || fnUpdate; // action
@@ -234,7 +241,7 @@ export default function(form, opts) {
 		form.querySelectorAll(selector).forEach(link => {
 			link.onclick = async ev => {
 				const msg = link.dataset.confirm;
-				if (!msg || confirm(msg)) { // has confirmation?
+				if (!msg || confirm(i18n.get(msg))) { // has confirmation?
 					const data = await self.send({ action: link.href, method: link.dataset.method });
 					data && fn(data, link); // callbak if no errors
 				}
@@ -265,5 +272,5 @@ export default function(form, opts) {
 				form.elements.forEach(input => { if (fnCheck(input)) input.checked = el.checked; });
 			});
 	});
-	self.autofocus().afterReset(ev => { self.closeAlerts().autofocus(); });
+	self.autofocus().beforeReset(ev => { self.closeAlerts().autofocus(); });
 }

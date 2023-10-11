@@ -39,15 +39,16 @@ export default function(block, opts) {
 	opts.maxResults = opts.maxResults || 10; //max showed rows (default = 10)
     opts.optionClass = opts.optionClass || "option"; // child name class
     opts.activeClass = opts.activeClass || "active"; // active option class
+    opts.resultsClass = opts.resultsClass || "results"; // results list
     opts.source = opts.source || fnEmpty; //empty source by default
     opts.render = opts.render || fnParam; //render label on autocomplete
     opts.select = opts.select || fnParam; //set value in id input
     opts.onChange = opts.onChange || fnParam; //handle change event
 
 	const self = this; //self instance
-    const inputValue = block.querySelector("[type=hidden]");
+    const resultsHTML = block.querySelector("ul." + opts.resultsClass);
     const autocomplete = block.querySelector("[type=search]");
-    const resultsHTML = block.querySelector("ul.results");
+    const inputValue = autocomplete.nextElementSibling;
 
     let _searching, _time; // call and time indicator (reduce calls)
     let _results = EMPTY; // default = empty array

@@ -18,11 +18,11 @@ export default {
     errFormat: "Wrong format!",
     errReclave: "Passwords typed do not match",
     errRange: "Value out of allowed range",
+    noSelect: "Element not selected successfully",
 
     //confirm cuestions
     saveOk: "Element saved successfully!",
     remove: "Are you sure to delete this element?",
-    removeSolicitud: "Are you sure to delete this request?",
     removeAll: "Are you sure to delete all elements?",
     removeOk: "Element removed successfully!",
     cancel: "Are you sure to cancel element?",
@@ -30,6 +30,7 @@ export default {
     unlink: "Are you sure to unlink those elements?",
     unlinkOk: "Elements unlinked successfully!",
     linkOk: "Elements linked successfully!",
+    noResults: "No results founds",
 
     //datepicker language
     monthNames: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],

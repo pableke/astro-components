@@ -74,7 +74,7 @@ function Langs() {
     en.toFloat = str => str && fnToFloat(str, ".");  // String to Float
     en.isoFloat = (num, n) => isNaN(num) ? null : fnIsoFloat(num, n); // Float to String formated
     en.fmtFloat = (str, n) => str && fnFmtFloat(str, ".", n); // String to EN String formated
-    
+
     es.toFloat = str => str && fnToFloat(str, ",");  // String to Float
     es.isoFloat = (num, n) => isNaN(num) ? null : fnIsoFloat(num, n); // Float to String formated
     es.fmtFloat = (str, n) => str && fnFmtFloat(str, ",", n); // String to EN String formated

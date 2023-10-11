@@ -28,6 +28,11 @@ function Validators() {
     this.gt0 = (name, value, msg) => (value && (value > 0)) || !i18n.setError(msg || "errGt0", name); // required gt0
     this.ge0 = (name, value, msg) => !value || (value > 0) || !i18n.setError(msg || "errGt0", name); // optional or gt0
 	this.max = (name, value, max, msg) => !value || (value.length <= max) || !i18n.setError(msg || "errMaxlength", name); // optional or length <= max
+	this.key = (name, value, msg) => { // Required number gt0
+        if (!value)
+            return !i18n.setError("errRequired", name);
+        return (value > 0) || !i18n.setError(msg || "noSelect", name);
+    }
 	this.size = (name, value, max, msg) => { // required and length <= max
         if (!value) // String length validations
             return !i18n.setError("errRequired", name);
