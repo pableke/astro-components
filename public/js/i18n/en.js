@@ -18,7 +18,6 @@ export default {
     errFormat: "Wrong format!",
     errReclave: "Passwords typed do not match",
     errRange: "Value out of allowed range",
-    noSelect: "Element not selected successfully",
 
     //confirm cuestions
     saveOk: "Element saved successfully!",
@@ -30,6 +29,7 @@ export default {
     unlink: "Are you sure to unlink those elements?",
     unlinkOk: "Elements unlinked successfully!",
     linkOk: "Elements linked successfully!",
+    notFound: "Element not found!",
     noResults: "No results founds",
 
     //datepicker language

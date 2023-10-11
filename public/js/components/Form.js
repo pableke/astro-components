@@ -23,10 +23,10 @@ export default function(form, opts) {
 	opts.integerFormatClass = opts.integerFormatClass || "ui-integer"; // Integer i18n
 	opts.numberFormatClass = opts.numberFormatClass || "ui-number"; // Number type
 	opts.inputBlockClass = opts.inputBlockClass || "ui-block"; // Inputs block styles
-	opts.inputErrorClass = opts.inputErrorClass || "ui-error";
-	opts.tipErrorClass = opts.tipErrorClass || "ui-errtip";
-	opts.updateOnlyClass = opts.updateOnlyClass || "update-only";
-	opts.negativeNumClass = opts.negativeNumClass || "text-red";
+	opts.inputErrorClass = opts.inputErrorClass || "ui-error"; // Input error styles
+	opts.tipErrorClass = opts.tipErrorClass || "ui-errtip"; // Tip error style
+	opts.updateOnlyClass = opts.updateOnlyClass || "update-only"; // Elements for update
+	opts.negativeNumClass = opts.negativeNumClass || "text-red"; // Negative numbers styles
 
 	const self = this; //self instance
 	const FOCUSABLED = "[tabindex]:not([type=hidden],[readonly],[disabled])";
@@ -172,12 +172,9 @@ export default function(form, opts) {
 	const fnSetTip = (el, msg) => fnSetText(form.querySelector("#tip-" + el.name) || divNull, msg);
 	const fnSetInputOk = el => { el.classList.remove(opts.inputErrorClass); fnSetTip(el, ""); }
 	const fnSetInputError = (el, msg) => {
-		if (msg) { // el has an error
-			el.classList.add(opts.inputErrorClass);
-			fnSetTip(el, msg);
-		}
-		else // el is not an error
-			fnSetInputOk(el);
+		msg = msg || ""; // has error message
+		el.classList.toggle(opts.inputErrorClass, msg);
+		fnSetTip(el, msg);
 	}
 	this.closeAlerts = () => {
 		form.elements.forEach(fnSetInputOk);

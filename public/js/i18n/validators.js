@@ -31,7 +31,7 @@ function Validators() {
 	this.key = (name, value, msg) => { // Required number gt0
         if (!value)
             return !i18n.setError("errRequired", name);
-        return (value > 0) || !i18n.setError(msg || "noSelect", name);
+        return (value > 0) || !i18n.setError(msg || "notFound", name);
     }
 	this.size = (name, value, max, msg) => { // required and length <= max
         if (!value) // String length validations

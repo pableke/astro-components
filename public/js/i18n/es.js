@@ -19,7 +19,6 @@ export default {
     errFormat: "¡Formato incorrecto!",
     errReclave: "Las claves introducidas no coinciden",
     errRange: "Valor fuera del rango permitido",
-    noSelect: "No ha seleccionado el elemento correctamente",
 
     //confirm cuestions
     saveOk: "Datos actualizados correctamente",
@@ -31,6 +30,7 @@ export default {
     unlink: "¿Confirma que desea desasociar estos registros?",
     unlinkOk: "Registros desasociados correctamente",
     linkOk: "Registros asociados correctamente.",
+    notFound: "Elemento no encontrado en el sistema",
     noResults: "No se han encontrado registros asociados",
 
     //datepicker language

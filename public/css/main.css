@@ -65,8 +65,7 @@ label.inline { display: inline-block; }
 .ui-check { margin: 0 1px; }
 .ui-select { width: max-content; }
 .ui-date { width: 10rem/* w-40 = 160px */; }
-.ui-ta { width: 98%; height: 90px; } /*height: 90px = 5 rows aprox.*/
-.ui-ta-2r { width: 98%; height: 45px; } /*height: 45px = 2 rows aprox.*/
+.ui-ta { width: 98%; min-height: 36px; max-height: 100px; resize: none; form-sizing: content; }
 .ui-integer, .ui-float { width: 10rem/* w-40 = 160px */; text-align: right; }
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left: .5em; }
 .disabled { opacity: .5; pointer-events: none; text-decoration: none; }
