@@ -5,13 +5,15 @@ HTMLCollection.prototype.find = Array.prototype.find;
 HTMLCollection.prototype.forEach = Array.prototype.forEach;
 
 HTMLElement.prototype.eachPrev = function(fn) {
-    for (let el = this.previousElementSibling; el; el = el.previousElementSibling)
-        fn(el);
+    var el = this.previousElementSibling;
+    for (let i = 0; el; el = el.previousElementSibling)
+        fn(el, i++);
     return this;
 }
 HTMLElement.prototype.eachNext = function(fn) {
-    for (let el = this.nextElementSibling; el; el = el.nextElementSibling)
-        fn(el);
+    var el = this.nextElementSibling;
+    for (let i = 0; el; el = el.nextElementSibling)
+        fn(el, i++);
     return this;
 }
 HTMLElement.prototype.eachSibling = function(fn) {

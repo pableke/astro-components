@@ -18,7 +18,7 @@ export default function(form, opts) {
 	opts.hideClass = opts.hideClass || "hide"; // hidden class name
 	opts.defaultMsgOk = opts.defaultMsgOk || "saveOk"; // default key for message ok
 	opts.defaultMsgError = opts.defaultMsgError || "errForm"; // default key error
-	opts.checkAllClass = opts.checkAllClass || "ui-check-all";
+	opts.checkAllClass = opts.checkAllClass || "ui-check-all"; // Check all related checkboxes
 	opts.floatFormatClass = opts.floatFormatClass || "ui-float"; // Float i18n
 	opts.integerFormatClass = opts.integerFormatClass || "ui-integer"; // Integer i18n
 	opts.numberFormatClass = opts.numberFormatClass || "ui-number"; // Number type

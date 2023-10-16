@@ -65,7 +65,7 @@ export default function(table, opts) {
 
     this.clear = () => { _index = -1; return self; }
     this.set = (name, fn) => { opts[name] = fn; return self; }
-	this.read = selector => table.querySelector(selector).innerHTML;
+	this.html = selector => table.querySelector(selector).innerHTML;
 
     function fnRender(data) {
         _rows = data || EMPTY;
