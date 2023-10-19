@@ -28,18 +28,26 @@ function Validators() {
     this.gt0 = (name, value, msg) => (value && (value > 0)) || !i18n.setError(msg || "errGt0", name); // required gt0
     this.ge0 = (name, value, msg) => !value || (value > 0) || !i18n.setError(msg || "errGt0", name); // optional or gt0
 	this.max = (name, value, max, msg) => !value || (value.length <= max) || !i18n.setError(msg || "errMaxlength", name); // optional or length <= max
-	this.key = (name, value, msg) => { // Required number gt0
+	this.key = (name, value, msg) => { // Required DB-key
         if (!value)
             return !i18n.setError("errRequired", name);
         return (value > 0) || !i18n.setError(msg || "notFound", name);
     }
+
 	this.size = (name, value, max, msg) => { // required and length <= max
         if (!value) // String length validations
             return !i18n.setError("errRequired", name);
+		max = max ?? 1000; // Default max size == 1000
         if (value.length > max)
             return !i18n.setError(msg || "errMaxlength", name);
         return true;
     }
+	this.size20 = (name, value, msg) => self.size(name, value, 20, msg);
+	this.size50 = (name, value, msg) => self.size(name, value, 50, msg);
+	this.size100 = (name, value, msg) => self.size(name, value, 100, msg);
+	this.size200 = (name, value, msg) => self.size(name, value, 200, msg);
+	this.size250 = (name, value, msg) => self.size(name, value, 250, msg);
+	this.size500 = (name, value, msg) => self.size(name, value, 500, msg);
 
 	this.isEmail = (name, value, msg) => {
         if (!self.size(name, value, 200))

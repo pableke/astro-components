@@ -8,7 +8,10 @@ const isset = val => (typeof(val) !== "undefined") && (val !== null);
 const isstr = val => (typeof(val) === "string") || (val instanceof String);
 const fnVisible = el => (el.offsetWidth || el.offsetHeight || el.getClientRects().length);
 
+String.isset = isset;
+String.isstr = isstr;
 HTMLCollection.prototype.find = Array.prototype.find;
+HTMLCollection.prototype.filter = Array.prototype.filter;
 HTMLCollection.prototype.forEach = Array.prototype.forEach;
 HTMLCollection.prototype.findIndex = Array.prototype.findIndex;
 
@@ -18,13 +21,14 @@ export default function(form, opts) {
 	opts.hideClass = opts.hideClass || "hide"; // hidden class name
 	opts.defaultMsgOk = opts.defaultMsgOk || "saveOk"; // default key for message ok
 	opts.defaultMsgError = opts.defaultMsgError || "errForm"; // default key error
+	//opts.inputBlockClass = opts.inputBlockClass || "ui-block"; // Inputs block styles
+	opts.dateClass = opts.dateClass || "ui-date"; // Date type
 	opts.checkAllClass = opts.checkAllClass || "ui-check-all"; // Check all related checkboxes
 	opts.floatFormatClass = opts.floatFormatClass || "ui-float"; // Float i18n
 	opts.integerFormatClass = opts.integerFormatClass || "ui-integer"; // Integer i18n
 	opts.numberFormatClass = opts.numberFormatClass || "ui-number"; // Number type
-	opts.inputBlockClass = opts.inputBlockClass || "ui-block"; // Inputs block styles
 	opts.inputErrorClass = opts.inputErrorClass || "ui-error"; // Input error styles
-	opts.tipErrorClass = opts.tipErrorClass || "ui-errtip"; // Tip error style
+	//opts.tipErrorClass = opts.tipErrorClass || "ui-errtip"; // Tip error style
 	opts.updateOnlyClass = opts.updateOnlyClass || "update-only"; // Elements for update
 	opts.negativeNumClass = opts.negativeNumClass || "text-red"; // Negative numbers styles
 
@@ -33,53 +37,55 @@ export default function(form, opts) {
 	const updateOnly = document.getElementsByClassName(opts.updateOnlyClass);
 
 	this.focus = el => { el && el.focus(); return self; }
+	this.setFocus = selector => self.focus(self.getInput(selector));
 	this.autofocus = () => self.focus(form.elements.find(el => (el.matches(FOCUSABLED) && fnVisible(el))));
 	this.getInput = selector => form.elements.find(el => el.matches(selector)); // find an element
-	this.reset = () => { form.reset(); return self.autofocus(); } // clear inputs and autofocus
+	this.getInputs = selector => form.elements.filter(el => el.matches(selector)); // filter elements
+	this.reset = () => { form.reset(); return self; } // clear inputs and autofocus
 
 	// Alerts helpers
 	this.showOk = msg => { alerts.showOk(msg); return self; } // Encapsule showOk message
+	this.showInfo = msg => { alerts.showInfo(msg); return self; } // Encapsule showInfo message
+	this.showWarn = msg => { alerts.showWarn(msg); return self; } // Encapsule showWarn message
 	this.showError = msg => { alerts.showError(msg); return self; } // Encapsule showError message
 	this.showAlerts = data => { alerts.showAlerts(data); return self; } // Encapsule showAlerts message
 
 	// Actions to update form view (inputs, texts, ...)
+	const fnFor = (list, fn) => { list.forEach(fn); return self; }
+	const fnEach = (selector, fn) => fnFor(form.querySelectorAll(selector), fn);
 	const fnSetText = (el, text) => { el.innerHTML = text; return self; }
 	this.text = (selector, text) => fnSetText(form.querySelector(selector), text);
-	this.show = selector => { form.querySelector(selector).classList.remove(opts.hideClass); return self; }
-	this.hide = selector => { form.querySelector(selector).classList.add(opts.hideClass); return self; }
-	this.toggle = (selector, force) => { form.querySelector(selector).classList.toggle(opts.hideClass, !force); return self; }
-	this.disabled = (selector, force) => { self.getInput(selector).toggleAttribute("disabled", force); return self; }
-	this.readonly = (selector, force) => {
-		const el = self.getInput(selector); // Update attribute and style
-		el.classList.toggle("disabled", el.toggleAttribute("readonly", force));
-		return self;
-	}
+	this.show = selector => fnEach(selector, el => el.classList.remove(opts.hideClass));
+	this.hide = selector => fnEach(selector, el => el.classList.add(opts.hideClass));
+	this.toggle = (selector, force) => fnEach(selector, el => el.classList.toggle(opts.hideClass, !force));
+	this.disabled = (selector, force) => fnFor(self.getInputs(selector), el => el.toggleAttribute("disabled", force)); // Update attribute only
+	this.readonly = (selector, force) => fnFor(self.getInputs(selector), el => el.classList.toggle("disabled", el.toggleAttribute("readonly", force))); // Update attribute and style
 
+	const fnSetNumber = (el, value) => {
+		el.value = value || ""; // Show formatted value and style
+		el.classList.toggle(opts.negativeNumClass, el.value.startsWith("-"));
+	}
 	function fnSetValue(el, value) {
 		if (el.type =="date") // input type = date
-			el.value = value && value.substrng(0, 10);
+			el.value = value ? value.substring(0, 10) : "";
 		else if (el.classList.contains(opts.floatFormatClass))
-			data[el.name] = i18n.isoFloat(value); // Float format
+			fnSetNumber(el, i18n.isoFloat(value));
 		else if (el.classList.contains(opts.integerFormatClass))
-			data[el.name] = i18n.isoInt(value); // Integer format
+			fnSetNumber(el, i18n.isoInt(value));
 		else if (el.type === "checkbox") // Array type
 			el.checked = value && value.includes(el.value);
 		else if (el.type === "radio")
 			el.checked = (el.value == value);
-		else if (el.name)
+		else
 			el.value = value || ""; // String
 		return self;
 	}
 	this.setValue = (el, value) => el ? fnSetValue(el, value) : self;
 	this.setval = (selector, value) => self.setValue(self.getInput(selector), value);
-	this.setValues = data => { // update element value only if data exists
-		form.elements.forEach(el => (isset(data[el.name]) && fnSetValue(el, data[el.name])));
-		return self;
-	}
+	this.setValues = data => fnFor(form.elements, el => (isset(data[el.name]) && fnSetValue(el, data[el.name]))); // update element value only if data exists
 	this.render = data => { // JSON to View
-		form.elements.forEach(el => fnSetValue(el, data[el.name]));
 		updateOnly.forEach(el => el.classList.toggle(opts.hideClass, !data[opts.pkName]));
-		return self;
+		return fnFor(form.elements, el => fnSetValue(el, data[el.name]));
 	}
 
 	function fnParseValue(el) {
@@ -95,7 +101,7 @@ export default function(form, opts) {
 	this.valueOf = selector => self.getValue(self.getInput(selector));
 	this.parse = () => { // View to JSON
 		const data = {}; // Results container
-		form.elements.forEach(el => {
+		return fnFor(form.elements, el => {
 			if ((el.type === "checkbox") && el.checked) {
 				data[el.name] = data[el.name] || [];
 				data[el.name].push(el.value); // Array type
@@ -103,13 +109,12 @@ export default function(form, opts) {
 			else if (el.name)
 				data[el.name] = fnParseValue(el);
 		});
-		return data;
 	}
 
 	// Inputs helpers
 	this.setAutocomplete = (selector, opts) => {
 		const block = form.querySelector(selector);
-		return new Autocomplete(block, opts);
+		return block && new Autocomplete(block, opts);
 	}
 	this.setDateRange = (f1, f2) => {
 		f1 = self.getInput(f1);
@@ -177,14 +182,18 @@ export default function(form, opts) {
 		fnSetTip(el, msg);
 	}
 	this.closeAlerts = () => {
-		form.elements.forEach(fnSetInputOk);
 		alerts.closeAlerts();
-		return self;
+		return fnFor(form.elements, fnSetInputOk);
 	}
 	this.setOk = msg => {
-		form.elements.forEach(fnSetInputOk);
 		alerts.showOk(msg || opts.defaultMsgOk);
-		return self;
+		return fnFor(form.elements, fnSetInputOk);
+	}
+	this.setError = (selector, msg, tip) => {
+		const el = self.getInput(selector);
+		tip && fnSetTip(el, tip); // Specific tip
+		el.classList.add(opts.inputErrorClass);
+		return self.focus(el).showError(msg);
 	}
 	this.setErrors = messages => {
 		if (isstr(messages)) // simple message text
@@ -235,7 +244,7 @@ export default function(form, opts) {
 		return res.ok ? data : !self.setErrors(data);
 	}
 	this.setRequest = (selector, fn) => {
-		form.querySelectorAll(selector).forEach(link => {
+		return fnEach(selector, link => {
 			link.onclick = async ev => {
 				const msg = link.dataset.confirm;
 				if (!msg || confirm(i18n.get(msg))) { // has confirmation?
@@ -245,7 +254,6 @@ export default function(form, opts) {
 				ev.preventDefault();
 			};
 		});
-		return self;
 	}
 	this.clone = msg => {
 		alerts.showOk(msg || opts.defaultMsgOk); // show message
@@ -254,16 +262,20 @@ export default function(form, opts) {
 	}
 
 	// Form initialization
-	const fmtNumber = (el, value) => { // Show formatted value and style
-		el.classList.toggle(opts.negativeNumClass, value && value.startsWith("-"));
-		el.value = value; // value formatted
-	}
 	form.elements.forEach(el => {
-		if (el.classList.contains(opts.floatFormatClass))
-			el.addEventListener("change", ev => fmtNumber(el, i18n.fmtFloat(el.value)));
-		else if (el.classList.contains(opts.integerFormatClass))
-			el.addEventListener("change", ev => fmtNumber(el, i18n.fmtInt(el.value)));
-		else if (el.classList.contains(opts.checkAllClass))
+		if (el.classList.contains(opts.floatFormatClass)) {
+			el.addEventListener("change", ev => fnSetNumber(el, i18n.fmtFloat(el.value)));
+			return fnSetValue(el, +el.value); // iso format number
+		}
+		if (el.classList.contains(opts.integerFormatClass)) {
+			el.addEventListener("change", ev => fnSetNumber(el, i18n.fmtInt(el.value)));
+			return fnSetValue(el, +el.value); // iso format number
+		}
+		if (el.classList.contains(opts.dateClass)) {
+			el.type = "date"; // Hack PF type
+			return;
+		}
+		if (el.classList.contains(opts.checkAllClass))
 			el.addEventListener("click", ev => {
 				const fnCheck = input => (input.type == "checkbox") && (input.name == el.id);
 				form.elements.forEach(input => { if (fnCheck(input)) input.checked = el.checked; });

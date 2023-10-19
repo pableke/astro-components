@@ -32,6 +32,9 @@ export default {
     notFound: "Element not found!",
     noResults: "No results founds",
 
+    //array options
+    msgBool: ["No", "Yes"],
+
     //datepicker language
     monthNames: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
     monthNamesShort: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],

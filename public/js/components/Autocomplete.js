@@ -1,5 +1,6 @@
 
 const EMPTY = [];
+const fnVoid = () => {}
 const fnEmpty = () => EMPTY;
 const fnParam = param => param;
 
@@ -16,6 +17,7 @@ JSON.read = data => data && JSON.parse(data);
 HTMLCollection.prototype.forEach = Array.prototype.forEach; // Extends HTMLCollection prototype
 String.iIndexOf = (str1, str2) => tr(str1).toLowerCase().indexOf(tr(str2).toLowerCase()); // Mute String class with insensitive index
 String.ilike = (str1, str2) => (String.iIndexOf(str1, str2) > -1); // Mute String class with an insensitive search
+globalThis.loadItems = fnVoid; // Hack PF (only for CV-UAE)
 
 function tr(str) {
     var output = str || "";
@@ -40,15 +42,18 @@ export default function(block, opts) {
     opts.optionClass = opts.optionClass || "option"; // child name class
     opts.activeClass = opts.activeClass || "active"; // active option class
     opts.resultsClass = opts.resultsClass || "results"; // results list
+	opts.autocompleteClass = opts.autocompleteClass || "ui-autocomplete"; // Autocomplete type
     opts.source = opts.source || fnEmpty; //empty source by default
     opts.render = opts.render || fnParam; //render label on autocomplete
     opts.select = opts.select || fnParam; //set value in id input
-    opts.onChange = opts.onChange || fnParam; //handle change event
+    opts.afterSelect = opts.afterSelect || fnVoid; //fired after an item is selected
+    opts.onReset = opts.onReset || fnVoid; //fired when no value selected
 
 	const self = this; //self instance
     const resultsHTML = block.querySelector("ul." + opts.resultsClass);
-    const autocomplete = block.querySelector("[type=search]");
+    const autocomplete = block.querySelector("input." + opts.autocompleteClass);
     const inputValue = autocomplete.nextElementSibling;
+    autocomplete.type = "search"; // Force type
 
     let _searching, _time; // call and time indicator (reduce calls)
     let _results = EMPTY; // default = empty array
@@ -62,27 +67,10 @@ export default function(block, opts) {
 
     this.getInputValue = () => inputValue;
     this.getAutocomplete = () => autocomplete;
-    this.find = selector => block.querySelector(selector);
 
     const isChildren = i => inRange(i, 0, fnSize(resultsHTML.children) - 1);
     const removeList = () => { _index = -1; resultsHTML.innerHTML = ""; return self; }
-
-    this.reset = () => {
-        inputValue.value = "";
-        return removeList();
-    }
-    this.render = data => {
-        self.reset();
-        _results = data || EMPTY; // Force not unset var
-        _results.slice(0, opts.maxResults).forEach((data, i) => {
-            const label = wrap(opts.render(data, i, _results), autocomplete.value);
-            resultsHTML.innerHTML += `<li class="${opts.optionClass}">${label}</li>`;
-        });
-        resultsHTML.children.forEach((li, i) => {
-            li.onclick = ev => selectItem(li, i);
-        });
-        return self;
-    }
+    const fnClear = () => { inputValue.value = ""; return removeList(); }
 
     function activeItem(i) {
         _index = isChildren(i) ? i : _index; // current item
@@ -92,14 +80,37 @@ export default function(block, opts) {
         if (li && isChildren(i)) {
             _index = i;
             autocomplete.value = li.innerText;
-            inputValue.value = opts.select(_results[i]);
+            inputValue.value = opts.select(_results[i], self);
+            opts.afterSelect(_results[i], self);
             removeList();
         }
     }
     function fnSearch() {
         _searching = true; // Avoid new searchs
+        globalThis.loadItems = (xhr, status, args) => { // NOT use
+            self.render(JSON.read(args?.data)); // specific for PF
+            globalThis.loadItems = fnVoid;
+        }
         self.render(opts.source(autocomplete.value, self)); // Render results
         _searching = false; // restore sarches
+    }
+
+    this.reset = () => {
+        autocomplete.value = "";
+        opts.onReset(self);
+        return fnClear();
+    }
+    this.render = data => {
+        fnClear(); // clear previous results
+        _results = data || EMPTY; // Force not unset var
+        _results.slice(0, opts.maxResults).forEach((data, i) => {
+            const label = wrap(opts.render(data, i, _results), autocomplete.value);
+            resultsHTML.innerHTML += `<li class="${opts.optionClass}">${label}</li>`;
+        });
+        resultsHTML.children.forEach((li, i) => {
+            li.onclick = ev => selectItem(li, i);
+        });
+        return self;
     }
 
      // Event fired before char is writen in text
@@ -118,7 +129,7 @@ export default function(block, opts) {
     }
     autocomplete.onkeyup = ev => { // Event fired after char is writen in text
         if (fnSize(autocomplete.value) < opts.minLength)
-            return self.reset();
+            return fnClear();
         // Reduce server calls, only for backspace, alfanum or not is searching
         const search = (ev.keyCode == 8) || inRange(ev.keyCode, 46, 111) || inRange(ev.keyCode, 160, 223);
         if (search && !_searching) {
@@ -126,11 +137,13 @@ export default function(block, opts) {
             _time = setTimeout(fnSearch, opts.delay);
         }
     }
-
-    autocomplete.onchange = ev => opts.onChange(ev, self);
     autocomplete.onblur = ev => {
-        if (!autocomplete.value || !inputValue.value)
-            autocomplete.value = inputValue.value = "";
-        setTimeout(removeList, 150);
+        setTimeout(() => {
+            if (!autocomplete.value)
+                return self.reset();
+            if (!inputValue.value)
+                opts.onReset(self);
+            removeList();
+        }, 150);
     }
 }

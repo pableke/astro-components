@@ -2,6 +2,12 @@
 import en from "./en.js";
 import es from "./es.js";
 
+const isset = val => ((typeof(val) !== "undefined") && (val !== null));
+const isnum = val => ((typeof(val) === "number") || (val instanceof Number));
+
+Number.isset = isset;
+Number.isNumber = isnum;
+
 function Langs() {
 	const self = this; //self instance
     const MSGS = {}; // Messages container
@@ -17,7 +23,9 @@ function Langs() {
 
     this.getIsoLangs = () => KEYS;
     this.getIsoLang = () => document.documentElement.getAttribute("lang") || "en"; // || navigator.language || navigator.userLanguage;
+
     this.get = msg => _lang[msg] || msg;
+    this.getItem = (msg, index) => _lang[msg][index];
 
     this.getMsgs = () => MSGS;
 	this.getMsg = name => MSGS[name];
@@ -30,7 +38,8 @@ function Langs() {
 	this.setInfo = msg => self.setMsg("msgInfo", msg);
 	this.setWarn = msg => self.setMsg("msgWarn", msg);
 	this.getError = name => MSGS[name || "msgError"];
-	this.setError = (msg, name) => {
+	this.reject = msg => !self.setMsg("msgError", msg);
+    this.setError = (msg, name) => {
 		errors++;
 		name = name || "msgError";
 		return self.setMsg(name, msg);
@@ -47,12 +56,14 @@ function Langs() {
 
     en.strval = (data, name) => (data[name + "_en"] || data[name]);
     es.strval = (data, name) => (data[name + "_es"] || data[name]);
-    
+
     // Add i18n Date formats
     en.isoDate = str => str && str.substring(0, 10); //Iso string = yyyy-mm-dd
     es.isoDate = str => str && (str.substring(8, 10) + "/" + str.substring(5, 7) + "/" + str.substring(0, 4)); //Iso string to dd/mm/yyyy
     this.isoDate = str => _lang.isoDate(str);
-    
+	this.isoTime = str => str && str.substring(11, 19); //hh:MM:ss
+	this.isoDateTime = str => self.isoDate(str) + " " + self.isoTime(str); //ISO date + hh:MM:ss
+
     // Add i18n Float formats
     const options = { minimumFractionDigits: 2 };
     function fnToFloat(str, d) { //String to Float
@@ -64,7 +75,7 @@ function Langs() {
         return isNaN(num) ? null : num;
     }
     function fnIsoFloat(num, n) {
-        return parseFloat(num.toFixed(isNaN(n) ? 2 : n)).toLocaleString(_lang.lang, options);
+        return parseFloat(num.toFixed(n ?? 2)).toLocaleString(_lang.lang, options);
     }
     function fnFmtFloat(str, dIn, n) { // String to String formated
         const num = fnToFloat(str, dIn); // String to Float type
@@ -72,11 +83,11 @@ function Langs() {
     }
     
     en.toFloat = str => str && fnToFloat(str, ".");  // String to Float
-    en.isoFloat = (num, n) => isNaN(num) ? null : fnIsoFloat(num, n); // Float to String formated
+    en.isoFloat = (num, n) => isset(num) ? fnIsoFloat(num, n) : null; // Float to String formated
     en.fmtFloat = (str, n) => str && fnFmtFloat(str, ".", n); // String to EN String formated
 
     es.toFloat = str => str && fnToFloat(str, ",");  // String to Float
-    es.isoFloat = (num, n) => isNaN(num) ? null : fnIsoFloat(num, n); // Float to String formated
+    es.isoFloat = (num, n) => isset(num) ? fnIsoFloat(num, n) : null; // Float to String formated
     es.fmtFloat = (str, n) => str && fnFmtFloat(str, ",", n); // String to EN String formated
     
     this.toFloat = str => _lang.toFloat(str);
@@ -102,11 +113,11 @@ function Langs() {
     }
     
     en.toInt = str => str && fnToInt(str);  // String to Int
-    en.isoInt = num => isNaN(num) ? null : fnIsoInt(num); // Int to String formated
+    en.isoInt = num => isset(num) ? fnIsoInt(num) : null; // Int to String formated
     en.fmtInt = str => str && fnFmtInt(str); // String to EN String formated
     
     es.toInt = str => str && fnToInt(str);  // String to Int
-    es.isoInt = num => isNaN(num) ? null : fnIsoInt(num); // Int to String formated
+    es.isoInt = num => isset(num) ? fnIsoInt(num) : null; // Int to String formated
     es.fmtInt = str => str && fnFmtInt(str); // String to EN String formated
     
     this.toInt = str => _lang.toInt(str);

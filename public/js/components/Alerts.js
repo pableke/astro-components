@@ -39,18 +39,22 @@ function Alerts() {
     const texts = alerts.getElementsByClassName(opts.alertTextClass);
     const close = alerts.getElementsByClassName(opts.alertCloseClass);
 
-    const closeAlert = el => {
+    const fnShow = (el, txt) => {
+        el.parentNode.classList.remove(opts.hideClass, opts.hideOutClass);
+        el.parentNode.classList.add(opts.showInClass);
+        el.innerHTML = i18n.get(txt);
+        return self;
+    }
+    const fnClose = el => {
         el.classList.remove(opts.showInClass);
         el.classList.add(opts.hideOutClass);
         return self;
     }
-    const closeAlertFromChild = el => closeAlert(el.parentNode);
+    const fnCloseFromChild = el => fnClose(el.parentNode);
     const setAlert = (el, txt) => {
         if (txt) { // Message exists
-            el.parentNode.eachSibling(closeAlert); // close previous alerts
-            el.parentNode.classList.remove(opts.hideClass, opts.hideOutClass);
-            el.parentNode.classList.add(opts.showInClass);
-            el.innerHTML = i18n.get(txt);
+            el.parentNode.eachSibling(fnClose); // close previous alerts
+            return fnShow(el, txt); // show specific alert typw
         }
         return self;
     }
@@ -61,21 +65,28 @@ function Alerts() {
     this.showWarn = msg => setAlert(fnGetType(opts.typeWarnClass), msg); //yellow
     this.showError = msg => setAlert(fnGetType(opts.typeErrorClass), msg); //red
     this.showAlerts = function(msgs) { //show posible multiple messages types
-        return msgs ? self.showOk(msgs.msgOk).showInfo(msgs.msgInfo).showWarn(msgs.msgWarn).showError(msgs.msgError) : self;
+        if (msgs) {
+            msgs.msgOk && fnShow(fnGetType(opts.typeOkClass), msgs.msgOk);
+            msgs.msgInfo && fnShow(fnGetType(opts.typeInfoClass), msgs.msgInfo);
+            msgs.msgWarn && fnShow(fnGetType(opts.typeWarnClass), msgs.msgWarn);
+            msgs.msgError && fnShow(fnGetType(opts.typeErrorClass), msgs.msgError);
+        }
+        return self;
     }
 
     this.closeAlerts = function() {
         i18n.reset(); // Clear previos messages
-        texts.forEach(closeAlertFromChild); // fadeOut all alerts
+        texts.forEach(fnCloseFromChild); // fadeOut all alerts
         return self;
     }
 
     // Show posible server messages and close click event
     texts.forEach(el => setAlert(el, el.innerHTML));
-    close.forEach(el => el.addEventListener("click", ev => closeAlertFromChild(el)));
+    close.forEach(el => el.addEventListener("click", ev => fnCloseFromChild(el)));
 }
 
 // Global singleton instance
 const alerts = new Alerts();
-globalThis.alerts = alerts;
+globalThis.alerts = alerts; // Global reference
+globalThis.showAlerts = (xhr, status, args) => alerts.showAlerts(JSON.read(args?.data)); // Hack PF (only for CV-UAE)
 export default alerts;

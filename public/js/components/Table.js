@@ -9,14 +9,19 @@ const fnTrue = () => true;
 const format = (tpl, data) => tpl.replace(RE_VAR, (m, k) => data[k] ?? "");
 
 HTMLCollection.prototype.forEach = Array.prototype.forEach;
-JSON.render = (tpl, data, fnRender) => {
+String.prototype.format = function(fn) { return this.replace(RE_VAR, fn); }
+String.prototype.render = function(data) { return format(this, data); }
+JSON.render = (tpl, data, fnRender, resume) => {
+    const status = {};
+    resume = resume || {};
     fnRender = fnRender || fnVoid;
-    const status = { size: data.length };
+
     let output = ""; // Initialize result
+    status.size = resume.size = data.length;
     data.forEach((item, i) => { // render each item
         status.index = i;
         status.count = i + 1;
-        fnRender(item, status, i, data)
+        fnRender(item, status, resume, data);
         output += format(tpl, status);
     });
     return output;
@@ -49,19 +54,20 @@ export default function(table, opts) {
 
 	const self = this; //self instance
     const RESUME = {}; //sum and count
-    const tbody = table.tBodies[0]; //body element
-    const tplBody = tbody.innerHTML; //body template
+    const tBody = table.tBodies[0]; //body element
+    const tplBody = tBody.innerHTML; //body template
     const tplFoot = table.tFoot.innerHTML; //footer template
 
     let _rows = EMPTY; // default = empty array
     let _index = -1 // current item position in data
 
+    this.getBody = () => tBody;
     this.getResume = () => RESUME;
     this.getData = () => _rows;
     this.getIndex = () => _index;
     this.getItem = i => _rows[i ?? _index];
     this.getCurrentItem = () => _rows[_index];
-    this.getCurrentRow = () => tbody.children[_index];
+    this.getCurrentRow = () => tBody.children[_index];
 
     this.clear = () => { _index = -1; return self; }
     this.set = (name, fn) => { opts[name] = fn; return self; }
@@ -72,19 +78,19 @@ export default function(table, opts) {
         RESUME.size = _rows.length;
 
         opts.beforeRender(RESUME);
-        tbody.innerHTML = RESUME.size
-                                ? JSON.render(tplBody, _rows, (row, fmt, i) => opts.onRender(row, fmt, RESUME, i))
+        tBody.innerHTML = RESUME.size
+                                ? JSON.render(tplBody, _rows, opts.onRender, RESUME)
                                 : '<tr><td class="no-data" colspan="99">' + i18n.get(opts.msgEmptyTable) + '</td></tr>';
         const fmt = opts.afterRender(RESUME); // get formatted resume
         table.tFoot.innerHTML = format(tplFoot, fmt || RESUME); // render resume
 
-        tbody.classList.remove(opts.hideClass);
-        tbody.classList.add(opts.showClass);
+        tBody.classList.remove(opts.hideClass);
+        tBody.classList.add(opts.showClass);
         table.tFoot.classList.remove(opts.hideClass);
         table.tFoot.classList.add(opts.showClass);
 
         // Row listeners for change, find and remove items
-        tbody.children.forEach((tr, i) => {
+        tBody.children.forEach((tr, i) => {
             tr.onchange = ev => {
                 _index = i; // current item
                 const fnChange = opts["change-" + ev.target.name];
@@ -116,7 +122,8 @@ export default function(table, opts) {
     }
 
     this.render = fnRender;
-    this.insert = (row, id) => { row.id = id; _rows.push(row); return fnRender(_rows); }
+    this.push = row => { _rows.push(row); return fnRender(_rows); }
+    this.insert = (row, id) => { row.id = id; return self.push(row); }
     this.update = row => { Object.assign(_rows[_index], row); return fnRender(_rows); }
     this.save = (row, id) => (id ? opts.insert(row, id) : opts.update(row)); // Insert or update
 

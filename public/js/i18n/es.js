@@ -33,6 +33,9 @@ export default {
     notFound: "Elemento no encontrado en el sistema",
     noResults: "No se han encontrado registros asociados",
 
+    //array options
+    msgBool: ["No", "Si"],
+
     //datepicker language
     monthNames: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
     monthNamesShort: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
