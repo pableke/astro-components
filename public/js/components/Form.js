@@ -59,7 +59,7 @@ export default function(form, opts) {
 	this.hide = selector => fnEach(selector, el => el.classList.add(opts.hideClass));
 	this.toggle = (selector, force) => fnEach(selector, el => el.classList.toggle(opts.hideClass, !force));
 	this.disabled = (selector, force) => fnFor(self.getInputs(selector), el => el.toggleAttribute("disabled", force)); // Update attribute only
-	this.readonly = (selector, force) => fnFor(self.getInputs(selector), el => el.classList.toggle("disabled", el.toggleAttribute("readonly", force))); // Update attribute and style
+	this.readonly = (selector, force) => fnFor(self.getInputs(selector), el => el.classList.toggle("readonly", el.toggleAttribute("readonly", force))); // Update attribute and style
 
 	const fnSetNumber = (el, value) => {
 		el.value = value || ""; // Show formatted value and style
@@ -94,14 +94,14 @@ export default function(form, opts) {
 		if (el.classList.contains(opts.integerFormatClass))
 			return i18n.toInt(el.value); // Integer
 		if (el.classList.contains(opts.numberFormatClass))
-			return +el.value; // Number type directly
+			return el.value ? +el.value : null; // Number type directly
 		return el.value; // String
 	}
 	this.getValue = el => el && fnParseValue(el);
 	this.valueOf = selector => self.getValue(self.getInput(selector));
-	this.parse = () => { // View to JSON
-		const data = {}; // Results container
-		return fnFor(form.elements, el => {
+	this.parse = data => { // View to JSON
+		data = data || {}; // Results container
+		form.elements.forEach(el => {
 			if ((el.type === "checkbox") && el.checked) {
 				data[el.name] = data[el.name] || [];
 				data[el.name].push(el.value); // Array type
@@ -109,6 +109,7 @@ export default function(form, opts) {
 			else if (el.name)
 				data[el.name] = fnParseValue(el);
 		});
+		return data;
 	}
 
 	// Inputs helpers
@@ -223,7 +224,7 @@ export default function(form, opts) {
 
 	// Form actions
 	this.send = async opts => {
-		window.loading(); //show loading... div
+		alerts.loading(); //show loading... div
 		const fd = new FormData(form); // Data container
 
 		opts = opts || {}; // Settings
@@ -240,7 +241,7 @@ export default function(form, opts) {
 		const res = await globalThis.fetch(opts.action, opts);
 		const type = res.headers.get("content-type") || "";
 		const data = await (type.includes("application/json") ? res.json() : res.text());
-		window.working(); // always force to hide loadin div
+		alerts.working(); // always force to hide loadin div
 		return res.ok ? data : !self.setErrors(data);
 	}
 	this.setRequest = (selector, fn) => {

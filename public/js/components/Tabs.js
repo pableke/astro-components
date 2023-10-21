@@ -59,6 +59,7 @@ export default function(opts) {
             fnView(tab, self); // Fire when show tab
         }
         delete opts["onInitTab" + i];
+        alerts.top(); // go up
         return self;
     }
 

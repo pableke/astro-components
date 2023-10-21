@@ -1,4 +1,6 @@
 
+import alerts from "./Alerts.js";
+
 const EMPTY = [];
 const fnVoid = () => {}
 const fnEmpty = () => EMPTY;
@@ -38,6 +40,7 @@ export default function(block, opts) {
     opts = opts || {};
 	opts.delay = opts.delay || 400; //milliseconds between keystroke occurs and when a search is performed
 	opts.minLength = opts.minLength || 3; //length to start
+	opts.maxLength = opts.maxLength || 15; //max length for searching
 	opts.maxResults = opts.maxResults || 10; //max showed rows (default = 10)
     opts.optionClass = opts.optionClass || "option"; // child name class
     opts.activeClass = opts.activeClass || "active"; // active option class
@@ -69,8 +72,9 @@ export default function(block, opts) {
     this.getAutocomplete = () => autocomplete;
 
     const isChildren = i => inRange(i, 0, fnSize(resultsHTML.children) - 1);
-    const removeList = () => { _index = -1; resultsHTML.innerHTML = ""; return self; }
-    const fnClear = () => { inputValue.value = ""; return removeList(); }
+    const unselect = () => { _index = -1; inputValue.value = ""; return self; }
+    const removeList = () => { resultsHTML.innerHTML = ""; return self; }
+    const fnClear = () => { unselect(); return removeList(); }
 
     function activeItem(i) {
         _index = isChildren(i) ? i : _index; // current item
@@ -87,18 +91,20 @@ export default function(block, opts) {
     }
     function fnSearch() {
         _searching = true; // Avoid new searchs
-        globalThis.loadItems = (xhr, status, args) => { // NOT use
+        alerts.loading(); // Show loading indicator
+        globalThis.loadItems = (xhr, status, args) => { // Only PF
+            globalThis.loadItems = fnVoid; // Avoid extra loads
             self.render(JSON.read(args?.data)); // specific for PF
-            globalThis.loadItems = fnVoid;
         }
-        self.render(opts.source(autocomplete.value, self)); // Render results
+        opts.source(autocomplete.value, self); // Fire source
         _searching = false; // restore sarches
     }
 
     this.reset = () => {
-        autocomplete.value = "";
-        opts.onReset(self);
-        return fnClear();
+        fnClear(); // Reset previous values
+        autocomplete.value = ""; // Clear input
+        opts.onReset(self); // Fire event onFinish
+        return self;
     }
     this.render = data => {
         fnClear(); // clear previous results
@@ -110,6 +116,7 @@ export default function(block, opts) {
         resultsHTML.children.forEach((li, i) => {
             li.onclick = ev => selectItem(li, i);
         });
+        alerts.working(); // fadeOut loading indicator
         return self;
     }
 
@@ -121,29 +128,33 @@ export default function(block, opts) {
         const ENTER = 13;
 
         if (ev.keyCode == UP)
-            activeItem(_index - 1);
-        else if (ev.keyCode == DOWN)
-            activeItem(_index + 1);
-        else if ((ev.keyCode == TAB) || (ev.keyCode == ENTER))
+            return activeItem(_index - 1);
+        if (ev.keyCode == DOWN)
+            return activeItem(_index + 1);
+        if ((ev.keyCode == TAB) || (ev.keyCode == ENTER))
             selectItem(self.getCurrentOption(), _index);
     }
-    autocomplete.onkeyup = ev => { // Event fired after char is writen in text
-        if (fnSize(autocomplete.value) < opts.minLength)
-            return fnClear();
-        // Reduce server calls, only for backspace, alfanum or not is searching
-        const search = (ev.keyCode == 8) || inRange(ev.keyCode, 46, 111) || inRange(ev.keyCode, 160, 223);
-        if (search && !_searching) {
-            clearTimeout(_time); // Clear previous searches
-            _time = setTimeout(fnSearch, opts.delay);
+    // Event fired after char is writen in text
+    autocomplete.onkeyup = ev => {
+        const size = fnSize(autocomplete.value);
+        if (size < opts.minLength)
+            return fnClear(); // Min legnth required
+        if (size < opts.maxLength) { // Reduce server calls, only for backspace or alfanum
+            const search = (ev.keyCode == 8) || inRange(ev.keyCode, 46, 111) || inRange(ev.keyCode, 160, 223);
+            if (search && !_searching) {
+                clearTimeout(_time); // Clear previous searches
+                _time = setTimeout(fnSearch, opts.delay);
+            }
         }
     }
+    // Event fired before onblur only when text changes
+    autocomplete.onchange = ev => {
+        if (!autocomplete.value)
+            return self.reset();
+        if (!inputValue.value)
+            opts.onReset(self);
+    }
     autocomplete.onblur = ev => {
-        setTimeout(() => {
-            if (!autocomplete.value)
-                return self.reset();
-            if (!inputValue.value)
-                opts.onReset(self);
-            removeList();
-        }, 150);
+        setTimeout(removeList, 150);
     }
 }

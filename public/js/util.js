@@ -6,16 +6,6 @@ import Autocomplete from "./components/Autocomplete.js";
 import autocompletes from "./data/autocompletes.js";
 
 const initView = () => {
-	// Loading div
-	const _loading = document.body.firstChild;
-	window.loading = () => _loading.classList.remove("hide", "fadeOut");
-	window.working = () => _loading.classList.add("fadeOut");
-
-	// Scroll body to top on click and toggle back-to-top arrow
-	const _top = _loading.nextElementSibling;
-	window.onscroll = function() { _top.classList.toggle("hide", this.scrollY < 80); }
-	_top.addEventListener("click", ev => document.body.scrollIntoView({ behavior: "smooth" }));
-
 	document.querySelectorAll(".autocomplete").forEach(el => {
 		const ac = new Autocomplete(el, autocompletes[el.id]);
 	});

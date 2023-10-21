@@ -6,35 +6,22 @@ function Presto() {
 	const self = this; //self instance
     const NO_APLICA = "N/A"; //default table float
 
-    // Define current type
-    let id, isTcr, isFce, isL83, isGcr, isAnt, isAfc;
-    this.setId = value => {
-        id = value;
-        return self;
-    }
-    this.setTipo = value => {
-        isTcr = (value == 1);
-        isFce = (value == 6);
-        isL83 = (value == 3);
-        isGcr = (value == 4);
-        isAnt = (value == 5);
-        isAfc = (value == 8);
-        return self;
-    }
-    this.init = (id, tipo) => self.setId(id).setTipo(tipo);
+    let data; // Define current presto data type
+    this.setData = input => { data = input; return self; }
+    this.isTcr = () => (data.tipo == 1);
+    this.isFce = () => (data.tipo == 6);
+    this.isL83 = () => (data.tipo == 3);
+    this.isGcr = () => (data.tipo == 4);
+    this.isAnt = () => (data.tipo == 5);
+    this.isAfc = () => (data.tipo == 8);
 
-    this.isTcr = () => isTcr;
-    this.isFce = () => isFce;
-    this.isL83 = () => isL83;
-    this.isAnt = () => isAnt;
-    this.isAfc = () => isAfc;
-
-    this.isPartidaDec = () => (isTcr || isL83 || isAnt || isAfc);
-    this.isDisableEjInc = () => (id || isTcr || isFce);
-    this.isAutoLoadInc = () => (isL83 || isAnt || isAfc);
+    this.isPartidaDec = () => (self.isTcr() || self.isL83() || self.isAnt() || self.isAfc());
+    this.isDisableEjInc = () => (data.id || self.isTcr() || self.isFce());
+    this.isAutoLoadImp = () => (self.isL83() || self.isAnt() || self.isAfc());
+    this.isAutoLoadInc = () => (self.isL83() || self.isAnt());
 
     this.isAnticipada = partida => (partida.mask & 4);
-    this.isImpExcedido = partida => ((isAnt || (partida.e == "642")) && String.isset(partida.ih) && ((partida.ih + .01) < partida.imp));
+    this.isImpExcedido = partida => ((self.isAnt() || (partida.e == "642")) && String.isset(partida.ih) && ((partida.ih + .01) < partida.imp));
     this.isoBool = mask => i18n.getItem("msgBool", mask & 1);
 
     this.renderPartida = (data, output, resume) => {

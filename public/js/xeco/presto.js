@@ -6,9 +6,13 @@ import presto from "../model/Presto.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 	const tabs = new Tabs(); // Tab instance
+
+	const fFilter = document.forms.find(form => (form.name == "xeco-filter"));
+    const formFilter = new Form(fFilter);
+
     const fPresto = document.forms.find(form => (form.name == "xeco-presto"));
     const formPresto = new Form(fPresto);
-    presto.init(+fPresto.id.value, +formPresto.valueOf("#tipo"));
+    presto.setData(formPresto.parse());
 
     const tPartidas = fPresto.querySelector("#partidas-tb");
 	const lineas = new Table(tPartidas, {
@@ -16,8 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
         beforeRender: resume => { resume.imp = 0;},
         onRender: presto.renderPartida,
         afterRender: resume => {
-            if (resume.size > 0) // hay lineas?
-                formPresto.disabled("#ej-dec").disabled("#ej-inc", presto.isDisableEjInc());
+            const readonly = resume.size > 0;
+            formPresto.readonly("#ej-dec", readonly).readonly("#ej-inc", readonly || presto.isDisableEjInc());
             tabs.setActions(lineas.getBody());
             return presto.renderResume(resume, {});
         }
@@ -29,8 +33,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const fnLoadDC = index => {
         dec = economicasDec[index];
         formPresto.setval("#imp-cd", dec?.imp);
+        window.alerts.working(); // Hide loading indicator
     }
     const fnAvisoFa = mask => { //aviso para organicas afectadas en TCR o FCE
+        window.alerts.loading(); // Show loading indicator
         const info = "La orgánica seleccionada es afectada, por lo que su solicitud solo se aceptará para determinado tipo de operaciones.";
         (mask & 1) && (presto.isTcr() || presto.isFce()) && formPresto.showInfo(info);
     }
@@ -44,8 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
             formPresto.showError(msg);
     }
 
-    window.autoloadL83 = (xhr, status, args) => fnAutoloadInc(args.data, "Aplicación AIP no encontrada en el sistema.");
-    window.autoloadAnt = (xhr, status, args) => fnAutoloadInc(args.data, "No se ha encontrado el anticipo en el sistema.");
+    window.autoloadL83 = (xhr, status, args) => fnAutoloadInc(args?.data, "Aplicación AIP no encontrada en el sistema.");
+    window.autoloadAnt = (xhr, status, args) => fnAutoloadInc(args?.data, "No se ha encontrado el anticipo en el sistema.");
     window.loadCD = el => {
         if (presto.isL83()) //L83 => busco su AIP
             formPresto.click("#autoload-l83");
@@ -54,13 +60,12 @@ document.addEventListener("DOMContentLoaded", () => {
         fnLoadDC(el.selectedIndex);
     }
     window.loadEconomicasDec = (xhr, status, args) => {
-        economicasDec = JSON.read(args.economicas) || [];
-        if (args.data) {
-            if (presto.isL83()) //L83 => busco su AIP
-                autoloadL83(xhr, status, args);
-            else if (presto.isAnt()) //ANT => cargo misma organica
-                autoloadAnt(xhr, status, args);
-        }
+        window.alerts.closeAlerts(); // close previos alerts
+        economicasDec = JSON.read(args?.economicas) || [];
+        if (presto.isL83()) //L83 => busco su AIP
+            autoloadL83(xhr, status, args);
+        else if (presto.isAnt()) //ANT => cargo misma organica
+            autoloadAnt(xhr, status, args);
         fnLoadDC(0); // Cargo el importe del crédito disponible por defecto
     }
 
@@ -71,17 +76,17 @@ document.addEventListener("DOMContentLoaded", () => {
 		select: item => item.value,
 		afterSelect: item => {
             fnAvisoFa(item.int); //aviso para organicas afectadas en TCR o FCE
+            presto.isAutoLoadInc() && lineas.render(); //autoload => clear table
             formPresto.setval("#fa-dec", presto.isoBool(item.int)).click("#find-economicas-dec");
         },
         onReset: () => {
-            if (presto.isAutoLoadInc() && !presto.isAfc()) //autoload y no AFC
-                lineas.render(); // clear table
+            presto.isAutoLoadInc() && lineas.render(); //autoload => clear table
             formPresto.setval("#fa-dec").click("#find-economicas-dec");
         }
 	});
     formPresto.onChangeInput("#imp-dec", ev => {
         const partidas = lineas.getData();
-        if (presto.isAutoLoadInc() && partidas.length) {
+        if (presto.isAutoLoadImp() && partidas.length) {
             partidas[0].imp = formPresto.getValue(ev.target); //importe obligatorio
             lineas.render(partidas);
         }
@@ -117,10 +122,11 @@ document.addEventListener("DOMContentLoaded", () => {
     //****** tabla de partidas a incrementar ******//
 
     window.fnSend = () => {
+        const resume = lineas.getResume();
         const partidas = lineas.getData();
         if (!partidas.length) // Todas las solicitudes tienen partidas a incrementar
-            return !formPresto.setError("#org-inc", "Debe seleccionar al menos una partida a aumentar!");
-        if (dec && !presto.isAnt() && (RESUME.imp > dec.imp)) // los anticipos no validan el CD
+            return !formPresto.setError("#org-dec", "Debe seleccionar al menos una partida a aumentar!");
+        if (dec && !presto.isAnt() && (resume.imp > dec.imp)) // los anticipos no validan el CD
             return !formPresto.setError("#imp-dec", "¡Importe máximo de la partida a disminuir excedido!");
         if (formPresto.isValid(presto.validatePresto)) { //todas las validaciones estan ok?
             partidas.sort((a, b) => (b.imp - a.imp)); //orden por importe desc.

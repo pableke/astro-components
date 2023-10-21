@@ -21,7 +21,7 @@ HTMLElement.prototype.eachSibling = function(fn) {
 }
 
 const opts = { // Configuration
-    alertsSelector: ".alerts",
+    alertsClass: "alerts",
     hideClass: "hide",
     showInClass: "fadeIn",
     hideOutClass: "fadeOut",
@@ -35,9 +35,20 @@ const opts = { // Configuration
 
 function Alerts() {
 	const self = this; //self instance
-    const alerts = document.querySelector(opts.alertsSelector);
+    const alerts = document.querySelector("." + opts.alertsClass);
     const texts = alerts.getElementsByClassName(opts.alertTextClass);
     const close = alerts.getElementsByClassName(opts.alertCloseClass);
+
+	// Handle loading div
+    const _loading = alerts.nextElementSibling;
+	this.loading = () => _loading.classList.remove(opts.hideClass, opts.hideOutClass);
+	this.working = () => _loading.classList.add(opts.hideOutClass);
+
+    // Scroll body to top on click and toggle back-to-top arrow
+	const _top = _loading.nextElementSibling;
+    this.top = () => { document.body.scrollIntoView({ behavior: "smooth" }); return self; }
+	window.onscroll = function() { _top.classList.toggle(opts.hideClass, this.scrollY < 80); }
+	_top.addEventListener("click", self.top);
 
     const fnShow = (el, txt) => {
         el.parentNode.classList.remove(opts.hideClass, opts.hideOutClass);
@@ -87,6 +98,8 @@ function Alerts() {
 
 // Global singleton instance
 const alerts = new Alerts();
-globalThis.alerts = alerts; // Global reference
-globalThis.showAlerts = (xhr, status, args) => alerts.showAlerts(JSON.read(args?.data)); // Hack PF (only for CV-UAE)
+window.alerts = alerts; // Global reference
+window.loading = alerts.loading;
+window.working = alerts.working;
+window.showAlerts = (xhr, status, args) => alerts.showAlerts(JSON.read(args?.data)); // Hack PF (only for CV-UAE)
 export default alerts;
