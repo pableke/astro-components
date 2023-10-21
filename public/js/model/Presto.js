@@ -38,7 +38,7 @@ function Presto() {
         output.fa = self.isoBool(data.omask);
         output.excedido = self.isImpExcedido(data) ? '<span class="textwarn textbig" title="La cantidad solicitada excede el margen registrado por el Buzón de Ingresos">&#9888;</span>' : "";
         output.anticipada = self.isAnticipada(data) ? '<span class="textbig" title="Este contrato ha gozado de anticipo en algún momento">&#65;</span>' : "";
-        output.doc030 = isGcr ? '<a href="#tab-3" class="fas fa-wallet action tab-action"></a>' : "";
+        output.doc030 = self.isGcr() ? '<a href="#tab-3" class="fas fa-wallet action tab-action"></a>' : "";
         resume.imp += data.imp; // sum
         return output;
     }
