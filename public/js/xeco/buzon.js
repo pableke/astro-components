@@ -70,9 +70,9 @@ document.addEventListener("DOMContentLoaded", () => { // on load view
 		const factura = formBuzon.getInput("#factura_input").files[0];
 		const justPago = formBuzon.getInput("#justPago_input").files[0];
 		if (!factura)
-			return !window.alerts.showError("Debe seleccionar una factura.");
+			return !formBuzon.showError("Debe seleccionar una factura.");
 		if (justPagoRequired && !justPago)
-			return !window.alerts.showError("Debe seleccionar Justificante de pago.");
+			return !formBuzon.showError("Debe seleccionar Justificante de pago.");
 		const fileNames = factura.name + (justPago ? (", " + justPago.name) : "");
 		return formBuzon.text("#ut-desc", formBuzon.getOptionText("#tramit-all")).text("#file-name", fileNames);
 	});
@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => { // on load view
 		const data = JSON.read(args?.data); // new data
 		if (!data) return; // Nada que hacer
 		if (data.msgError)
-			window.alerts.showError(data.msgError);
+			formOrganicas.showError(data.msgError);
 		else {
 			table.render(data); // reload table
 			form.reset().showOk("saveOk"); // clear inputs, autofocus and message

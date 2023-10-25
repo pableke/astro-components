@@ -1,6 +1,7 @@
 /* Inputs Block */
 .ui-blocks { display: flex; flex-wrap: wrap; gap: .5rem; }
 .ui-block { max-width: 500px; padding: 4px; }
+.ui-block-main { padding: 4px; flex-grow: 1; }
 .ui-block-lg { min-width: 200px; max-width: 400px; padding: 4px; flex-grow: 1; }
 .ui-block-xl { min-width: 300px; max-width: 600px; padding: 4px; flex-grow: 1; }
 .ui-block-box { min-width: 250px; padding: 4px; border: 1px solid black; }
@@ -132,7 +133,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left
 
 /* Extra small devices (portrait phones, less than 576px) */
 @media screen and (max-width: 575.98px) {
-	.ui-block-xl { min-width: 100%; }
+	.ui-block-lg, .ui-block-xl { min-width: 100%; }
 }
 /* Small devices (landscape phones, 576px and up) */
 @media screen and (min-width: 576px) and (max-width: 767.98px) {

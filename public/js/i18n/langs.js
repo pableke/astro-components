@@ -10,19 +10,29 @@ Number.isNumber = isnum;
 
 function Langs() {
 	const self = this; //self instance
+    const DEFAULT = "en"; // Default iso lang
     const MSGS = {}; // Messages container
-    const langs = { en, es };
-    const KEYS = Object.keys(langs);
 
+    let _langs = { en, es };
     let _lang = en; // Default language
 	let errors = 0; // Errors counter
 
-    this.getLangs = () => langs;
-    this.getLang = lang => langs[lang] || _lang;
-    this.setLang = lang => { _lang = langs[lang] || _lang; } // especific language
+    this.getLangs = () => _langs;
+	this.setLangs = langs => {
+		_langs = langs;
+		_lang = langs.en;
+		return self;
+	}
+    this.getLang = lang => _langs[lang] || _lang;
+    this.setLang = lang => { _lang = _langs[lang] || _lang; } // especific language
 
-    this.getIsoLangs = () => KEYS;
-    this.getIsoLang = () => document.documentElement.getAttribute("lang") || "en"; // || navigator.language || navigator.userLanguage;
+    this.getIsoLangs = () => Object.keys(_langs);
+	this.getNavLang = () => navigator.language || navigator.userLanguage; // default browser language
+    this.getIsoLang = () => document.documentElement.getAttribute("lang") || self.getNavLang() || DEFAULT;
+    this.findIsoLang = list => {
+        list = list || ""; // languages list (ej: es-ES,es)
+        return list.split(",").find(lang => _langs[lang]) || DEFAULT;
+    }
 
     this.get = msg => _lang[msg] || msg;
     this.getItem = (msg, index) => _lang[msg][index];
@@ -125,12 +135,9 @@ function Langs() {
     this.fmtInt = str => _lang.fmtInt(str);
 
     // Initialize langs
-    const initLang = () => { // selected language
-        const current = document.documentElement.getAttribute("lang");
-        _lang = langs[current] || _lang;
-    }
+    const initLang = () => self.setLang(self.getIsoLang());
     document.addEventListener("DOMContentLoaded", initLang); // on load view
-    document.addEventListener("astro:after-swap", initLang); // after view transition event
+    //document.addEventListener("astro:after-swap", initLang); // after view transition event
 }
 
 export default new Langs();

@@ -54,7 +54,8 @@ export default function(form, opts) {
 	const fnFor = (list, fn) => { list.forEach(fn); return self; }
 	const fnEach = (selector, fn) => fnFor(form.querySelectorAll(selector), fn);
 	const fnSetText = (el, text) => { el.innerHTML = text; return self; }
-	this.text = (selector, text) => fnSetText(form.querySelector(selector), text);
+	this.text = (selector, text) => fnSetText(form.querySelector(selector), text); // Update text info in form
+	this.render = (selector, data) => fnEach(selector, el => el.render(data)); // HTMLElement.prototype.render is implemented in Table component
 	this.show = selector => fnEach(selector, el => el.classList.remove(opts.hideClass));
 	this.hide = selector => fnEach(selector, el => el.classList.add(opts.hideClass));
 	this.toggle = (selector, force) => fnEach(selector, el => el.classList.toggle(opts.hideClass, !force));
@@ -83,7 +84,7 @@ export default function(form, opts) {
 	this.setValue = (el, value) => el ? fnSetValue(el, value) : self;
 	this.setval = (selector, value) => self.setValue(self.getInput(selector), value);
 	this.setValues = data => fnFor(form.elements, el => (isset(data[el.name]) && fnSetValue(el, data[el.name]))); // update element value only if data exists
-	this.render = data => { // JSON to View
+	this.setData = data => { // JSON to View
 		updateOnly.forEach(el => el.classList.toggle(opts.hideClass, !data[opts.pkName]));
 		return fnFor(form.elements, el => fnSetValue(el, data[el.name]));
 	}
@@ -99,7 +100,7 @@ export default function(form, opts) {
 	}
 	this.getValue = el => el && fnParseValue(el);
 	this.valueOf = selector => self.getValue(self.getInput(selector));
-	this.parse = data => { // View to JSON
+	this.getData = data => { // View to JSON
 		data = data || {}; // Results container
 		form.elements.forEach(el => {
 			if ((el.type === "checkbox") && el.checked) {
@@ -147,10 +148,11 @@ export default function(form, opts) {
 	}
 
 	// Events handlers
-	this.change = fn => form.addEventListener("change", fn);
-	this.submit = fn => form.addEventListener("submit", fn);
-	this.beforeReset = fn => form.addEventListener("reset", fn);
-	this.afterReset = fn => form.addEventListener("reset", ev => setTimeout(() => fn(ev), 1));
+	this.change = fn => { form.addEventListener("change", fn); return self; }
+	this.submit = fn => { form.addEventListener("submit", fn); return self; }
+	this.beforeReset = fn => { form.addEventListener("reset", fn); return self; }
+	this.afterReset = fn => { form.addEventListener("reset", ev => setTimeout(() => fn(ev), 1)); return self; }
+	this.setClick = (selector, fn) => fnEach(selector, el => el.addEventListener("click", fn))
 	this.click = selector => { form.querySelector(selector).click(); return self; } // Fire event
 
 	this.onChangeInput = (selector, fn) => {
@@ -207,7 +209,7 @@ export default function(form, opts) {
 		return self;
 	}
 	this.isValid = fnValidate => {
-		const data = self.closeAlerts().parse();
+		const data = self.closeAlerts().getData();
 		return fnValidate(data) ? data : !self.setErrors(i18n.getMsgs());
 	}
 	this.validate = async fnValidate => {

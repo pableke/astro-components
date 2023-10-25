@@ -41,12 +41,13 @@ function Alerts() {
 
 	// Handle loading div
     const _loading = alerts.nextElementSibling;
-	this.loading = () => _loading.classList.remove(opts.hideClass, opts.hideOutClass);
-	this.working = () => _loading.classList.add(opts.hideOutClass);
+	this.loading = () => { _loading.classList.remove(opts.hideClass, opts.hideOutClass); return self; }
+	this.working = () => { _loading.classList.add(opts.hideOutClass); return self; }
 
     // Scroll body to top on click and toggle back-to-top arrow
 	const _top = _loading.nextElementSibling;
     this.top = () => { document.body.scrollIntoView({ behavior: "smooth" }); return self; }
+	this.redir = (url, target) => { url && window.open(url, target || "_blank"); return self; };
 	window.onscroll = function() { _top.classList.toggle(opts.hideClass, this.scrollY < 80); }
 	_top.addEventListener("click", self.top);
 
@@ -82,7 +83,7 @@ function Alerts() {
             msgs.msgWarn && fnShow(fnGetType(opts.typeWarnClass), msgs.msgWarn);
             msgs.msgError && fnShow(fnGetType(opts.typeErrorClass), msgs.msgError);
         }
-        return self;
+        return self.working();
     }
 
     this.closeAlerts = function() {
@@ -92,14 +93,13 @@ function Alerts() {
     }
 
     // Show posible server messages and close click event
-    texts.forEach(el => setAlert(el, el.innerHTML));
+    texts.forEach(el => { el.innerHTML && fnShow(el, el.innerHTML); });
     close.forEach(el => el.addEventListener("click", ev => fnCloseFromChild(el)));
+
+    // Global singleton instance
+    window.loading = self.loading;
+    window.working = self.working;
+    window.showAlerts = (xhr, status, args) => self.showAlerts(JSON.read(args?.data)); // Hack PF (only for CV-UAE)
 }
 
-// Global singleton instance
-const alerts = new Alerts();
-window.alerts = alerts; // Global reference
-window.loading = alerts.loading;
-window.working = alerts.working;
-window.showAlerts = (xhr, status, args) => alerts.showAlerts(JSON.read(args?.data)); // Hack PF (only for CV-UAE)
-export default alerts;
+export default new Alerts();

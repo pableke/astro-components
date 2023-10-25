@@ -9,6 +9,18 @@ const fnTrue = () => true;
 const format = (tpl, data) => tpl.replace(RE_VAR, (m, k) => data[k] ?? "");
 
 HTMLCollection.prototype.forEach = Array.prototype.forEach;
+HTMLElement.prototype.render = function(data) {
+    this.dataset.hide = this.dataset.hide || "hide"; // default hide class
+    this.dataset.template = this.dataset.template || this.innerHTML; // save current template
+    if (data) {
+        this.innerHTML = format(this.dataset.template, data);
+        this.classList.remove(this.dataset.hide);
+    }
+    else
+        this.classList.add(this.dataset.hide);
+    return this;
+}
+
 String.prototype.format = function(fn) { return this.replace(RE_VAR, fn); }
 String.prototype.render = function(data) { return format(this, data); }
 JSON.render = (tpl, data, fnRender, resume) => {
@@ -45,7 +57,6 @@ export default function(table, opts) {
     opts.tableActionClass = opts.tableActionClass || "table-action";
     opts.msgConfirmRemove = opts.msgConfirmRemove || "remove";
     opts.msgConfirmReset = opts.msgConfirmReset || "removeAll";
-    opts.msgEmptyTable = opts.msgEmptyTable || "noResults";
     opts.beforeRender = opts.beforeRender || fnVoid;
     opts.onRender = opts.onRender || fnVoid;
     opts.afterRender = opts.afterRender || fnVoid;
@@ -56,6 +67,7 @@ export default function(table, opts) {
     const RESUME = {}; //sum and count
     const tBody = table.tBodies[0]; //body element
     const tplBody = tBody.innerHTML; //body template
+    const tplEmpty = opts.msgEmptyTable ? '<tr><td class="no-data" colspan="99">' + i18n.get(opts.msgEmptyTable) + '</td></tr>' : "";
     const tplFoot = table.tFoot.innerHTML; //footer template
 
     let _rows = EMPTY; // default = empty array
@@ -77,12 +89,9 @@ export default function(table, opts) {
         _rows = data || EMPTY;
         RESUME.size = _rows.length;
 
-        opts.beforeRender(RESUME);
-        tBody.innerHTML = RESUME.size
-                                ? JSON.render(tplBody, _rows, opts.onRender, RESUME)
-                                : '<tr><td class="no-data" colspan="99">' + i18n.get(opts.msgEmptyTable) + '</td></tr>';
-        const fmt = opts.afterRender(RESUME); // get formatted resume
-        table.tFoot.innerHTML = format(tplFoot, fmt || RESUME); // render resume
+        opts.beforeRender(RESUME); // Fired init. event
+        tBody.innerHTML = RESUME.size ? JSON.render(tplBody, _rows, opts.onRender, RESUME) : tplEmpty; // body
+        table.tFoot.innerHTML = format(tplFoot, opts.afterRender(RESUME) || RESUME); // render formatted resume
 
         tBody.classList.remove(opts.hideClass);
         tBody.classList.add(opts.showClass);
@@ -90,7 +99,7 @@ export default function(table, opts) {
         table.tFoot.classList.add(opts.showClass);
 
         // Row listeners for change, find and remove items
-        tBody.children.forEach((tr, i) => {
+        tBody.rows.forEach((tr, i) => {
             tr.onchange = ev => {
                 _index = i; // current item
                 const fnChange = opts["change-" + ev.target.name];
@@ -187,5 +196,9 @@ export default function(table, opts) {
         });
         return self;
     }
+
+    // Init. table
     self.setActions(table);
+    if (!tBody.rows.length)
+        tBody.innerHTML = tplEmpty;
 }

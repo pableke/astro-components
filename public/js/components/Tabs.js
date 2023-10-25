@@ -27,9 +27,9 @@ export default function(opts) {
     this.setTabMask = mask => { _tabMask = mask; return self; } // set mask for tabs
 
     // Set events on tabs actions
-    this.setInitEvent = (tab, fn) => { opts["onInitTab" + tab] = fn; return self; }
-    this.setShowEvent = (tab, fn) => { opts["onShowTab" + tab] = fn; return self; }
-    this.setViewEvent = (tab, fn) => { opts["onViewTab" + tab] = fn; return self; }
+    this.setInitEvent = (tab, fn) => { opts["init-tab-" + tab] = fn; return self; }
+    this.setShowEvent = (tab, fn) => { opts["show-tab-" + tab] = fn; return self; }
+    this.setViewEvent = (tab, fn) => { opts["view-tab-" + tab] = fn; return self; }
 
 	// Alerts helpers
 	this.showOk = msg => { alerts.showOk(msg); return self; } // Encapsule showOk message
@@ -43,8 +43,8 @@ export default function(opts) {
         if (i == _tabIndex) // is current tab
             return self; // nothing to do
         const tab = tabs[i]; // get next tab
-        const fnInit = opts["onInitTab" + i] || fnTrue; // Event handler fire once
-        const fnShow = opts["onShowTab" + i] || fnTrue; // Event handler fire each access to tab
+        const fnInit = opts["init-" + tab.id] || fnTrue; // Event handler fire once
+        const fnShow = opts["show-" + tab.id] || fnTrue; // Event handler fire each access to tab
         if (fnInit(tab) && fnShow(tab)) { // Validata change tab
             alerts.closeAlerts(); // Close all previous messages
             const step = "step-" + i; //go to a specific step on progressbar
@@ -55,10 +55,10 @@ export default function(opts) {
             _tabIndex = i; // set current index
             tabs.forEach(tab => tab.classList.remove(opts.activeClass));
             tab.classList.add(opts.activeClass); // set active tab
-            const fnView = opts["onViewTab" + i] || fnTrue;
+            const fnView = opts["view-" + tab.id] || fnTrue;
             fnView(tab, self); // Fire when show tab
         }
-        delete opts["onInitTab" + i];
+        delete opts["init-" + tab.id];
         alerts.top(); // go up
         return self;
     }
@@ -106,5 +106,11 @@ export default function(opts) {
         });
         return self;
     }
+
+    // Init. view and PF navigation (only for CV-UAE)
     self.setActions(document);
+    window.showTab = (xhr, status, args, tab) => {
+        (status == "success") && self.showTab(tab);
+        window.showAlerts(xhr, status, args);
+    }
 }

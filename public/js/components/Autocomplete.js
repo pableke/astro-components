@@ -106,6 +106,10 @@ export default function(block, opts) {
         opts.onReset(self); // Fire event onFinish
         return self;
     }
+    this.reload = () => {
+        autocomplete.focus(); // Set focus
+        return self.reset(); // Reset all data
+    }
     this.render = data => {
         fnClear(); // clear previous results
         _results = data || EMPTY; // Force not unset var

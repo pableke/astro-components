@@ -75,7 +75,7 @@ tfoot { font-weight: bold; border-top: 1px dashed black; }
 
 /* Specific styles */
 .hide { display: none !important; } /* force display none */
-.navbar { margin: 1px 4px; padding: 4px; display: inline-block; width: 100%; clear: both; }
+.navbar { margin: 4px 0; padding: 4px; display: inline-block; width: 100%; clear: both; }
 
 .text-blue, .text-info { color: rgb(59 130 246)/* blue-500 */; }
 .text-green, .text-success { color: green; }
