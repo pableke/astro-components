@@ -23,6 +23,7 @@ export default function(form, opts) {
 	opts.defaultMsgError = opts.defaultMsgError || "errForm"; // default key error
 	//opts.inputBlockClass = opts.inputBlockClass || "ui-block"; // Inputs block styles
 	opts.dateClass = opts.dateClass || "ui-date"; // Date type
+	opts.boolClass = opts.boolClass || "ui-bool"; // Boolean type
 	opts.checkAllClass = opts.checkAllClass || "ui-check-all"; // Check all related checkboxes
 	opts.floatFormatClass = opts.floatFormatClass || "ui-float"; // Float i18n
 	opts.integerFormatClass = opts.integerFormatClass || "ui-integer"; // Integer i18n
@@ -56,6 +57,7 @@ export default function(form, opts) {
 	const fnFor = (list, fn) => { list.forEach(fn); return self; }
 	const fnEach = (selector, fn) => fnFor(form.querySelectorAll(selector), fn);
 	const fnSetText = (el, text) => { el.innerHTML = text; return self; }
+    this.html = selector => form.querySelector(selector).innerHTML;
 	this.text = (selector, text) => fnEach(selector, el => fnSetText(el, text)); // Update all texts info in form
 	this.render = (selector, data) => { // HTMLElement.prototype.render is implemented in Table component
 		data = data || i18n.getLang(); // Default data = current language
@@ -79,6 +81,8 @@ export default function(form, opts) {
 			fnSetNumber(el, i18n.isoFloat(value));
 		else if (el.classList.contains(opts.integerFormatClass))
 			fnSetNumber(el, i18n.isoInt(value));
+		else if (el.classList.contains(opts.boolClass))
+			el.value = i18n.boolval(value);
 		else if (el.type === "checkbox") // Array type
 			el.checked = value && value.includes(el.value);
 		else if (el.type === "radio")
@@ -166,6 +170,11 @@ export default function(form, opts) {
 	this.onChangeInput = (selector, fn) => {
 		const el = self.getInput(selector);
 		el.addEventListener("change", fn);
+		return self;
+	}
+	this.onChangeSelect = (selector, fn) => {
+		const el = self.getInput(selector); // call function + register listener
+		fn(el); el.addEventListener("change", ev => fn(el));
 		return self;
 	}
 	this.onChangeFile = (selector, fn) => {
@@ -280,6 +289,10 @@ export default function(form, opts) {
 			if (el.classList.contains(opts.integerFormatClass)) {
 				el.addEventListener("change", ev => fnSetNumber(el, i18n.fmtInt(el.value)));
 				return fnSetNumber(el, el.value && i18n.isoInt(+el.value)); // iso format integer
+			}
+			if (el.classList.contains(opts.boolClass)) {
+				el.value = i18n.boolval(el.value); // Hack PF type
+				return;
 			}
 			if (el.classList.contains(opts.dateClass)) {
 				el.type = "date"; // Hack PF type

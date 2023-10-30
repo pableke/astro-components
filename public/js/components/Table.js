@@ -91,6 +91,7 @@ export default function(table, opts) {
 	const fnFor = (list, fn) => { list.forEach(fn); return self; }
 	const fnEach = (selector, fn) => fnFor(table.querySelectorAll(selector), fn);
     this.html = selector => table.querySelector(selector).innerHTML;
+	this.text = (selector, text) => fnEach(selector, el => { el.innerHTML = text; }); // Update all texts info in form
 	this.show = selector => fnEach(selector, el => el.classList.remove(opts.hideClass));
 	this.hide = selector => fnEach(selector, el => el.classList.add(opts.hideClass));
 	this.toggle = (selector, force) => force ? self.show(selector) : self.hide(selector);

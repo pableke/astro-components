@@ -8,16 +8,18 @@ import presto from "../model/Presto.js";
 document.addEventListener("DOMContentLoaded", () => {
     /*** Filtro + listado de solicitudes ***/
     const tabFilter = tabs.getTab(2);
-    //tabs.showTab((tabFilter.dataset.usuec == "true") ? 0 : 2);
-    (tabFilter.dataset.usuec == "true") ? tabs.showTab(0) : document.querySelector("#list-solicitudes").click();
 	const fFilter = document.forms.find(form => (form.name == "xeco-filter"));
     const formFilter = new Form(fFilter);
-    tabs.setViewEvent(2, tab => formFilter.setFocus("#filtro-ej"));
+    const msgEmptyPrestos = "No se han encontrado solicitudes para a la búsqueda seleccionada";
+    let tSolicitudes = tabFilter.querySelector("table#solicitudes");
+    let prestos = new Table(tSolicitudes, { msgEmptyTable: msgEmptyPrestos });
+    tabs.setViewEvent(2, tab => formFilter.setFocus("#filtro-ej")).showTab((tabFilter.dataset.usuec == "true") ? 0 : 2);
     window.updatePrestos = (xhr, status, args) => {
         formFilter.setActions(); // Reload inputs actions
-        const tSolicitudes = tabFilter.querySelector("table#solicitudes");
-        const prestos = new Table(tSolicitudes, { msgEmptyTable: "No se han encontrado solicitudes para a la búsqueda seleccionada" });
-        window.showTab(xhr, status, args, 2) && prestos.hide(".firma-" + args.id); // muestro el tab del listado y oculo las acciones de firma
+        tSolicitudes = tabFilter.querySelector("table#solicitudes");
+        prestos = new Table(tSolicitudes, { msgEmptyTable: msgEmptyPrestos });
+        // Si todo ok => muestro el tab del listado acualizando el valor del estado y ocultando las acciones de firma
+        window.showTab(xhr, status, args, 2) && prestos.hide(".firma-" + args.id).text(".estado-" + args.id, "Procesando...");
     }
     /*** Filtro + listado de solicitudes ***/
 
@@ -25,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const f030 = document.forms.find(form => (form.name == "xeco-030"));
     const form030 = new Form(f030);
     tabs.setViewEvent(3, tab => form030.setFocus("#acOrg030"));
-    const acOrg030 = form030.setAutocomplete("#ac-org-030", {
+    form030.setAutocomplete("#ac-org-030", {
         minLength: 4,
         source: () => form030.click("#find-org-030"),
         render: item => item.label,
@@ -84,12 +86,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const fnLoadDC = index => {
             const dec = economicasDec[index];
             formPresto.setval("#cd", dec?.imp);
-            alerts.working(); // Hide loading indicator
         }
-        const fnAvisoFa = mask => { //aviso para organicas afectadas en TCR o FCE
-            alerts.loading(); // Show loading indicator
+        const fnAvisoFa = item => { //aviso para organicas afectadas en TCR o FCE
             const info = "La orgánica seleccionada es afectada, por lo que su solicitud solo se aceptará para determinado tipo de operaciones.";
-            (mask & 1) && (presto.isTcr() || presto.isFce()) && formPresto.showInfo(info);
+            (item?.int & 1) && (presto.isTcr() || presto.isFce()) && formPresto.showInfo(info);
+            alerts.working(); // Hide loading indicator
         }
         const fnAutoloadInc = (data, msg) => {
             const partida = JSON.read(data);
@@ -110,15 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 formPresto.click("#autoload-ant");
             fnLoadDC(el.selectedIndex);
         }
-        window.loadEconomicasDec = (xhr, status, args) => {
-            alerts.closeAlerts(); // close previos alerts
-            economicasDec = JSON.read(args?.economicas) || [];
-            if (presto.isL83()) //L83 => busco su AIP
-                autoloadL83(xhr, status, args);
-            else if (presto.isAnt()) //ANT => cargo misma organica
-                autoloadAnt(xhr, status, args);
-            fnLoadDC(0); // Cargo el importe del crédito disponible por defecto
-        }
 
         const acOrgDec = formPresto.setAutocomplete("#ac-org-dec", {
             minLength: 4,
@@ -126,15 +118,24 @@ document.addEventListener("DOMContentLoaded", () => {
             render: item => item.label,
             select: item => item.value,
             afterSelect: item => {
-                fnAvisoFa(item.int); //aviso para organicas afectadas en TCR o FCE
+                alerts.loading();
                 presto.isAutoLoadInc() && lineas.render(); //autoload => clear table
-                formPresto.setval("#fa-dec", presto.isAfectada(item.int)).click("#find-economicas-dec");
+                formPresto.setval("#faDec", item.int & 1).click("#find-economicas-dec");
             },
             onReset: () => {
                 presto.isAutoLoadInc() && lineas.render(); //autoload => clear table
-                formPresto.setval("#fa-dec").click("#find-economicas-dec");
+                formPresto.setval("#faDec").click("#find-economicas-dec");
             }
         });
+        window.loadEconomicasDec = (xhr, status, args) => {
+            economicasDec = JSON.read(args?.economicas) || [];
+            if (presto.isL83()) //L83 => busco su AIP
+                autoloadL83(xhr, status, args);
+            else if (presto.isAnt()) //ANT => cargo misma organica
+                autoloadAnt(xhr, status, args);
+            fnLoadDC(0); // Cargo el importe del crédito disponible por defecto
+            fnAvisoFa(acOrgDec.getCurrentItem()); //aviso para organicas afectadas en TCR o FCE
+        }
         formPresto.onChangeInput("#impDec", ev => {
             const partidas = lineas.getData();
             if (presto.isAutoLoadImp() && partidas.length) {
@@ -150,15 +151,15 @@ document.addEventListener("DOMContentLoaded", () => {
             source: () => formPresto.click("#find-organica-inc"),
             render: item => item.label,
             select: item => item.value,
-            afterSelect: item => {
-                fnAvisoFa(item.int); //aviso para organicas afectadas en TCR o FCE
-                formPresto.setval("#fa-inc", presto.isAfectada(item.int)).click("#find-economicas-inc");
-            },
-            onReset: () => formPresto.setval("#fa-inc").setval("#impInc").click("#find-economicas-inc")
+            afterSelect: item => { alerts.loading(); formPresto.setval("#faInc", item.int & 1).click("#find-economicas-inc"); },
+            onReset: () => formPresto.setval("#faInc").setval("#impInc").click("#find-economicas-inc")
         });
+        window.loadEconomicasInc = (xhr, status, args) => {
+            fnAvisoFa(acOrgInc.getCurrentItem()); //aviso para organicas afectadas en TCR o FCE
+        }
         /****** partida a incrementar ******/
 
-        formPresto.onChangeInput("#urgente", ev => formPresto.toggle(".grp-urgente", ev.target.value == "2"))
+        formPresto.onChangeSelect("#urgente", el => formPresto.toggle(".grp-urgente", el.value == "2"))
                 .onChangeInput("#ejDec", ev => { formPresto.setval("#ejInc", ev.target.value); acOrgDec.reset(); })
                 .onChangeInput("#ejInc", acOrgInc.reset);
 
@@ -167,9 +168,9 @@ document.addEventListener("DOMContentLoaded", () => {
         window.loadPartidaInc = (xhr, status, args) => {
             const partida = JSON.read(args.data);
             const row = lineas.getData().find(row => ((row.o == partida.o) && (row.e == partida.e)));
-            if (row)
+            if (row) // compruebo si la partida existía previamente
                 return formPresto.setError("#acOrgInc", "¡Partida ya asociada a la solicitud!");
-            partida.imp = formPresto.valueOf("#impInc");
+            partida.imp = formPresto.valueOf("#impInc"); // Importe de la partida a añadir
             delete partida.id; // remove PK autocalculada en extraeco.v_presto_partidas_inc
             lineas.push(partida);
             acOrgInc.reload();
@@ -220,6 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const msgEmptyTable = "No se han encontrado documentos de UXXI-EC asociadas a la solicitud";
 	const documentos = new Table(tDocumentos, { msgEmptyTable, onRender: presto.renderUxxiec });
     window.loadUxxiec = (xhr, status, args) => (window.showTab(xhr, status, args, 15) && documentos.render(args.response));
+    window.saveUxxiec = (xhr, status, args) => (alerts.loading() && formUxxi.setval("#operaciones", JSON.stringify(documentos.getData())));
     tabs.setViewEvent(15, tab => formUxxi.setFocus("#uxxi"));
     /*** FORMULARIO PARA LA CREACIÓN DEL EXPEDIENTE CON UXXI-EC ***/
 });

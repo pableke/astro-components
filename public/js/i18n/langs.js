@@ -66,6 +66,12 @@ function Langs() {
 
     en.strval = (data, name) => (data[name + "_en"] || data[name]);
     es.strval = (data, name) => (data[name + "_es"] || data[name]);
+    this.strval = (data, name) => _lang.strval(data, name);
+
+    const BOOLEAN_TRUE = ["1", "true", "yes", "on"];
+    en.boolval = str => isset(str) ? _lang.msgBool[+BOOLEAN_TRUE.includes("" + str)] : null;
+    es.boolval = str => isset(str) ? _lang.msgBool[+BOOLEAN_TRUE.includes("" + str)] : null;
+    this.boolval = str => _lang.boolval(str);
 
     // Add i18n Date formats
     en.isoDate = str => str && str.substring(0, 10); //Iso string = yyyy-mm-dd

@@ -41,7 +41,7 @@ function Alerts() {
 
 	// Handle loading div
     const _loading = alerts.nextElementSibling;
-	this.loading = () => { _loading.classList.remove(opts.hideClass, opts.hideOutClass); return self; }
+	this.loading = () => { _loading.classList.remove(opts.hideClass, opts.hideOutClass); return self.closeAlerts(); }
 	this.working = () => { _loading.classList.add(opts.hideOutClass); return self; }
 
     // Scroll body to top on click and toggle back-to-top arrow

@@ -8,7 +8,7 @@ function Partida(presto) {
 
     this.isAnticipada = partida => (partida.mask & 4);
     this.isImpExcedido = partida => ((presto.isAnt() || (partida.e == "642")) && String.isset(partida.ih) && ((partida.ih + .01) < partida.imp));
-    this.isAfectada = mask => i18n.getItem("msgBool", mask & 1); // Es afectada? Si/No
+    this.isAfectada = mask => (mask & 1); // Es afectada? Si/No
 
     this.format = (data, output) => {
         output.ej = data.ej;

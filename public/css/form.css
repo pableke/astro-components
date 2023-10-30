@@ -35,7 +35,7 @@ label.inline { display: inline-block; }
 :is(.dark .ui-input):focus { border-color: rgb(147 197 253)/* blue-300 */; }
 
 .ui-check { margin: 0 1px; }
-.ui-short { width: 50px; }
+.ui-bool, .ui-short { width: 50px; }
 .ui-date, .ui-code { width: 140px; }
 .ui-ta { min-height: 36px; max-height: 100px; resize: vertical; form-sizing: content; }
 .ui-integer, .ui-float { width: 130px; text-align: right; }
