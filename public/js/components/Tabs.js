@@ -7,20 +7,20 @@ const mask = (val, i) => ((val >> i) & 1); // check bit at i position
 HTMLCollection.prototype.forEach = Array.prototype.forEach;
 HTMLCollection.prototype.findIndex = Array.prototype.findIndex;
 
-export default function(opts) {
-    opts = opts || {}; // default optios
-    opts.tabClass = opts.tabClass || "tab-content";
-    opts.activeClass = opts.activeClass || "active";
-    opts.tabActionClass = opts.tabActionClass || "tab-action";
-    opts.progressBarClass = opts.progressBarClass || "progress-bar";
+const opts = { // Configuration
+    tabClass: "tab-content",
+    activeClass: "active",
+    tabActionClass: "tab-action",
+    progressBarClass: "progress-bar",
+};
 
+function Tabs() {
 	const self = this; //self instance
 	const tabs = document.getElementsByClassName(opts.tabClass);
 	const progressbar = document.getElementsByClassName(opts.progressBarClass);
 
     let _tabIndex = tabs.findIndex(el => el.classList.contains(opts.activeClass)); //current index tab
     let _tabSize = tabs.length - 1; // max tabs size
-    let _backTab = _tabIndex; // back to previous tab
     let _tabMask = ~0; // all 11111....
 
     this.getTab = id => tabs.find(tab => (tab.id == ("tab-" + id))); // Find by id selector
@@ -38,7 +38,7 @@ export default function(opts) {
 	this.showError = msg => { alerts.showError(msg); return self; } // Encapsule showError message
 	this.showAlerts = data => { alerts.showAlerts(data); return self; } // Encapsule showAlerts message
 
-    function fnShowTab(i) { //show tab by index
+    function fnShowTab(i, updateBack) { //show tab by index
         i = (i < 0) ? 0 : Math.min(i, _tabSize);
         if (i == _tabIndex) // is current tab
             return self; // nothing to do
@@ -51,7 +51,7 @@ export default function(opts) {
             progressbar.forEach(bar => { // progressbar is optional
                 bar.children.forEach(child => child.classList.toggle(opts.activeClass, child.id <= step));
             });
-            _backTab = _tabIndex; // save from
+            tab.dataset.back = updateBack ? _tabIndex : (tab.dataset.back ?? 0) // Save source tab index
             _tabIndex = i; // set current index
             tabs.forEach(tab => tab.classList.remove(opts.activeClass));
             tab.classList.add(opts.activeClass); // set active tab
@@ -63,27 +63,21 @@ export default function(opts) {
         return self;
     }
 
-    this.showTab = id => fnShowTab(tabs.findIndex(tab => (tab.id == ("tab-" + id)))); //find by id selector
-    this.lastTab = () => fnShowTab(_tabSize);
-    this.backTab = () => fnShowTab(_backTab);
-    this.prevTab = () => { // Ignore 0's mask tab
-        for (var i = _tabIndex - 1; !mask(_tabMask, i) && (i > 0); i--);
-        return fnShowTab(i); // Show calculated prev tab
-    }
+    this.showTab = id => fnShowTab(tabs.findIndex(tab => (tab.id == ("tab-" + id))), true); //find by id selector
+    this.backTab = () => fnShowTab(+tabs[_tabIndex].dataset.back, false); // Back to previous tab
+    this.lastTab = () => fnShowTab(_tabSize, true);
     this.nextTab = () => { // Ignore 0's mask tab
         for (var i = _tabIndex + 1; !mask(_tabMask, i) && (i < _tabSize); i++);
-        return fnShowTab(i); // Show calculated next tab
+        return fnShowTab(i, true); // Show calculated next tab
     }
 
     this.setActions = el => {
         el.getElementsByClassName(opts.tabActionClass).forEach(link => {
-            link.addEventListener("click", ev => { // Handle click event
+            link.onclick = ev => { // Handle click event
                 ev.preventDefault(); // avoid navigation
                 const href = link.getAttribute("href");
                 if (href == "#back-tab")
                     return self.backTab();
-                if (href == "#prev-tab")
-                    return self.setTabMask(+(link.dataset.mask ?? _tabMask)).prevTab();
                 if (href == "#next-tab")
                     return self.setTabMask(+(link.dataset.mask ?? _tabMask)).nextTab();
                 if (href.startsWith("#tab-"))
@@ -91,18 +85,17 @@ export default function(opts) {
                 if (href == "#last-tab")
                     return self.lastTab();
                 if (href == "#toggle-tab") {
-                    const toggle = link.dataset.css || "hide";
-                    const selector = link.dataset.target || (".info-" + link.id);
-                    document.querySelectorAll(selector).forEach(el => el.classList.toggle(toggle));
-    
-                    const icon = link.getElementById("icon-" + link.id);
+                    const hide = link.dataset.hide || "hide";
+                    const target = link.dataset.target || (".info-" + link.id);
+                    document.querySelectorAll(target).forEach(el => el.classList.toggle(hide));
+
+                    const icon = link.querySelector(".icon-" + link.id);
                     if (icon && link.dataset.toggle) // change link icon class?
                         link.dataset.toggle.split(/\s+/).forEach(name => icon.classList.toggle(name));
-    
                     const input = link.dataset.focus && document.querySelector(link.dataset.focus);
                     input && input.focus(); // set focus on input
                 }
-            });
+            }
         });
         return self;
     }
@@ -110,7 +103,17 @@ export default function(opts) {
     // Init. view and PF navigation (only for CV-UAE)
     self.setActions(document);
     window.showTab = (xhr, status, args, tab) => {
-        (status == "success") && self.showTab(tab);
-        window.showAlerts(xhr, status, args);
+        if (status != "success")
+            return !alerts.showError("Error 500: Internal server error.");
+        if (!args) // Has server response
+            return self.showTab(tab); // Show tab and return true
+        const msgs = JSON.read(args.msgs); // Parse server messages
+        const ok = !msgs?.msgError; // is ok?
+        ok && self.showTab(tab); // Only show tab if no error
+        alerts.showAlerts(msgs); // Always show alerts after change tab
+        args.response = JSON.read(args.data); // Return data parsed!
+        return ok;
     }
 }
+
+export default new Tabs();

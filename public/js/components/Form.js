@@ -29,10 +29,12 @@ export default function(form, opts) {
 	opts.numberFormatClass = opts.numberFormatClass || "ui-number"; // Number type
 	opts.inputErrorClass = opts.inputErrorClass || "ui-error"; // Input error styles
 	//opts.tipErrorClass = opts.tipErrorClass || "ui-errtip"; // Tip error style
+	//opts.insertOnlyClass = opts.insertOnlyClass || "insert-only"; // Elements for insert
 	opts.updateOnlyClass = opts.updateOnlyClass || "update-only"; // Elements for update
 	opts.negativeNumClass = opts.negativeNumClass || "text-red"; // Negative numbers styles
 
 	const self = this; //self instance
+	const INPUTS = "input,select,textarea";
 	const FOCUSABLED = "[tabindex]:not([type=hidden],[readonly],[disabled])";
 	const updateOnly = document.getElementsByClassName(opts.updateOnlyClass);
 
@@ -54,13 +56,17 @@ export default function(form, opts) {
 	const fnFor = (list, fn) => { list.forEach(fn); return self; }
 	const fnEach = (selector, fn) => fnFor(form.querySelectorAll(selector), fn);
 	const fnSetText = (el, text) => { el.innerHTML = text; return self; }
-	this.text = (selector, text) => fnSetText(form.querySelector(selector), text); // Update text info in form
-	this.render = (selector, data) => fnEach(selector, el => el.render(data)); // HTMLElement.prototype.render is implemented in Table component
+	this.text = (selector, text) => fnEach(selector, el => fnSetText(el, text)); // Update all texts info in form
+	this.render = (selector, data) => { // HTMLElement.prototype.render is implemented in Table component
+		data = data || i18n.getLang(); // Default data = current language
+		return fnEach(selector, el => el.render(data)); // Render each element
+	}
+
 	this.show = selector => fnEach(selector, el => el.classList.remove(opts.hideClass));
 	this.hide = selector => fnEach(selector, el => el.classList.add(opts.hideClass));
 	this.toggle = (selector, force) => fnEach(selector, el => el.classList.toggle(opts.hideClass, !force));
-	this.disabled = (selector, force) => fnFor(self.getInputs(selector), el => el.toggleAttribute("disabled", force)); // Update attribute only
-	this.readonly = (selector, force) => fnFor(self.getInputs(selector), el => el.classList.toggle("readonly", el.toggleAttribute("readonly", force))); // Update attribute and style
+	this.disabled = (force, selector) => fnFor(self.getInputs(selector || INPUTS), el => el.toggleAttribute("disabled", force)); // Update attribute only
+	this.readonly = (force, selector) => fnFor(self.getInputs(selector || INPUTS), el => el.classList.toggle("readonly", el.toggleAttribute("readonly", force))); // Update attribute and style
 
 	const fnSetNumber = (el, value) => {
 		el.value = value || ""; // Show formatted value and style
@@ -77,6 +83,8 @@ export default function(form, opts) {
 			el.checked = value && value.includes(el.value);
 		else if (el.type === "radio")
 			el.checked = (el.value == value);
+		else if ((el.tagName == "SELECT") && !value)
+			el.selectedIndex = 0;
 		else
 			el.value = value || ""; // String
 		return self;
@@ -263,26 +271,28 @@ export default function(form, opts) {
 		updateOnly.forEach(el => el.classList.add(opts.hideClass)); // inserting mode
 		return fnSetValue(self.getInput("[name='" + opts.pkName + "']"), ""); // input must exists
 	}
+	this.setActions = () => {
+		return fnFor(form.elements, el => {
+			if (el.classList.contains(opts.floatFormatClass)) {
+				el.addEventListener("change", ev => fnSetNumber(el, i18n.fmtFloat(el.value)));
+				return fnSetNumber(el, el.value && i18n.isoFloat(+el.value)); // iso format float
+			}
+			if (el.classList.contains(opts.integerFormatClass)) {
+				el.addEventListener("change", ev => fnSetNumber(el, i18n.fmtInt(el.value)));
+				return fnSetNumber(el, el.value && i18n.isoInt(+el.value)); // iso format integer
+			}
+			if (el.classList.contains(opts.dateClass)) {
+				el.type = "date"; // Hack PF type
+				return;
+			}
+			if (el.classList.contains(opts.checkAllClass))
+				el.addEventListener("click", ev => {
+					const fnCheck = input => (input.type == "checkbox") && (input.name == el.id);
+					form.elements.forEach(input => { if (fnCheck(input)) input.checked = el.checked; });
+				});
+		});
+	}
 
 	// Form initialization
-	form.elements.forEach(el => {
-		if (el.classList.contains(opts.floatFormatClass)) {
-			el.addEventListener("change", ev => fnSetNumber(el, i18n.fmtFloat(el.value)));
-			return fnSetValue(el, +el.value); // iso format number
-		}
-		if (el.classList.contains(opts.integerFormatClass)) {
-			el.addEventListener("change", ev => fnSetNumber(el, i18n.fmtInt(el.value)));
-			return fnSetValue(el, +el.value); // iso format number
-		}
-		if (el.classList.contains(opts.dateClass)) {
-			el.type = "date"; // Hack PF type
-			return;
-		}
-		if (el.classList.contains(opts.checkAllClass))
-			el.addEventListener("click", ev => {
-				const fnCheck = input => (input.type == "checkbox") && (input.name == el.id);
-				form.elements.forEach(input => { if (fnCheck(input)) input.checked = el.checked; });
-			});
-	});
-	self.autofocus().beforeReset(ev => { self.closeAlerts().autofocus(); });
+	self.setActions().autofocus().beforeReset(ev => { self.closeAlerts().autofocus(); });
 }

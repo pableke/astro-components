@@ -10,14 +10,14 @@ const format = (tpl, data) => tpl.replace(RE_VAR, (m, k) => data[k] ?? "");
 
 HTMLCollection.prototype.forEach = Array.prototype.forEach;
 HTMLElement.prototype.render = function(data) {
-    this.dataset.hide = this.dataset.hide || "hide"; // default hide class
-    this.dataset.template = this.dataset.template || this.innerHTML; // save current template
+    const hide = this.dataset.hide || "hide"; // default hide class
     if (data) {
+        this.dataset.template = this.dataset.template || this.innerHTML; // save current template
         this.innerHTML = format(this.dataset.template, data);
-        this.classList.remove(this.dataset.hide);
+        this.classList.remove(hide);
     }
     else
-        this.classList.add(this.dataset.hide);
+        this.classList.add(hide);
     return this;
 }
 
@@ -59,21 +59,22 @@ export default function(table, opts) {
     opts.msgConfirmReset = opts.msgConfirmReset || "removeAll";
     opts.beforeRender = opts.beforeRender || fnVoid;
     opts.onRender = opts.onRender || fnVoid;
+    opts.onFooter = opts.onFooter || fnVoid;
     opts.afterRender = opts.afterRender || fnVoid;
     opts.onRemove = opts.onRemove || fnTrue;
     opts.onReset = opts.onReset || fnTrue;
 
 	const self = this; //self instance
-    const RESUME = {}; //sum and count
     const tBody = table.tBodies[0]; //body element
     const tplBody = tBody.innerHTML; //body template
     const tplEmpty = opts.msgEmptyTable ? '<tr><td class="no-data" colspan="99">' + i18n.get(opts.msgEmptyTable) + '</td></tr>' : "";
-    const tplFoot = table.tFoot.innerHTML; //footer template
+    const tplFoot = table.tFoot.innerHTML; //Footer template
+    const RESUME = { columns: JSON.size(tBody.rows[0]?.cells) }; //Table parameters
+    const FOOTER = { columns: RESUME.columns }; //Footer output formated
 
     let _rows = EMPTY; // default = empty array
     let _index = -1 // current item position in data
 
-    this.getBody = () => tBody;
     this.getResume = () => RESUME;
     this.getData = () => _rows;
     this.getIndex = () => _index;
@@ -81,17 +82,27 @@ export default function(table, opts) {
     this.getCurrentItem = () => _rows[_index];
     this.getCurrentRow = () => tBody.children[_index];
 
+    this.getBody = () => tBody;
+    this.setBody = data => { tBody.innerHTML = data || tplEmpty; return self; }
+
     this.clear = () => { _index = -1; return self; }
     this.set = (name, fn) => { opts[name] = fn; return self; }
-	this.html = selector => table.querySelector(selector).innerHTML;
+
+	const fnFor = (list, fn) => { list.forEach(fn); return self; }
+	const fnEach = (selector, fn) => fnFor(table.querySelectorAll(selector), fn);
+    this.html = selector => table.querySelector(selector).innerHTML;
+	this.show = selector => fnEach(selector, el => el.classList.remove(opts.hideClass));
+	this.hide = selector => fnEach(selector, el => el.classList.add(opts.hideClass));
+	this.toggle = (selector, force) => force ? self.show(selector) : self.hide(selector);
 
     function fnRender(data) {
-        _rows = data || EMPTY;
-        RESUME.size = _rows.length;
+        _rows = data || [];
+        FOOTER.size = RESUME.size = _rows.length;
 
         opts.beforeRender(RESUME); // Fired init. event
         tBody.innerHTML = RESUME.size ? JSON.render(tplBody, _rows, opts.onRender, RESUME) : tplEmpty; // body
-        table.tFoot.innerHTML = format(tplFoot, opts.afterRender(RESUME) || RESUME); // render formatted resume
+        table.tFoot.innerHTML = format(tplFoot, opts.onFooter(RESUME, FOOTER) || FOOTER); // render formatted footer
+        opts.afterRender(RESUME); // After body and footer is rendered
 
         tBody.classList.remove(opts.hideClass);
         tBody.classList.add(opts.showClass);
@@ -99,7 +110,7 @@ export default function(table, opts) {
         table.tFoot.classList.add(opts.showClass);
 
         // Row listeners for change, find and remove items
-        tBody.rows.forEach((tr, i) => {
+        return fnFor(tBody.rows, (tr, i) => {
             tr.onchange = ev => {
                 _index = i; // current item
                 const fnChange = opts["change-" + ev.target.name];
@@ -116,7 +127,6 @@ export default function(table, opts) {
                 };
             });
         });
-        return self;
     }
 
     this.remove = () => {

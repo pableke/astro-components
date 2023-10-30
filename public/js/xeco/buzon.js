@@ -1,11 +1,10 @@
 
 import Form from "../components/Form.js";
 import Table from "../components/Table.js";
-import Tabs from "../components/Tabs.js";
+import tabs from "../components/Tabs.js";
 import buzon from "../model/Buzon.js";
 
 document.addEventListener("DOMContentLoaded", () => { // on load view
-	const tabs = new Tabs(); // Tab instance
 	let justPagoRequired = false;
 
 	const fBuzon = document.forms.find(form => (form.name == "xeco-buzon"));
@@ -39,14 +38,14 @@ document.addEventListener("DOMContentLoaded", () => { // on load view
 	table.set("#buzon", () => {
 		const data = table.getCurrentItem();
 		formBuzon.setval("#buzon-id-org", data.org).setval("#buzon-cod-org", data.oCod)
-				.setval("#tramit-all", data.grp).readonly("#tramit-all", true)
+				.setval("#tramit-all", data.grp).readonly(true, "#tramit-all")
 				.text("#org-desc", data.oCod + " / " + data.oDesc);
 		elTipo.onchange = updateBuzonOrganica;
 		updateBuzonOrganica();
 		tabs.showTab(1);
 	});
 	table.set("#buzon-otros", () => {
-		formBuzon.setval("#buzon-id-org", "").setval("#buzon-cod-org", "").readonly("#tramit-all", false)
+		formBuzon.setval("#buzon-id-org", "").setval("#buzon-cod-org", "").readonly(false, "#tramit-all")
 				.text("#org-desc", table.html("#otras"));
 		elTipo.onchange = updateBuzonOtros;
 		updateBuzonOtros();
@@ -57,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => { // on load view
 	const form = new Form(fTablero);
 	form.setAutocomplete("#ac-organica", {
 		minLength: 4,
-		source: () => { form.click("#find-organica"); },
+		source: () => form.click("#find-organica"),
 		render: item => item.label,
 		select: item => item.value,
 		afterSelect: () => form.click("#find-unidades-tramit")

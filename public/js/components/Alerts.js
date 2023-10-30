@@ -99,7 +99,7 @@ function Alerts() {
     // Global singleton instance
     window.loading = self.loading;
     window.working = self.working;
-    window.showAlerts = (xhr, status, args) => self.showAlerts(JSON.read(args?.data)); // Hack PF (only for CV-UAE)
+    window.showAlerts = (xhr, status, args) => self.showAlerts(JSON.read(args?.msgs)); // Hack PF (only for CV-UAE)
 }
 
 export default new Alerts();

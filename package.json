@@ -7,7 +7,7 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "tasks": "gulp",
+    "gulp": "gulp",
     "astro": "astro"
   },
   "dependencies": {

@@ -35,7 +35,6 @@ export default {
 
     //array options
     msgBool: ["No", "Si"],
-    states: ["Sin Enviar", "Aceptada", "Rechazada", "Ejecutada", "Notificada", "Enviada", "Sin Enviar", "Cancelada", "Caducada", "Error Capa SOA", "Error Crédito Vinculante"],
 
     //datepicker language
     monthNames: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
