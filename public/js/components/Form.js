@@ -44,7 +44,6 @@ export default function(form, opts) {
 	this.autofocus = () => self.focus(form.elements.find(el => (el.matches(FOCUSABLED) && fnVisible(el))));
 	this.getInput = selector => form.elements.find(el => el.matches(selector)); // find an element
 	this.getInputs = selector => form.elements.filter(el => el.matches(selector)); // filter elements
-	this.reset = () => { form.reset(); return self; } // clear inputs and autofocus
 
 	// Alerts helpers
 	this.showOk = msg => { alerts.showOk(msg); return self; } // Encapsule showOk message
@@ -70,9 +69,16 @@ export default function(form, opts) {
 	this.disabled = (force, selector) => fnFor(self.getInputs(selector || INPUTS), el => el.toggleAttribute("disabled", force)); // Update attribute only
 	this.readonly = (force, selector) => fnFor(self.getInputs(selector || INPUTS), el => el.classList.toggle("readonly", el.toggleAttribute("readonly", force))); // Update attribute and style
 
+	// Value property
 	const fnSetNumber = (el, value) => {
 		el.value = value || ""; // Show formatted value and style
 		el.classList.toggle(opts.negativeNumClass, el.value.startsWith("-"));
+	}
+	function fnSetInputVal(el, value) {
+		if ((el.tagName == "SELECT") && !value)
+			el.selectedIndex = 0;
+		else
+			el.value = value || ""; // String
 	}
 	function fnSetValue(el, value) {
 		if (el.type =="date") // input type = date
@@ -87,10 +93,8 @@ export default function(form, opts) {
 			el.checked = value && value.includes(el.value);
 		else if (el.type === "radio")
 			el.checked = (el.value == value);
-		else if ((el.tagName == "SELECT") && !value)
-			el.selectedIndex = 0;
 		else
-			el.value = value || ""; // String
+			fnSetInputVal(el, value)
 		return self;
 	}
 	this.setValue = (el, value) => el ? fnSetValue(el, value) : self;
@@ -125,6 +129,10 @@ export default function(form, opts) {
 		return data;
 	}
 
+	//this.copy = (el1, el2) => { self.getInput(el1).value = self.getInput(el2).value; return self; }
+	this.reset = () => { form.elements.forEach(el => fnSetInputVal(el)); return self.autofocus(); } // clear inputs (hidden to) and autofocus
+	this.restart = selector => { const el = self.getInput(selector); el.value = ""; el.focus(); return self; } // remove value + focus
+
 	// Inputs helpers
 	this.setAutocomplete = (selector, opts) => {
 		const block = form.querySelector(selector);
@@ -138,9 +146,15 @@ export default function(form, opts) {
 		return self;
 	}
 
-	this.setSelect = function(selector, values, keys, emptyOption) {
+	this.setSelect = function(selector, items, emptyOption) {
 		const select = self.getInput(selector); // Get select element
-		emptyOption = emptyOption ? "" : `<option>${emptyOption}</option>`; // Text for empty first option
+		emptyOption = emptyOption ? `<option>${emptyOption}</option>` : ""; // Text for empty first option
+		const fnItem = item => `<option value="${item.value}">${item.label}</option>`; // Item list
+		return fnSetText(select, emptyOption + items.map(fnItem).join("")); // Render items
+	}
+	this.setOptions = function(selector, values, keys, emptyOption) {
+		const select = self.getInput(selector); // Get select element
+		emptyOption = emptyOption ? `<option>${emptyOption}</option>` : ""; // Text for empty first option
 		const fnKeys = (val, i) => `<option value="${keys[i]}">${val}</option>`; // Default options template
 		const fnDefault = (val, i) => `<option value="${i+1}">${val}</option>`; // 1, 2, 3... Number array
 		return fnSetText(select, emptyOption + values.map(keys ? fnKeys : fnDefault).join(""));

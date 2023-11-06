@@ -20,14 +20,15 @@ function Partida(presto) {
         output.ch = i18n.isoFloat(data.ch) || NO_APLICA;
         output.mh = i18n.isoFloat(data.mh) || NO_APLICA;
         output.ih = i18n.isoFloat(data.ih) || NO_APLICA;
-        output.fa = self.isAfectada(data.omask);
+        output.fa = i18n.boolval(self.isAfectada(data.omask));
         return output;
     }
     this.render = (data, output, resume) => {
         resume.imp += data.imp; // sum
         output.excedido = self.isImpExcedido(data) ? '<span class="text-warn text-xl" title="La cantidad solicitada excede el margen registrado por el Buzón de Ingresos">&#9888;</span>' : "";
         output.anticipada = self.isAnticipada(data) ? '<span class="text-xl" title="Este contrato ha gozado de anticipo en algún momento">&#65;</span>' : "";
-        output.doc030 = presto.isGcr() ? '<a href="#doc030" class="fal fa-money-bill-alt action action-green row-action"></a>' : "";
+        output.doc030 = presto.isGcr() ? '<a href="#doc030" class="fal fa-money-bill-alt action action-green row-action" title="Asociar los datos del documento 030"></a>' : "";
+        output.remove = (presto.isEditable() && !presto.isAfc()) ? '<a href="#remove" class="fas fa-times action action-red row-action" title="Desasociar partida"></a>' : "";
         return self.format(data, output);
     }
     this.resume = (data, output) => {
@@ -61,6 +62,8 @@ function Presto() {
     let data; // Current presto data type
     this.getData = name => (name ? data[name] : data);
     this.setData = input => { data = input; return self; }
+    this.getPartida = () => partida;
+
     this.isTcr = () => (data.tipo == 1);
     this.isFce = () => (data.tipo == 6);
     this.isL83 = () => (data.tipo == 3);
@@ -87,14 +90,6 @@ function Presto() {
         output.ej = data.ej;
         return output;
     }
-    this.renderUxxiec = (data, output) => {
-        output.num = data.num;
-        output.uxxi = data.uxxi;
-        output.desc = data.desc;
-        output.imp = i18n.isoFloat(data.imp) || "-";
-        output.fUxxi = i18n.isoDate(data.fUxxi);
-        return output;
-    }
     this.validate = data => {
         let ok = valid.reset().key("acOrgDec", data.idOrgDec, "Debe seleccionar la orgánica que disminuye"); // autocomplete required key
         ok = valid.key("idEcoDec", data.idEcoDec, "Debe seleccionar la económica que disminuye") && ok; // select required number
@@ -110,15 +105,6 @@ function Presto() {
         }
         return ok;
     }
-    this.validateReject = data => {
-        return valid.reset().size("rechazo", data.rechazo) || i18n.reject("Debe indicar un motivo para el rechazo de la solicitud."); // Required string
-    }
-
-    this.formatPartida = partida.format;
-    this.renderPartida = partida.render;
-    this.renderResume = partida.resume;
-    this.validatePartida = partida.validate;
-    this.validate030 = partida.validate030;
 }
 
 export default new Presto();

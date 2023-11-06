@@ -1,12 +1,13 @@
 /* Inputs Block */
-.ui-blocks { display: flex; flex-wrap: wrap; gap: .5rem; }
+.ui-blocks { display: flex; flex-wrap: wrap; gap: .5rem; align-items: stretch; }
 .ui-block { max-width: 500px; padding: 4px; }
-.ui-block-main { padding: 4px; flex-grow: 1; }
+.ui-block-main { margin: auto; padding: 4px; flex-grow: 1; }
+.ui-block-md { min-width: 200px; max-width: 320px; padding: 4px; flex-grow: 1; }
 .ui-block-lg { min-width: 200px; max-width: 400px; padding: 4px; flex-grow: 1; }
 .ui-block-xl { min-width: 300px; max-width: 600px; padding: 4px; flex-grow: 1; }
 .ui-block-box { min-width: 250px; padding: 4px; border: 1px solid black; }
 .ui-block-row { width: 100%; padding: 4px; }
-.ui-block-btn { padding-top: 20px; }
+.ui-block-btn { margin-top: 16px; }
 /* Inputs Block */
 
 /* Labels */
@@ -16,7 +17,6 @@ label {
 	color: rgb(17 24 39)/* text-gray-900 */;
 }
 label.required:after { color: #e32; content: " *"; }
-label.inline { display: inline-block; }
 :is(.dark label) { color: white; }
 /* Labels */
 
@@ -60,7 +60,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left
 
 .ui-error { border: 2px solid #dc3545 !important; }
 .ui-error:focus { border: 2px solid tomato !important; --tw-ring-opacity: 0 !important; }
-.ui-errtip { margin-top: 0.25rem/* 4px */; font-size: 0.75rem/* 12px */; line-height: 1rem/* 16px */; font-style: italic; color: rgb(239 68 68)/* red-500 */; }
+.ui-errtip { margin-top: 0; font-size: 0.75rem/* 12px */; line-height: 1rem/* 16px */; font-style: italic; color: rgb(239 68 68)/* red-500 */; }
 /* Inputs */
 
 /* Autocomplete */
@@ -80,7 +80,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left
 
 /* Buttons */
 .btn {
-	display: inline-flex; align-items: center; margin: 3px 9px 3px 0; padding: .5rem 1rem; height: 40px;
+	display: inline-block; margin: 3px 9px 3px 0; padding: .6rem 1rem; height: 42px;
 	font-weight: 500; font-size: 0.875rem/* 14px */; line-height: 1.25rem/* 20px */;
 	border-width: 1px; border-radius: 0.25rem/* 4px */; outline: 2px solid transparent; outline-offset: 2px;
 }
@@ -133,7 +133,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left
 
 /* Extra small devices (portrait phones, less than 576px) */
 @media screen and (max-width: 575.98px) {
-	.ui-block-lg, .ui-block-xl { min-width: 100%; }
+	.ui-block-md, .ui-block-lg, .ui-block-xl { min-width: 100%; }
 }
 /* Small devices (landscape phones, 576px and up) */
 @media screen and (min-width: 576px) and (max-width: 767.98px) {

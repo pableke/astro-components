@@ -25,6 +25,11 @@ function Tabs() {
 
     this.getTab = id => tabs.find(tab => (tab.id == ("tab-" + id))); // Find by id selector
     this.setTabMask = mask => { _tabMask = mask; return self; } // set mask for tabs
+    this.setActive = id => { // Force active class whithot events and alerts
+        const tab = self.getTab(id);
+        tab && tab.classList.add(opts.activeClass);
+        return self;
+    }
 
     // Set events on tabs actions
     this.setInitEvent = (tab, fn) => { opts["init-tab-" + tab] = fn; return self; }
@@ -51,7 +56,7 @@ function Tabs() {
             progressbar.forEach(bar => { // progressbar is optional
                 bar.children.forEach(child => child.classList.toggle(opts.activeClass, child.id <= step));
             });
-            tab.dataset.back = updateBack ? _tabIndex : (tab.dataset.back ?? 0) // Save source tab index
+            tab.dataset.back = updateBack ? _tabIndex : tab.dataset.back; // Save source tab index
             _tabIndex = i; // set current index
             tabs.forEach(tab => tab.classList.remove(opts.activeClass));
             tab.classList.add(opts.activeClass); // set active tab
@@ -59,7 +64,7 @@ function Tabs() {
             fnView(tab, self); // Fire when show tab
         }
         delete opts["init-" + tab.id];
-        alerts.top(); // go up
+        alerts.working().top(); // go up
         return self;
     }
 
@@ -111,7 +116,6 @@ function Tabs() {
         const ok = !msgs?.msgError; // is ok?
         ok && self.showTab(tab); // Only show tab if no error
         alerts.showAlerts(msgs); // Always show alerts after change tab
-        args.response = JSON.read(args.data); // Return data parsed!
         return ok;
     }
 }

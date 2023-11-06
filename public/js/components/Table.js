@@ -73,7 +73,7 @@ export default function(table, opts) {
     const FOOTER = { columns: RESUME.columns }; //Footer output formated
 
     let _rows = EMPTY; // default = empty array
-    let _index = -1 // current item position in data
+    let _index = -1; // current item position in data
 
     this.getResume = () => RESUME;
     this.getData = () => _rows;
@@ -81,6 +81,8 @@ export default function(table, opts) {
     this.getItem = i => _rows[i ?? _index];
     this.getCurrentItem = () => _rows[_index];
     this.getCurrentRow = () => tBody.children[_index];
+    this.isItem = () => (_index > -1) && (_index < _rows.length);
+    this.isEmpty = () => !JSON.size(_rows);
 
     this.getBody = () => tBody;
     this.setBody = data => { tBody.innerHTML = data || tplEmpty; return self; }
@@ -97,7 +99,8 @@ export default function(table, opts) {
 	this.toggle = (selector, force) => force ? self.show(selector) : self.hide(selector);
 
     function fnRender(data) {
-        _rows = data || [];
+        _index = -1; // clear previous selects
+        _rows = data || []; // data to render on table
         FOOTER.size = RESUME.size = _rows.length;
 
         opts.beforeRender(RESUME); // Fired init. event
@@ -114,7 +117,7 @@ export default function(table, opts) {
         return fnFor(tBody.rows, (tr, i) => {
             tr.onchange = ev => {
                 _index = i; // current item
-                const fnChange = opts["change-" + ev.target.name];
+                const fnChange = opts["change-" + ev.target.name] || fnVoid;
                 fnChange(ev.target, self);
             };
             tr.getElementsByClassName(opts.rowActionClass).forEach(link => {
@@ -159,7 +162,7 @@ export default function(table, opts) {
     table.tFoot.onchange = ev => {
         const input = ev.target; // element changed
         const fnChange = opts["change-" + input.name] || fnVoid;
-        table.tFoot.innerHTML = format(tplFoot, fnChange(input, self) || RESUME);
+        fnChange(input, self);
     }
 
     // Orderable columns system

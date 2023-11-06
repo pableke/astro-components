@@ -6,6 +6,8 @@ import tabs from "../components/Tabs.js";
 import presto from "../model/Presto.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+    const partida = presto.getPartida();
+
     /*** Filtro + listado de solicitudes ***/
     const tabFilter = tabs.getTab(2);
 	const fFilter = document.forms.find(form => (form.name == "xeco-filter"));
@@ -13,14 +15,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const msgEmptyPrestos = "No se han encontrado solicitudes para a la búsqueda seleccionada";
     let tSolicitudes = tabFilter.querySelector("table#solicitudes");
     let prestos = new Table(tSolicitudes, { msgEmptyTable: msgEmptyPrestos });
-    tabs.setViewEvent(2, tab => formFilter.setFocus("#filtro-ej")).showTab((tabFilter.dataset.usuec == "true") ? 0 : 2);
-    window.updatePrestos = (xhr, status, args) => {
+    tabs.setViewEvent(2, tab => formFilter.setFocus("#filtro-ej")).setActive((tabFilter.dataset.usuec == "true") ? 0 : 2);
+    window.loadPrestos = (xhr, status, args) => {
         formFilter.setActions(); // Reload inputs actions
         tSolicitudes = tabFilter.querySelector("table#solicitudes");
         prestos = new Table(tSolicitudes, { msgEmptyTable: msgEmptyPrestos });
-        // Si todo ok => muestro el tab del listado acualizando el valor del estado y ocultando las acciones de firma
-        window.showTab(xhr, status, args, 2) && prestos.hide(".firma-" + args.id).text(".estado-" + args.id, "Procesando...");
+        window.showTab(xhr, status, args, 2);
     }
+    window.updatePresto = (xhr, status, args) => window.showTab(xhr, status, args, 2) && prestos.hide(".firma-" + args.id).text(".estado-" + args.id, "Procesando...");
     /*** Filtro + listado de solicitudes ***/
 
     /*** FORMULARIO PARA EL DC 030 DE LAS GCR ***/
@@ -59,60 +61,93 @@ document.addEventListener("DOMContentLoaded", () => {
     const lineas = new Table(tPartidas, {
         msgEmptyTable: "No existen partidas asociadas a la solicitud",
         beforeRender: resume => { resume.imp = 0; },
-        onRender: presto.renderPartida,
-        onFooter: presto.renderResume,
+        onRender: partida.render,
+        onFooter: partida.resume,
         afterRender: resume => {
             const readonly = resume.size > 0;
             formPresto.readonly(readonly, "#ejDec").readonly(readonly || presto.isDisableEjInc(), "#ejInc");
-            lineas.toggle(".partida-min", !presto.isPartidaExt()).toggle(".partida-ext", presto.isPartidaExt()).toggle(".insert-only", presto.isEditable());
+            lineas.toggle(".partida-min", !presto.isPartidaExt()).toggle(".partida-ext", presto.isPartidaExt());
         },
         "#doc030": () => { // load tab view 3
             const row = lineas.getCurrentItem();
             const readonly = !presto.isEditable() && !presto.isFirmable();
-            form030.render(".info-080", presto.formatPartida(row, {})).readonly(readonly).toggle(readonly, "#save-030")
+            form030.render(".info-080", partida.format(row, {})).readonly(readonly).toggle("#save-030", !readonly)
                     .setval("#acOrg030", row.o030 + " - " + row.dOrg030).setval("#idEco030", row.idEco030).setval("#imp030", row.imp030 ?? row.imp)
                     .text("#memo-030", presto.getData("memo"));
             tabs.showTab(3);
         }
     });
 
-    function initFormPresto(xhr, status, args) {
+    //****** partida a decrementar ******//
+    let economicasDec, acOrgDec, acOrgInc;
+    const fnAvisoFa = item => { //aviso para organicas afectadas en TCR o FCE
+        const info = "La orgánica seleccionada es afectada, por lo que su solicitud solo se aceptará para determinado tipo de operaciones.";
+        presto.isAfectada(item?.int) && (presto.isTcr() || presto.isFce()) && formPresto.showInfo(info);
+        alerts.working(); // Hide loading indicator
+    }
+    const fnAutoloadInc = (data, msg) => {
+        const partida = JSON.read(data);
+        if (partida) { //hay partida?
+            partida.imp = 0; //tabla de fila/partida unica
+            lineas.render([ partida ]); //render partidas
+        }
+        else if (acOrgDec.isItem())
+            formPresto.showError(msg);
+    }
+
+    window.autoloadL83 = (xhr, status, args) => fnAutoloadInc(args?.data, "Aplicación AIP no encontrada en el sistema.");
+    window.autoloadAnt = (xhr, status, args) => fnAutoloadInc(args?.data, "No se ha encontrado el anticipo en el sistema.");
+
+    const fnLoadEcoDec = args => {
+        economicasDec = JSON.read(args?.economicas);
+        if (JSON.size(economicasDec) > 0) // Load options from items
+            formPresto.setSelect("#idEcoDec", economicasDec).setval("#idEcoDecPF", economicasDec[0].value).setval("#cd", economicasDec[0].imp);
+        else
+            formPresto.setSelect("#idEcoDec", [], "Seleccione una económica").setval("#idEcoDecPF").setval("#cd");
+    }
+    window.loadEconomicasDec = (xhr, status, args) => {
+        fnLoadEcoDec(args); // carga las econonomicas a decrementar
+        if (presto.isL83()) //L83 => busco su AIP
+            window.autoloadL83(xhr, status, args);
+        else if (presto.isAnt()) //ANT => cargo misma organica
+            window.autoloadAnt(xhr, status, args);
+        fnAvisoFa(acOrgDec.getCurrentItem()); //aviso para organicas afectadas en TCR o FCE
+    }
+    //****** partida a decrementar ******//
+
+    /****** partida a incrementar ******/
+    window.loadEconomicasInc = (xhr, status, args) => {
+        const data = JSON.read(args?.data); // get items
+        if (JSON.size(data) > 0) // Load options from items
+            formPresto.setSelect("#idEcoInc", data).setval("#idEcoIncPF", data[0].value);
+        else
+            formPresto.setSelect("#idEcoInc", [], "Seleccione una económica").setval("#idEcoIncPF");
+        fnAvisoFa(acOrgInc.getCurrentItem()); //aviso para organicas afectadas en TCR o FCE
+    }
+    /****** partida a incrementar ******/
+
+    //****** tabla de partidas a incrementar ******//
+    window.fnAddPartidaInc = () => formPresto.isValid(partida.validate);
+    window.loadPartidaInc = (xhr, status, args) => {
+        const partida = JSON.read(args.data);
+        const row = lineas.getData().find(row => ((row.o == partida.o) && (row.e == partida.e)));
+        if (row) // compruebo si la partida existía previamente
+            return formPresto.setError("#acOrgInc", "¡Partida ya asociada a la solicitud!");
+        partida.imp = formPresto.valueOf("#impInc"); // Importe de la partida a añadir
+        delete partida.id; // remove PK autocalculada en extraeco.v_presto_partidas_inc
+        lineas.push(partida);
+        acOrgInc.reload();
+    }
+    //****** tabla de partidas a incrementar ******//
+
+    window.viewPresto = (xhr, status, args) => {
+        fnLoadEcoDec(args); // carga las econonomicas a decrementar
         presto.setData(formPresto.setActions().getData()); // prepare inputs and load data before render
         lineas.render(JSON.read(args?.data)); // Load partidas a incrementar
         tabs.setActions(fPresto).showTab(1); // Muestra el tab
-
-        //****** partida a decrementar ******//
-        let economicasDec;
-        const fnLoadDC = index => {
-            const dec = economicasDec[index];
-            formPresto.setval("#cd", dec?.imp);
-        }
-        const fnAvisoFa = item => { //aviso para organicas afectadas en TCR o FCE
-            const info = "La orgánica seleccionada es afectada, por lo que su solicitud solo se aceptará para determinado tipo de operaciones.";
-            (item?.int & 1) && (presto.isTcr() || presto.isFce()) && formPresto.showInfo(info);
-            alerts.working(); // Hide loading indicator
-        }
-        const fnAutoloadInc = (data, msg) => {
-            const partida = JSON.read(data);
-            if (partida) { //hay partida?
-                partida.imp = 0; //tabla de fila/partida unica
-                lineas.render([ partida ]); //render partidas
-            }
-            else
-                formPresto.showError(msg);
-        }
-
-        window.autoloadL83 = (xhr, status, args) => fnAutoloadInc(args?.data, "Aplicación AIP no encontrada en el sistema.");
-        window.autoloadAnt = (xhr, status, args) => fnAutoloadInc(args?.data, "No se ha encontrado el anticipo en el sistema.");
-        window.loadCD = el => {
-            if (presto.isL83()) //L83 => busco su AIP
-                formPresto.click("#autoload-l83");
-            else if (presto.isAnt()) //ANT => cargo misma organica
-                formPresto.click("#autoload-ant");
-            fnLoadDC(el.selectedIndex);
-        }
-
-        const acOrgDec = formPresto.setAutocomplete("#ac-org-dec", {
+    }
+    window.createPresto = (xhr, status, args) => {
+        acOrgDec = formPresto.setAutocomplete("#ac-org-dec", {
             minLength: 4,
             source: () => formPresto.click("#find-organica-dec"),
             render: item => item.label,
@@ -127,26 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 formPresto.setval("#faDec").click("#find-economicas-dec");
             }
         });
-        window.loadEconomicasDec = (xhr, status, args) => {
-            economicasDec = JSON.read(args?.economicas) || [];
-            if (presto.isL83()) //L83 => busco su AIP
-                autoloadL83(xhr, status, args);
-            else if (presto.isAnt()) //ANT => cargo misma organica
-                autoloadAnt(xhr, status, args);
-            fnLoadDC(0); // Cargo el importe del crédito disponible por defecto
-            fnAvisoFa(acOrgDec.getCurrentItem()); //aviso para organicas afectadas en TCR o FCE
-        }
-        formPresto.onChangeInput("#impDec", ev => {
-            const partidas = lineas.getData();
-            if (presto.isAutoLoadImp() && partidas.length) {
-                partidas[0].imp = formPresto.getValue(ev.target); //importe obligatorio
-                lineas.render(partidas);
-            }
-        });
-        //****** partida a decrementar ******//
-
-        /****** partida a incrementar ******/
-        const acOrgInc = formPresto.setAutocomplete("#ac-org-inc", {
+        acOrgInc = formPresto.setAutocomplete("#ac-org-inc", {
             minLength: 4,
             source: () => formPresto.click("#find-organica-inc"),
             render: item => item.label,
@@ -154,30 +170,28 @@ document.addEventListener("DOMContentLoaded", () => {
             afterSelect: item => { alerts.loading(); formPresto.setval("#faInc", item.int & 1).click("#find-economicas-inc"); },
             onReset: () => formPresto.setval("#faInc").setval("#impInc").click("#find-economicas-inc")
         });
-        window.loadEconomicasInc = (xhr, status, args) => {
-            fnAvisoFa(acOrgInc.getCurrentItem()); //aviso para organicas afectadas en TCR o FCE
-        }
-        /****** partida a incrementar ******/
-
-        formPresto.onChangeSelect("#urgente", el => formPresto.toggle(".grp-urgente", el.value == "2"))
+        formPresto.onChangeInput("#idEcoDec", ev => {
+            const el = ev.target; // current input
+            formPresto.setval("#idEcoDecPF", el.value).setval("#cd", economicasDec[el.selectedIndex].imp);
+            if (presto.isL83()) //L83 => busco su AIP
+                formPresto.click("#autoload-l83");
+            else if (presto.isAnt()) //ANT => cargo misma organica
+                formPresto.click("#autoload-ant");
+        });
+        formPresto.onChangeInput("#impDec", ev => {
+            const partidas = lineas.getData();
+            if (presto.isAutoLoadImp() && partidas.length) {
+                partidas[0].imp = formPresto.getValue(ev.target); //importe obligatorio
+                lineas.render(partidas);
+            }
+        });
+        formPresto.setSelect("#idEcoInc", [], "Seleccione una económica")
+                .onChangeInput("#idEcoInc", ev => formPresto.setval("#idEcoIncPF", ev.target.value))
+                .onChangeInput("#urgente", ev => formPresto.toggle(".grp-urgente", ev.target.value == "2"))
                 .onChangeInput("#ejDec", ev => { formPresto.setval("#ejInc", ev.target.value); acOrgDec.reset(); })
                 .onChangeInput("#ejInc", acOrgInc.reset);
-
-        //****** tabla de partidas a incrementar ******//
-        window.fnAddPartidaInc = () => formPresto.isValid(presto.validatePartida);
-        window.loadPartidaInc = (xhr, status, args) => {
-            const partida = JSON.read(args.data);
-            const row = lineas.getData().find(row => ((row.o == partida.o) && (row.e == partida.e)));
-            if (row) // compruebo si la partida existía previamente
-                return formPresto.setError("#acOrgInc", "¡Partida ya asociada a la solicitud!");
-            partida.imp = formPresto.valueOf("#impInc"); // Importe de la partida a añadir
-            delete partida.id; // remove PK autocalculada en extraeco.v_presto_partidas_inc
-            lineas.push(partida);
-            acOrgInc.reload();
-        }
-        //****** tabla de partidas a incrementar ******//
+        window.viewPresto(xhr, status, args);
     }
-    window.initFormPresto = initFormPresto;
     window.fnSend = () => {
         const resume = lineas.getResume();
         const partidas = lineas.getData();
@@ -194,40 +208,4 @@ document.addEventListener("DOMContentLoaded", () => {
         return false;
     }
     /*** FORMULARIO PRINCIPAL ***/
-
-	const fReject = document.forms.find(form => (form.name == "xeco-reject"));
-    const formReject = new Form(fReject);
-    tabs.setViewEvent(11, tab => formReject.setFocus("#rechazo"));
-    window.fnRechazar = () => formReject.isValid(presto.validateReject) && confirm("¿Confirma que desea rechazar esta solicitud?");
-
-    /*** FORMULARIO PARA LA CREACIÓN DEL EXPEDIENTE CON UXXI-EC ***/
-    const fUxxi = document.forms.find(form => (form.name == "xeco-uxxi"));
-    const formUxxi = new Form(fUxxi);
-    const acUxxi = formUxxi.setAutocomplete("#ac-uxxi", {
-		minLength: 4,
-		source: () => formUxxi.click("#find-uxxi"),
-		render: item => (item.num + " - " + item.uxxi + "<br>" + item.desc),
-		select: item => item.id
-	});
-	formUxxi.setClick("a#add-uxxi", el => {
-        const doc = acUxxi.getCurrentItem();
-		if (doc) { // is doc selected?
-			delete doc.id; // Force insert
-			documentos.push(doc); // Save container
-		}
-        acUxxi.reload(); // Reload autocomplete
-	});
-    const tDocumentos = fUxxi.querySelector("table#documentos");
-    const msgEmptyTable = "No se han encontrado documentos de UXXI-EC asociadas a la solicitud";
-	const documentos = new Table(tDocumentos, { msgEmptyTable, onRender: presto.renderUxxiec });
-    window.loadUxxiec = (xhr, status, args) => (window.showTab(xhr, status, args, 15) && documentos.render(args.response));
-    window.saveUxxiec = (xhr, status, args) => (alerts.loading() && formUxxi.setval("#operaciones", JSON.stringify(documentos.getData())));
-    tabs.setViewEvent(15, tab => formUxxi.setFocus("#uxxi"));
-    /*** FORMULARIO PARA LA CREACIÓN DEL EXPEDIENTE CON UXXI-EC ***/
 });
-
-//gestion de informes y mensajes
-window.fnFirmar = () => confirm("¿Confirma que desea firmar esta solicitud?") && window.loading();
-window.fnIntegrar = () => confirm("¿Confirma que desea integrar esta solicitud en UXXI-EC?") && window.loading();
-window.fnRemove = () => confirm("¿Confirmas que desea eliminar esta solicitud?") && window.loading();
-window.handleReport = (xhr, status, args) => window.showAlerts(xhr, status, args).redir(args?.url);
