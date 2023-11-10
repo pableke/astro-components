@@ -1,6 +1,7 @@
 
 import i18n from "../i18n/langs.js";
 import valid from "../i18n/validators.js";
+import uxxiec from "./Uxxiec.js";
 
 function Linea(factura) {
 	const self = this; //self instance
@@ -31,20 +32,17 @@ function Factura() {
 	const self = this; //self instance
     const linea = new Linea(self);
 
-    let data, uae; // Current factura data type + uae user
+    let data; // Current factura data type
     this.getData = name => (name ? data[name] : data);
     this.setData = input => { data = input; return self; }
     this.getLinea = () => linea;
-
-    this.isUae = () => uae;
-    this.setUae = val => { uae = val; return self; }
-    this.isFirmaGaca = () => uae && self.isTtpp();
 
     this.isEditable = () => !data.id;
     this.isFactura = () => (data.tipo == 1);
     this.isCartaPago = () => (data.tipo == 3);
     this.isFirmable = () => (data.estado == 5);
-	this.isEditableUae = () => self.isEditable() || (uae && self.isFirmable());
+    this.isFirmaGaca = () => uxxiec.isUae() && self.isTtpp();
+	this.isEditableUae = () => self.isEditable() || (uxxiec.isUae() && self.isFirmable());
 
     this.getSubtipo = () => data.subtipo;
     this.setSubtipo = val => { data.subtipo = val; return self; }
@@ -72,6 +70,7 @@ function Factura() {
             ok = valid.size("extra", data.extra) ? ok : i18n.reject("Debe indicar un número de recibo válido"); // Required string
             ok = valid.leToday("fMax", data.fMax) ? ok : i18n.reject("Debe indicar la fecha del recibo asociado"); // Required date
         }
+        ok = valid.size("memo", data.memo) ? ok : i18n.reject("Debe indicar las observaciones asociadas a la solicitud."); // Required string
         ok = self.isFace() ? (valid.size("#og", data.og) && valid.size("#oc", data.oc) && valid.size("#ut", data.ut)) : ok;
         return self.isPlataforma() ? valid.size("#og", data.og) : ok;
     }

@@ -7,7 +7,6 @@ import i18n from "../i18n/langs.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 	const linea = factura.getLinea();
-	factura.setUae(tabs.getTab(1).dataset.uae == "true");
 	var acTercero; // Autocomplete de terceros
 
 	/*** Filtro + listado de solicitudes ***/

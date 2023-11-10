@@ -24,7 +24,7 @@ function Tabs() {
     let _tabMask = ~0; // all 11111....
 
     this.getTab = id => tabs.find(tab => (tab.id == ("tab-" + id))); // Find by id selector
-    this.setTabMask = mask => { _tabMask = mask; return self; } // set mask for tabs
+    this.setMask = mask => { _tabMask = mask; return self; } // set mask for tabs
     this.setActive = id => { // Force active class whithot events and alerts
         const tab = self.getTab(id);
         tab && tab.classList.add(opts.activeClass);
@@ -70,6 +70,7 @@ function Tabs() {
 
     this.showTab = id => fnShowTab(tabs.findIndex(tab => (tab.id == ("tab-" + id))), true); //find by id selector
     this.backTab = () => fnShowTab(+tabs[_tabIndex].dataset.back, false); // Back to previous tab
+    this.prevTab = () => self.backTab; // Synonym for back to previous tab
     this.lastTab = () => fnShowTab(_tabSize, true);
     this.nextTab = () => { // Ignore 0's mask tab
         for (var i = _tabIndex + 1; !mask(_tabMask, i) && (i < _tabSize); i++);
@@ -81,10 +82,10 @@ function Tabs() {
             link.onclick = ev => { // Handle click event
                 ev.preventDefault(); // avoid navigation
                 const href = link.getAttribute("href");
-                if (href == "#back-tab")
+                if ((href == "#back-tab") || (href == "#prev-tab"))
                     return self.backTab();
                 if (href == "#next-tab")
-                    return self.setTabMask(+(link.dataset.mask ?? _tabMask)).nextTab();
+                    return self.nextTab();
                 if (href.startsWith("#tab-"))
                     return self.showTab(+href.match(/\d+$/).pop());
                 if (href == "#last-tab")

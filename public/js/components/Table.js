@@ -145,8 +145,9 @@ export default function(table, opts) {
     }
 
     this.render = fnRender;
-    this.push = row => { _rows.push(row); return fnRender(_rows); }
-    this.insert = (row, id) => { row.id = id; return self.push(row); }
+    this.push = row => { _rows.push(row); return fnRender(_rows); }  // Push data
+    this.add = row => { delete row.id; return self.push(row); } // Force insert => remove PK
+    this.insert = (row, id) => { row.id = id; return self.push(row); } // New row with PK
     this.update = row => { Object.assign(_rows[_index], row); return fnRender(_rows); }
     this.save = (row, id) => (id ? opts.insert(row, id) : opts.update(row)); // Insert or update
 

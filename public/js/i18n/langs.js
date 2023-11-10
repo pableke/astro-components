@@ -7,6 +7,9 @@ const isnum = val => ((typeof(val) === "number") || (val instanceof Number));
 
 Number.isset = isset;
 Number.isNumber = isnum;
+Number.prototype.mask = function(i) { return ((this >> i) & 1); } // check bit at i position
+Number.prototype.bitor = function(flags) { return ((this & flags) > 0); } // some flags up?
+Number.prototype.bitand = function(flags) { return ((this & flags) == flags); } // all flags up?
 
 function Langs() {
 	const self = this; //self instance

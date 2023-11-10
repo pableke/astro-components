@@ -70,11 +70,11 @@ export default function(form, opts) {
 	this.readonly = (force, selector) => fnFor(self.getInputs(selector || INPUTS), el => el.classList.toggle("readonly", el.toggleAttribute("readonly", force))); // Update attribute and style
 
 	// Value property
-	const fnSetNumber = (el, value) => {
+	const fnNumber = (el, value) => {
 		el.value = value || ""; // Show formatted value and style
 		el.classList.toggle(opts.negativeNumClass, el.value.startsWith("-"));
 	}
-	function fnSetInputVal(el, value) {
+	function fnValue(el, value) {
 		if ((el.tagName == "SELECT") && !value)
 			el.selectedIndex = 0;
 		else
@@ -84,9 +84,9 @@ export default function(form, opts) {
 		if (el.type =="date") // input type = date
 			el.value = value ? value.substring(0, 10) : "";
 		else if (el.classList.contains(opts.floatFormatClass))
-			fnSetNumber(el, i18n.isoFloat(value));
+			fnNumber(el, i18n.isoFloat(value));
 		else if (el.classList.contains(opts.integerFormatClass))
-			fnSetNumber(el, i18n.isoInt(value));
+			fnNumber(el, i18n.isoInt(value));
 		else if (el.classList.contains(opts.boolClass))
 			el.value = i18n.boolval(value);
 		else if (el.type === "checkbox") // Array type
@@ -94,7 +94,7 @@ export default function(form, opts) {
 		else if (el.type === "radio")
 			el.checked = (el.value == value);
 		else
-			fnSetInputVal(el, value)
+			fnValue(el, value)
 		return self;
 	}
 	this.setValue = (el, value) => el ? fnSetValue(el, value) : self;
@@ -115,6 +115,7 @@ export default function(form, opts) {
 		return el.value; // String
 	}
 	this.getValue = el => el && fnParseValue(el);
+	this.getval = selector => self.getInput(selector)?.value;
 	this.valueOf = selector => self.getValue(self.getInput(selector));
 	this.getData = data => { // View to JSON
 		data = data || {}; // Results container
@@ -130,7 +131,7 @@ export default function(form, opts) {
 	}
 
 	//this.copy = (el1, el2) => { self.getInput(el1).value = self.getInput(el2).value; return self; }
-	this.reset = () => { form.elements.forEach(el => fnSetInputVal(el)); return self.autofocus(); } // clear inputs (hidden to) and autofocus
+	this.reset = () => { form.elements.forEach(el => fnValue(el)); return self.autofocus(); } // clear inputs (hidden to) and autofocus
 	this.restart = selector => { const el = self.getInput(selector); el.value = ""; el.focus(); return self; } // remove value + focus
 
 	// Inputs helpers
@@ -159,10 +160,10 @@ export default function(form, opts) {
 		const fnDefault = (val, i) => `<option value="${i+1}">${val}</option>`; // 1, 2, 3... Number array
 		return fnSetText(select, emptyOption + values.map(keys ? fnKeys : fnDefault).join(""));
 	}
-	this.toggleOptions = function(selector, fn) {
+	this.toggleOptions = function(selector, flags) {
 		const select = form.elements.find(el => (el.options && el.matches(selector)));
 		const option = select.options[select.selectedIndex]; //get current option
-		select.options.forEach((option, i) => option.classList.toggle(opts.hideClass, !fn(option, i, select)));
+		select.options.forEach((option, i) => option.classList.toggle(opts.hideClass, !flags.mask(i)));
 		if (option && option.classList.contains(opts.hideClass)) // is current option hidden?
 			select.selectedIndex = select.options.findIndex(el => !el.classList.contains(opts.hideClass));
 		return self;
@@ -297,12 +298,12 @@ export default function(form, opts) {
 	this.setActions = () => {
 		return fnFor(form.elements, el => {
 			if (el.classList.contains(opts.floatFormatClass)) {
-				el.addEventListener("change", ev => fnSetNumber(el, i18n.fmtFloat(el.value)));
-				return fnSetNumber(el, el.value && i18n.isoFloat(+el.value)); // iso format float
+				el.addEventListener("change", ev => fnNumber(el, i18n.fmtFloat(el.value)));
+				return fnNumber(el, el.value && i18n.isoFloat(+el.value)); // iso format float
 			}
 			if (el.classList.contains(opts.integerFormatClass)) {
-				el.addEventListener("change", ev => fnSetNumber(el, i18n.fmtInt(el.value)));
-				return fnSetNumber(el, el.value && i18n.isoInt(+el.value)); // iso format integer
+				el.addEventListener("change", ev => fnNumber(el, i18n.fmtInt(el.value)));
+				return fnNumber(el, el.value && i18n.isoInt(+el.value)); // iso format integer
 			}
 			if (el.classList.contains(opts.boolClass)) {
 				el.value = i18n.boolval(el.value); // Hack PF type

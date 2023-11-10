@@ -76,6 +76,8 @@ function Presto() {
 
     this.isEditable = () => !data.id;
     this.isFirmable = () => (data.estado == 5);
+	//this.isEditableUae = () => self.isEditable() || (uxxiec.isUae() && self.isFirmable());
+
     this.isPartidaDec = () => (self.isTcr() || self.isL83() || self.isAnt() || self.isAfc());
     this.isPartidaExt = () => (self.isGcr() || self.isAnt());
     this.isDisableEjInc = () => (data.id || self.isTcr() || self.isFce());

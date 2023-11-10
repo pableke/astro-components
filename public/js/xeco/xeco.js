@@ -21,6 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
     /*** FORMULARIO PARA EL RECHAZO/CANCELACIÓN DE SOLICITUDES ***/
 
     /*** FORMULARIO PARA LA CREACIÓN DEL EXPEDIENTE CON UXXI-EC ***/
+    const tabUxxi = tabs.getTab(15);
+    uxxiec.setNif(tabUxxi.dataset.nif).setUxxiec(tabUxxi.dataset.usuec).setUae(tabUxxi.dataset.uae);
     const fUxxi = document.forms.find(form => (form.name == "xeco-uxxi"));
     const formUxxi = new Form(fUxxi);
     const acUxxi = formUxxi.setAutocomplete("#ac-uxxi", {
@@ -31,10 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 	formUxxi.setClick("a#add-uxxi", el => {
         const doc = acUxxi.getCurrentItem();
-		if (doc) { // is doc selected?
-			delete doc.id; // Force insert
-			documentos.push(doc); // Save container
-		}
+		doc && documentos.add(doc); // Add and remove PK autocalculated in v_*_uxxiec
         acUxxi.reload(); // Reload autocomplete
 	});
     const tDocumentos = fUxxi.querySelector("table#documentos");

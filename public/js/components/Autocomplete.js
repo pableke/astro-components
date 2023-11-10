@@ -71,6 +71,11 @@ export default function(block, opts) {
 
     this.getInputValue = () => inputValue;
     this.getAutocomplete = () => autocomplete;
+    this.setValue = (value, label) => {
+        inputValue.value = value;
+        autocomplete.value = label;
+        return self;
+    }
 
     const isChildren = i => inRange(i, 0, fnSize(resultsHTML.children) - 1);
     const unselect = () => { _index = -1; inputValue.value = ""; return self; }
@@ -83,9 +88,8 @@ export default function(block, opts) {
     }
     function selectItem(li, i) {
         if (li && isChildren(i)) {
-            _index = i;
-            autocomplete.value = li.innerText;
-            inputValue.value = opts.select(_results[i], self);
+            _index = i; // Update current index
+            self.setValue(opts.select(_results[i], self), li.innerText);
             opts.afterSelect(_results[i], self);
             removeList();
         }

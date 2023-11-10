@@ -4,6 +4,7 @@ import Form from "../components/Form.js";
 import Table from "../components/Table.js";
 import tabs from "../components/Tabs.js";
 import presto from "../model/Presto.js";
+import uxxiec from "../model/Uxxiec.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const partida = presto.getPartida();
@@ -15,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const msgEmptyPrestos = "No se han encontrado solicitudes para a la búsqueda seleccionada";
     let tSolicitudes = tabFilter.querySelector("table#solicitudes");
     let prestos = new Table(tSolicitudes, { msgEmptyTable: msgEmptyPrestos });
-    tabs.setViewEvent(2, tab => formFilter.setFocus("#filtro-ej")).setActive((tabFilter.dataset.usuec == "true") ? 0 : 2);
+    tabs.setViewEvent(2, tab => formFilter.setFocus("#filtro-ej")).setActive(uxxiec.isUxxiec() ? 0 : 2);
     window.loadPrestos = (xhr, status, args) => {
         formFilter.setActions(); // Reload inputs actions
         tSolicitudes = tabFilter.querySelector("table#solicitudes");
@@ -29,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const f030 = document.forms.find(form => (form.name == "xeco-030"));
     const form030 = new Form(f030);
     tabs.setViewEvent(3, tab => form030.setFocus("#acOrg030"));
-    form030.setAutocomplete("#ac-org-030", {
+    const acOrg030 = form030.setAutocomplete("#ac-org-030", {
         minLength: 4,
         source: () => form030.click("#find-org-030"),
         render: item => item.label,
@@ -38,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     form030.setClick("#save-030", ev => {
         const row = lineas.getCurrentItem();
-        const data = form030.isValid(presto.validate030);
+        const data = form030.isValid(partida.validate030);
         if (row && data) {
             const label = data.acOrg030.split(" - ");
             if (label) { // Update partida inc.
@@ -47,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 row.idEco030 = data.idEco030;
                 row.imp030 = data.imp030;
                 form030.setval("#partidas", JSON.stringify(lineas.getData())); // save data to send to server
-                tabs.showTab(1); // Back to presto view
+                tabs.backTab().showOk("Datos del documento 030 asociados correctamente."); // Back to presto view
             }
         }
     });
@@ -71,9 +72,9 @@ document.addEventListener("DOMContentLoaded", () => {
         "#doc030": () => { // load tab view 3
             const row = lineas.getCurrentItem();
             const readonly = !presto.isEditable() && !presto.isFirmable();
+            acOrg030.setValue(row.idOrg030, row.o030 + " - " + row.dOrg030);
             form030.render(".info-080", partida.format(row, {})).readonly(readonly).toggle("#save-030", !readonly)
-                    .setval("#acOrg030", row.o030 + " - " + row.dOrg030).setval("#idEco030", row.idEco030).setval("#imp030", row.imp030 ?? row.imp)
-                    .text("#memo-030", presto.getData("memo"));
+                    .setval("#idEco030", row.idEco030).setval("#imp030", row.imp030 ?? row.imp).text("#memo-030", presto.getData("memo"));
             tabs.showTab(3);
         }
     });
@@ -134,8 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (row) // compruebo si la partida existía previamente
             return formPresto.setError("#acOrgInc", "¡Partida ya asociada a la solicitud!");
         partida.imp = formPresto.valueOf("#impInc"); // Importe de la partida a añadir
-        delete partida.id; // remove PK autocalculada en extraeco.v_presto_partidas_inc
-        lineas.push(partida);
+        lineas.add(partida); // Add and remove PK autocalculated in extraeco.v_presto_partidas_inc
         acOrgInc.reload();
     }
     //****** tabla de partidas a incrementar ******//
