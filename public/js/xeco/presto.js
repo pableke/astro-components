@@ -41,6 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const row = lineas.getCurrentItem();
         const data = form030.isValid(partida.validate030);
         if (row && data) {
+            if (row.imp < data.imp030)
+                return form030.setError("#imp030", "El importe del documento 030 excede al del 080.")
             const label = data.acOrg030.split(" - ");
             if (label) { // Update partida inc.
                 row.idOrg030 = +data.idOrg030;
@@ -74,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const readonly = !presto.isEditable() && !presto.isFirmable();
             acOrg030.setValue(row.idOrg030, row.o030 + " - " + row.dOrg030);
             form030.render(".info-080", partida.format(row, {})).readonly(readonly).toggle("#save-030", !readonly)
-                    .setval("#idEco030", row.idEco030).setval("#imp030", row.imp030 ?? row.imp).text("#memo-030", presto.getData("memo"));
+                    .setval("#idEco030", row.idEco030).setval("#imp030", row.imp030).text("#memo-030", presto.getData("memo"));
             tabs.showTab(3);
         }
     });
@@ -134,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const row = lineas.getData().find(row => ((row.o == partida.o) && (row.e == partida.e)));
         if (row) // compruebo si la partida existía previamente
             return formPresto.setError("#acOrgInc", "¡Partida ya asociada a la solicitud!");
-        partida.imp = formPresto.valueOf("#impInc"); // Importe de la partida a añadir
+        partida.imp030 = partida.imp = formPresto.valueOf("#impInc"); // Importe de la partida a añadir
         lineas.add(partida); // Add and remove PK autocalculated in extraeco.v_presto_partidas_inc
         acOrgInc.reload();
     }
@@ -143,8 +145,9 @@ document.addEventListener("DOMContentLoaded", () => {
     window.viewPresto = (xhr, status, args) => {
         fnLoadEcoDec(args); // carga las econonomicas a decrementar
         presto.setData(formPresto.setActions().getData()); // prepare inputs and load data before render
+        formPresto.setMode().toggle(".firmable-only", presto.isFirmable()).toggle(".cancelable-only", presto.isCancelable());
         lineas.render(JSON.read(args?.data)); // Load partidas a incrementar
-        tabs.setActions(fPresto).showTab(1); // Muestra el tab
+        tabs.showTab(1); // Muestra el tab
     }
     window.createPresto = (xhr, status, args) => {
         acOrgDec = formPresto.setAutocomplete("#ac-org-dec", {
@@ -196,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const resume = lineas.getResume();
         const partidas = lineas.getData();
         if (!partidas.length) // Todas las solicitudes tienen partidas a incrementar
-            return !formPresto.setError("#acOrgDec", "Debe seleccionar al menos una partida a aumentar!");
+            return !formPresto.setError("#acOrgInc", "Debe seleccionar al menos una partida a incrementar!", "errRequired");
         if (presto.isPartidaDec() && (resume.imp != formPresto.valueOf("#impDec"))) // Valido los importes a decrementar e incrementar
             return !formPresto.setError("#impDec", "¡Los importes a decrementar e incrementar no coinciden!");
         if (formPresto.isValid(presto.validate)) { //todas las validaciones estan ok?

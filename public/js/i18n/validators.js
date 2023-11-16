@@ -52,7 +52,7 @@ function Validators() {
 	this.isEmail = (name, value, msg) => {
         if (!self.size(name, value, 200))
             return false;
-		if (!value.test(/\w+[^\s@]+@[^\s@]+\.[^\s@]+/)) // RE_MAIL format
+		if (!/\w+[^\s@]+@[^\s@]+\.[^\s@]+/.test(value)) // RE_MAIL format
             return !i18n.setError(msg || "errCorreo", name); // not valid
 		return true;
 	}
@@ -61,7 +61,7 @@ function Validators() {
             return false;
 		if (value.length < 8)
 			return !i18n.setError("errMinlength8", name); // min length
-		if (!value.test(/^[\w#@&°!§%;:=\^\/\(\)\?\*\+\~\.\,\-\$]{6,}$/)) // RE_LOGIN format
+		if (!/^[\w#@&°!§%;:=\^\/\(\)\?\*\+\~\.\,\-\$]{6,}$/.test(value)) // RE_LOGIN format
             return !i18n.setError(msg || "errFormat", name); // not valid
 		return true;
 	}
@@ -69,28 +69,28 @@ function Validators() {
 	this.word = (name, value, msg) => {
         if (!self.size(name, value, 50))
             return false;
-		if (!value.test(/\w+/)) // RE_WORD format
+		if (!/\w+/.test(value)) // RE_WORD format
             return !i18n.setError(msg || "errFormat", name); // not valid
 		return true;
 	}
 	this.words = (name, value, msg) => {
         if (!self.size(name, value, 200))
             return false;
-		if (!value.test(/^\w+(,\w+)*$/)) // RE_WORDS format
+		if (!/^\w+(,\w+)*$/.test(value)) // RE_WORDS format
             return !i18n.setError(msg || "errFormat", name); // not valid
 		return true;
 	}
 	this.digits = (name, value, msg) => {
         if (!self.size(name, value, 20))
             return false;
-		if (!value.test(/^[1-9]\d*$/)) // RE_DIGITS format
+		if (!/^[1-9]\d*$/.test(value)) // RE_DIGITS format
             return !i18n.setError(msg || "errFormat", name); // not valid
 		return true;
 	}
 	this.numbers = (name, value, msg) => {
         if (!self.size(name, value, 200))
             return false;
-		if (!value.test(/^\d+(,\d+)*$/)) // RE_NUMBERS format
+		if (!/^\d+(,\d+)*$/.test(value)) // RE_NUMBERS format
             return !i18n.setError(msg || "errFormat", name); // not valid
 		return true;
 	}
@@ -99,21 +99,21 @@ function Validators() {
 	this.isDate = (name, value, msg) => {
         if (!value) // iso date validation
             return !i18n.setError("errRequired", name); // required
-		if (!value.test(/^\d{4}-[01]\d-[0-3]\d/)) // RE_DATE format
+		if (!/^\d{4}-[01]\d-[0-3]\d/.test(value)) // RE_DATE format
             return !i18n.setError(msg || "errDate", name); // not valid
         return true;
     }
 	this.isTime = (name, value, msg) => {
         if (!value) // iso date validation
             return !i18n.setError("errRequired", name); // required
-		if (!value.test(/[0-2]\d:[0-5]\d:[0-5]\d[\.\d{1,3}]?$/)) // RE_TIME format
+		if (!/[0-2]\d:[0-5]\d:[0-5]\d[\.\d{1,3}]?$/.test(value)) // RE_TIME format
             return !i18n.setError(msg || "errDate", name); // not valid
         return true;
     }
 	this.isDateTime = (name, value, msg) => {
         if (!value) // iso date validation
             return !i18n.setError("errRequired", name); // required
-		if (!value.test(/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d[\.\d{1,3}]?$/)) // RE_DATE_TIME format
+		if (!/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d[\.\d{1,3}]?$/.test(value)) // RE_DATE_TIME format
             return !i18n.setError(msg || "errDate", name); // not valid
         return true;
     }
@@ -141,7 +141,7 @@ function Validators() {
 	this.dni = function(name, value) {
 		if (!value)
 			return !i18n.setError("errRequired", name);
-		if (!value.test(/^(\d{8})([A-Z])$/) || !fnLetraDni(value)) // RE_DNI
+		if (!/^(\d{8})([A-Z])$/.test(value) || !fnLetraDni(value)) // RE_DNI
 			return !i18n.setError("errNif", name);
 		return true;
 	}
@@ -217,7 +217,7 @@ function Validators() {
 	this.isSwift = (name, value, msg) => {
         if (!value) // iso date validation
             return !i18n.setError("errRequired", name); // required
-		if (!value.test(/^[A-Z]{6,6}[A-Z2-9][A-NP-Z0-9]([A-Z0-9]{3,3}){0,1}$/)) // RE_SWIFT / RE_BIC format
+		if (!/^[A-Z]{6,6}[A-Z2-9][A-NP-Z0-9]([A-Z0-9]{3,3}){0,1}$/.test(value)) // RE_SWIFT / RE_BIC format
             return !i18n.setError(msg || "errDate", name); // not valid
         return true;
 	}

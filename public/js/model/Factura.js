@@ -41,6 +41,8 @@ function Factura() {
     this.isFactura = () => (data.tipo == 1);
     this.isCartaPago = () => (data.tipo == 3);
     this.isFirmable = () => (data.estado == 5);
+    //this.isRechazada = () => (data.estado == 2);
+    //this.isCancelable = () => (uxxiec.isUae() && data.id && !self.isFirmable() && !self.isRechazada());
     this.isFirmaGaca = () => uxxiec.isUae() && self.isTtpp();
 	this.isEditableUae = () => self.isEditable() || (uxxiec.isUae() && self.isFirmable());
 
@@ -65,12 +67,12 @@ function Factura() {
     this.validate = function(data) {
         let ok = valid.reset().key("acTercero", data.idTercero, "Debe seleccionar un tercero válido"); // autocomplete required key
         ok = valid.key("acOrganica", data.idOrganica, "No ha seleccionado correctamente la orgánica") && ok; // autocomplete required key
-		ok = (self.isTtpp() || self.isExtension()) ? valid.size("acRecibo", data.refreb, "Debe indicar un número de recibo válido") : ok; //subtipo = ttpp o extension
+		ok = (self.isRecibo()) ? valid.size("acRecibo", data.refreb, "Debe indicar un número de recibo válido") : ok; //subtipo = ttpp o extension
 		if (self.isDeportes()) {
             ok = valid.size("extra", data.extra) ? ok : i18n.reject("Debe indicar un número de recibo válido"); // Required string
             ok = valid.leToday("fMax", data.fMax) ? ok : i18n.reject("Debe indicar la fecha del recibo asociado"); // Required date
         }
-        ok = valid.size("memo", data.memo) ? ok : i18n.reject("Debe indicar las observaciones asociadas a la solicitud."); // Required string
+        //ok = valid.size("memo", data.memo) ? ok : i18n.reject("Debe indicar las observaciones asociadas a la solicitud."); // Required string
         ok = self.isFace() ? (valid.size("#og", data.og) && valid.size("#oc", data.oc) && valid.size("#ut", data.ut)) : ok;
         return self.isPlataforma() ? valid.size("#og", data.og) : ok;
     }

@@ -30,14 +30,13 @@ export default function(form, opts) {
 	opts.numberFormatClass = opts.numberFormatClass || "ui-number"; // Number type
 	opts.inputErrorClass = opts.inputErrorClass || "ui-error"; // Input error styles
 	//opts.tipErrorClass = opts.tipErrorClass || "ui-errtip"; // Tip error style
-	//opts.insertOnlyClass = opts.insertOnlyClass || "insert-only"; // Elements for insert
+	opts.insertOnlyClass = opts.insertOnlyClass || "insert-only"; // Elements for insert
 	opts.updateOnlyClass = opts.updateOnlyClass || "update-only"; // Elements for update
 	opts.negativeNumClass = opts.negativeNumClass || "text-red"; // Negative numbers styles
 
 	const self = this; //self instance
 	const INPUTS = "input,select,textarea";
 	const FOCUSABLED = "[tabindex]:not([type=hidden],[readonly],[disabled])";
-	const updateOnly = document.getElementsByClassName(opts.updateOnlyClass);
 
 	this.focus = el => { el && el.focus(); return self; }
 	this.setFocus = selector => self.focus(self.getInput(selector));
@@ -63,11 +62,26 @@ export default function(form, opts) {
 		return fnEach(selector, el => el.render(data)); // Render each element
 	}
 
-	this.show = selector => fnEach(selector, el => el.classList.remove(opts.hideClass));
-	this.hide = selector => fnEach(selector, el => el.classList.add(opts.hideClass));
-	this.toggle = (selector, force) => fnEach(selector, el => el.classList.toggle(opts.hideClass, !force));
+	const fnHide = el => el.classList.add(opts.hideClass);
+	const fnShow = el => el.classList.remove(opts.hideClass);
+	this.show = selector => fnEach(selector, fnShow);
+	this.hide = selector => fnEach(selector, fnHide);
+	this.toggle = (selector, force) => force ? self.show(selector) : self.hide(selector);
 	this.disabled = (force, selector) => fnFor(self.getInputs(selector || INPUTS), el => el.toggleAttribute("disabled", force)); // Update attribute only
 	this.readonly = (force, selector) => fnFor(self.getInputs(selector || INPUTS), el => el.classList.toggle("readonly", el.toggleAttribute("readonly", force))); // Update attribute and style
+
+	this.setInsertMode = () => {
+		fnFor(form.getElementsByClassName(opts.insertOnlyClass), fnShow);
+		return fnFor(form.getElementsByClassName(opts.updateOnlyClass), fnHide);
+	}
+	this.setUpdateMode = () => {
+		fnFor(form.getElementsByClassName(opts.insertOnlyClass), fnHide);
+		return fnFor(form.getElementsByClassName(opts.updateOnlyClass), fnShow);
+	}
+	this.setMode = id => {
+		id = id || self.getval("[name='" + opts.pkName + "']");
+		return id ? self.setUpdateMode() : self.setInsertMode();
+	}
 
 	// Value property
 	const fnNumber = (el, value) => {
@@ -101,8 +115,8 @@ export default function(form, opts) {
 	this.setval = (selector, value) => self.setValue(self.getInput(selector), value);
 	this.setValues = data => fnFor(form.elements, el => (isset(data[el.name]) && fnSetValue(el, data[el.name]))); // update element value only if data exists
 	this.setData = data => { // JSON to View
-		updateOnly.forEach(el => el.classList.toggle(opts.hideClass, !data[opts.pkName]));
-		return fnFor(form.elements, el => fnSetValue(el, data[el.name]));
+		fnFor(form.elements, el => fnSetValue(el, data[el.name]));
+		return self.setMode(data[opts.pkName]);
 	}
 
 	function fnParseValue(el) {
@@ -112,10 +126,10 @@ export default function(form, opts) {
 			return i18n.toInt(el.value); // Integer
 		if (el.classList.contains(opts.numberFormatClass))
 			return el.value ? +el.value : null; // Number type directly
-		return el.value; // String
+		return el.value && el.value.trim(); // String trimed by default
 	}
 	this.getValue = el => el && fnParseValue(el);
-	this.getval = selector => self.getInput(selector)?.value;
+	this.getval = selector => self.getInput(selector).value;
 	this.valueOf = selector => self.getValue(self.getInput(selector));
 	this.getData = data => { // View to JSON
 		data = data || {}; // Results container
@@ -143,8 +157,7 @@ export default function(form, opts) {
 		f1 = self.getInput(f1);
 		f2 = self.getInput(f2);
 		f1.addEventListener("blur", ev => f2.setAttribute("min", f1.value));
-		f2.addEventListener( "blur", ev => f1.setAttribute("max", f2.value));
-		return self;
+		return fnEvent(f2, "blur", ev => f1.setAttribute("max", f2.value));
 	}
 
 	this.setSelect = function(selector, items, emptyOption) {
@@ -175,22 +188,25 @@ export default function(form, opts) {
 	}
 
 	// Events handlers
-	this.change = fn => { form.addEventListener("change", fn); return self; }
-	this.submit = fn => { form.addEventListener("submit", fn); return self; }
-	this.beforeReset = fn => { form.addEventListener("reset", fn); return self; }
-	this.afterReset = fn => { form.addEventListener("reset", ev => setTimeout(() => fn(ev), 1)); return self; }
+	const fnEvent = (el, name, fn) => {
+		el.addEventListener(name, fn);
+		return self;
+	}
+	this.change = fn => fnEvent(form, "change", fn);
+	this.submit = fn => fnEvent(form, "submit", fn);
+	this.beforeReset = fn => fnEvent(form, "reset", fn);
+	this.afterReset = fn => fnEvent(form, "reset", ev => setTimeout(() => fn(ev), 1));
 	this.setClick = (selector, fn) => fnEach(selector, el => el.addEventListener("click", fn))
 	this.click = selector => { form.querySelector(selector).click(); return self; } // Fire event
 
 	this.onChangeInput = (selector, fn) => {
 		const el = self.getInput(selector);
-		el.addEventListener("change", fn);
-		return self;
+		return fnEvent(el, "change", fn);
 	}
 	this.onChangeSelect = (selector, fn) => {
-		const el = self.getInput(selector); // call function + register listener
-		fn(el); el.addEventListener("change", ev => fn(el));
-		return self;
+		const el = self.getInput(selector);
+		fn(el); // call function + register listener
+		return fnEvent(el, "change", ev => fn(el));
 	}
 	this.onChangeFile = (selector, fn) => {
 		const reader = new FileReader();
@@ -211,11 +227,8 @@ export default function(form, opts) {
 	// Form Validator
 	const fnSetTip = (el, msg) => fnSetText(form.querySelector("#tip-" + el.name) || divNull, msg);
 	const fnSetInputOk = el => { el.classList.remove(opts.inputErrorClass); fnSetTip(el, ""); }
-	const fnSetInputError = (el, msg) => {
-		msg = msg || ""; // has error message
-		el.classList.toggle(opts.inputErrorClass, msg);
-		fnSetTip(el, msg);
-	}
+	const fnSetInputError = (el, tip) => { el.classList.add(opts.inputErrorClass); fnSetTip(el, i18n.get(tip)); }
+	const fnToggleError = (el, tip) => { tip ? fnSetInputError(el, tip) : fnSetInputOk(el); }
 	this.closeAlerts = () => {
 		alerts.closeAlerts();
 		return fnFor(form.elements, fnSetInputOk);
@@ -224,9 +237,9 @@ export default function(form, opts) {
 		alerts.showOk(msg || opts.defaultMsgOk);
 		return fnFor(form.elements, fnSetInputOk);
 	}
-	this.setError = (selector, msg, tip) => {
-		const el = self.getInput(selector);
-		tip && fnSetTip(el, tip); // Specific tip
+	this.setError = (el, msg, tip) => {
+		el = isstr(el) ? self.getInput(el) : el;
+		tip && fnSetTip(el, i18n.get(tip)); // Specific tip
 		el.classList.add(opts.inputErrorClass);
 		return self.focus(el).showError(msg);
 	}
@@ -234,7 +247,7 @@ export default function(form, opts) {
 		if (isstr(messages)) // simple message text
 			alerts.showError(messages);
 		else { // Style error inputs and set focus on first error
-			form.elements.forEach(el => fnSetInputError(el, messages[el.name]));
+			form.elements.forEach(el => fnToggleError(el, messages[el.name]));
 			self.focus(form.elements.find(el => el.classList.contains(opts.inputErrorClass)));
 			alerts.showError(messages.msgError || opts.defaultMsgError);
 		}
@@ -291,9 +304,9 @@ export default function(form, opts) {
 		});
 	}
 	this.clone = msg => {
+		self.setInsertMode() // inserting mode
 		alerts.showOk(msg || opts.defaultMsgOk); // show message
-		updateOnly.forEach(el => el.classList.add(opts.hideClass)); // inserting mode
-		return fnSetValue(self.getInput("[name='" + opts.pkName + "']"), ""); // input must exists
+		return fnValue(self.getInput("[name='" + opts.pkName + "']"), ""); // input must exists
 	}
 	this.setActions = () => {
 		return fnFor(form.elements, el => {
@@ -305,15 +318,11 @@ export default function(form, opts) {
 				el.addEventListener("change", ev => fnNumber(el, i18n.fmtInt(el.value)));
 				return fnNumber(el, el.value && i18n.isoInt(+el.value)); // iso format integer
 			}
-			if (el.classList.contains(opts.boolClass)) {
+			if (el.classList.contains(opts.boolClass))
 				el.value = i18n.boolval(el.value); // Hack PF type
-				return;
-			}
-			if (el.classList.contains(opts.dateClass)) {
+			else if (el.classList.contains(opts.dateClass))
 				el.type = "date"; // Hack PF type
-				return;
-			}
-			if (el.classList.contains(opts.checkAllClass))
+			else if (el.classList.contains(opts.checkAllClass))
 				el.addEventListener("click", ev => {
 					const fnCheck = input => (input.type == "checkbox") && (input.name == el.id);
 					form.elements.forEach(input => { if (fnCheck(input)) input.checked = el.checked; });

@@ -1,6 +1,7 @@
 
 import i18n from "../i18n/langs.js";
 import valid from "../i18n/validators.js";
+import uxxiec from "./Uxxiec.js";
 
 function Partida(presto) {
 	const self = this; //self instance
@@ -76,6 +77,8 @@ function Presto() {
 
     this.isEditable = () => !data.id;
     this.isFirmable = () => (data.estado == 5);
+    this.isRechazada = () => (data.estado == 2);
+    this.isCancelable = () => (uxxiec.isUae() && data.id && !self.isFirmable() && !self.isRechazada());
 	//this.isEditableUae = () => self.isEditable() || (uxxiec.isUae() && self.isFirmable());
 
     this.isPartidaDec = () => (self.isTcr() || self.isL83() || self.isAnt() || self.isAfc());

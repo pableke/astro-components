@@ -19,7 +19,10 @@ function Tabs() {
 	const tabs = document.getElementsByClassName(opts.tabClass);
 	const progressbar = document.getElementsByClassName(opts.progressBarClass);
 
-    let _tabIndex = tabs.findIndex(el => el.classList.contains(opts.activeClass)); //current index tab
+    const fnFindIndex = id => tabs.findIndex(tab => (tab.id == ("tab-" + id))); //find index tab by id
+    const fnCurrentIndex = () => tabs.findIndex(el => el.classList.contains(opts.activeClass)); //current index tab
+
+    let _tabIndex = fnCurrentIndex(); //current index tab
     let _tabSize = tabs.length - 1; // max tabs size
     let _tabMask = ~0; // all 11111....
 
@@ -28,6 +31,7 @@ function Tabs() {
     this.setActive = id => { // Force active class whithot events and alerts
         const tab = self.getTab(id);
         tab && tab.classList.add(opts.activeClass);
+        _tabIndex = fnCurrentIndex(); //current index tab
         return self;
     }
 
@@ -35,6 +39,7 @@ function Tabs() {
     this.setInitEvent = (tab, fn) => { opts["init-tab-" + tab] = fn; return self; }
     this.setShowEvent = (tab, fn) => { opts["show-tab-" + tab] = fn; return self; }
     this.setViewEvent = (tab, fn) => { opts["view-tab-" + tab] = fn; return self; }
+    this.setValidEvent = (tab, fn) => { opts["valid-tab-" + tab] = fn; return self; }
 
 	// Alerts helpers
 	this.showOk = msg => { alerts.showOk(msg); return self; } // Encapsule showOk message
@@ -50,7 +55,8 @@ function Tabs() {
         const tab = tabs[i]; // get next tab
         const fnInit = opts["init-" + tab.id] || fnTrue; // Event handler fire once
         const fnShow = opts["show-" + tab.id] || fnTrue; // Event handler fire each access to tab
-        if (fnInit(tab) && fnShow(tab)) { // Validata change tab
+        const fnValid = ((i > _tabIndex) && opts["valid-" + tabs[_tabIndex].id]) || fnTrue; // Event fired before leave current tab to next tab
+        if (fnValid(tab) && fnInit(tab) && fnShow(tab)) { // Validate change tab
             alerts.closeAlerts(); // Close all previous messages
             const step = "step-" + i; //go to a specific step on progressbar
             progressbar.forEach(bar => { // progressbar is optional
@@ -68,7 +74,7 @@ function Tabs() {
         return self;
     }
 
-    this.showTab = id => fnShowTab(tabs.findIndex(tab => (tab.id == ("tab-" + id))), true); //find by id selector
+    this.showTab = id => fnShowTab(fnFindIndex(id), true); //find by id selector
     this.backTab = () => fnShowTab(+tabs[_tabIndex].dataset.back, false); // Back to previous tab
     this.prevTab = () => self.backTab; // Synonym for back to previous tab
     this.lastTab = () => fnShowTab(_tabSize, true);
@@ -79,7 +85,7 @@ function Tabs() {
 
     this.setActions = el => {
         el.getElementsByClassName(opts.tabActionClass).forEach(link => {
-            link.onclick = ev => { // Handle click event
+            link.addEventListener("click", ev => { // Handle click event
                 ev.preventDefault(); // avoid navigation
                 const href = link.getAttribute("href");
                 if ((href == "#back-tab") || (href == "#prev-tab"))
@@ -101,7 +107,7 @@ function Tabs() {
                     const input = link.dataset.focus && document.querySelector(link.dataset.focus);
                     input && input.focus(); // set focus on input
                 }
-            }
+            });
         });
         return self;
     }

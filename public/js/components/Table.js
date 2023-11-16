@@ -82,7 +82,9 @@ export default function(table, opts) {
     this.getCurrentItem = () => _rows[_index];
     this.getCurrentRow = () => tBody.children[_index];
     this.isItem = () => (_index > -1) && (_index < _rows.length);
-    this.isEmpty = () => !JSON.size(_rows);
+    this.getLastItem = () => _rows[_rows.length - 1];
+    this.isEmpty = () => !_rows.length;
+    this.size = () => _rows.length;
 
     this.getBody = () => tBody;
     this.setBody = data => { tBody.innerHTML = data || tplEmpty; return self; }

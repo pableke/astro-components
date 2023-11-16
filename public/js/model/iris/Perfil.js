@@ -39,9 +39,8 @@ function Perfil() {
 	const organica = new Organica(self);
 
     let data, parts;
-	const fnUpdate = perfil => {
-		perfil = perfil || KEY;
-		data = perfiles[perfil] || DEFAULT;
+	const fnUpdate = () => {
+		data = perfiles[self.getPerfil()] || DEFAULT;
 		return self;
 	}
 
@@ -56,24 +55,32 @@ function Perfil() {
 	}
 
 	this.getRol = () => parts[0];
-	this.setRol = val => { parts[0] = val; return fnUpdate(self.getPerfil()); }
+	this.setRol = val => { parts[0] = val; return fnUpdate(); }
 	this.setRolP = () => self.setRol("P");
 	this.setRolA = () => self.setRol("A");
 	this.setRolByNif = nif => (nif == uxxiec.getNif()) ? self.setRolP() : self.setRolA();
+	this.isRolP = () => (parts[0] == "P");
+	this.isRolA = () => (parts[0] == "A");
 
 	this.getColectivo = () => parts[1];
-	this.setColectivo = val => { parts[1] = val; return fnUpdate(self.getPerfil()); }
+	this.setColectivo = val => { parts[1] = val; return fnUpdate(); }
+	this.isPAS = () => (parts[1] == "PAS");
+	this.isPDI_FU = () => (parts[1] == "PDI-FU");
+	this.isPDI_LA = () => (parts[1] == "PDI-LA");
+	this.isPDI = () => (self.isPDI_FU() || self.isPDI_LA());
+
 	this.getActividad = () => parts[2];
-	this.setActividad = val => { parts[2] = val; return fnUpdate(self.getPerfil()); }
+	this.setActividad = val => { parts[2] = val; return fnUpdate(); }
 	this.isCOM = () => (parts[2] == "COM");
 	this.isMUN = () => (parts[2] == "MUN");
 	this.isMOV = () => (parts[2] == "MOV");
 
 	this.getTramite = () => parts[3];
-	this.setTramite = val => { parts[3] = val; return fnUpdate(self.getPerfil()); }
+	this.setTramite = val => { parts[3] = val; return fnUpdate(); }
+	this.isAyL = () => (parts[3] == "AyL");
 
 	this.getFinanciacion = () => parts[4];
-	this.setFinanciacion = val => { parts[4] = val; return fnUpdate(self.getPerfil()); }
+	this.setFinanciacion = val => { parts[4] = val; return fnUpdate(); }
 	this.isIsu = () => ((parts[4] == "ISU") || (parts[4] == "xSU"));
 	this.isA83 = () => ((parts[4] == "A83") || (parts[4] == "x83"));
 	this.isACA = () => ((parts[4] == "ACA") || (parts[4] == "xAC"));

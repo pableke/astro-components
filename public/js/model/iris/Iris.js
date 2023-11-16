@@ -3,28 +3,24 @@ import i18n from "../../i18n/iris/langs.js";
 import valid from "../../i18n/validators.js";
 import uxxiec from "../Uxxiec.js";
 
-function Ruta(irse) {
-	const self = this; //self instance
-}
-
-function Gasto(irse) {
-	const self = this; //self instance
-}
-
 function Iris() {
 	const self = this; //self instance
-    const ruta = new Ruta(self);
-    const gasto = new Gasto(self);
 
     let data; // Current factura data type
     this.getData = () => data;
     this.setData = input => { data = input; return self; }
-    this.getRuta = () => ruta;
-    this.getGasto = () => gasto;
 
-    this.isEditable = () => !data.id;
+    this.isEditableP0 = () => !data.id;
+    this.isEditable = () => (data.estado == 6);
     this.isFirmable = () => (data.estado == 5);
+    this.isRechazada = () => (data.estado == 2);
+    this.isCancelable = () => (uxxiec.isUae() && data.id && !self.isEditable() && !self.isFirmable() && !self.isRechazada());
 	this.isEditableUae = () => self.isEditable() || (uxxiec.isUae() && self.isFirmable());
+
+    this.validate = function(data) {
+        let ok = valid.reset().size("objeto", data.objeto, "Debe seleccionar el objeto de la comisión"); // required string
+        return ok;
+    }
 }
 
 export default new Iris();

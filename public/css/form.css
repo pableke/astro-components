@@ -7,6 +7,7 @@
 .ui-block-xl { min-width: 300px; max-width: 600px; padding: 4px; flex-grow: 1; }
 .ui-block-box { min-width: 250px; padding: 4px; border: 1px solid black; }
 .ui-block-row { width: 100%; padding: 4px; }
+.ui-block-break { flex-basis: 100%; }
 .ui-block-btn { margin-top: 16px; }
 /* Inputs Block */
 

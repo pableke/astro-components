@@ -1,9 +1,9 @@
 
 import Table from "./components/Table.js";
-import tables from "./data/tables.js";
+import tables from "./data/test/tables.js";
 
 import Autocomplete from "./components/Autocomplete.js";
-import autocompletes from "./data/autocompletes.js";
+import autocompletes from "./data/test/autocompletes.js";
 
 const initView = () => {
 	document.querySelectorAll(".autocomplete").forEach(el => {
