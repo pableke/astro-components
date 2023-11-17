@@ -1,8 +1,6 @@
 
+import array from "./ArrayBox.js";
 import i18n from "../i18n/langs.js";
-
-HTMLCollection.prototype.find = Array.prototype.find;
-HTMLCollection.prototype.forEach = Array.prototype.forEach;
 
 HTMLElement.prototype.eachPrev = function(fn) {
     var el = this.previousElementSibling;
@@ -99,7 +97,7 @@ function Alerts() {
     // Global singleton instance
     window.loading = self.loading;
     window.working = self.working;
-    window.showAlerts = (xhr, status, args) => self.showAlerts(JSON.read(args?.msgs)); // Hack PF (only for CV-UAE)
+    window.showAlerts = (xhr, status, args) => self.showAlerts(array.parse(args?.msgs)); // Hack PF (only for CV-UAE)
 }
 
 export default new Alerts();

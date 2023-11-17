@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const msgEmptyFacturas = "No se han encontrado solicitudes para a la búsqueda seleccionada";
     let tSolicitudes = tabFilter.querySelector("table#solicitudes");
     let facturas = new Table(tSolicitudes, { msgEmptyTable: msgEmptyFacturas });
-    tabs.setViewEvent(2, tab => formFilter.setFocus("#filtro-ej"));
     window.loadFacturas = (xhr, status, args) => {
         formFilter.setActions(); // Reload inputs actions
         tSolicitudes = tabFilter.querySelector("table#solicitudes");
@@ -29,7 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	/*** FORMULARIO PRINCIPAL ***/
     const fFact = document.forms.find(form => (form.name == "xeco-fact"));
     const formFact = new Form(fFact);
-    tabs.setViewEvent(1, tab => formFact.autofocus());
 
 	//****** tabla de los conceptos a facturar ******//
 	const fnCalcIva = iva => {
@@ -113,7 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	window.fnSend = () => {
 		if (lineas.isEmpty())
 			return !formFact.setError("#desc", "Debe detallar los conceptos asociados a la solicitud.");
-		formFact.setval("#lineas", JSON.stringify(lineas.getData()));
+		formFact.setval("#lineas", JSON.stringify(lineas.getData())).setval("#memo", lineas.getItem(0).desc);
 		return formFact.isValid(factura.validate) && confirm("¿Confirma que desea firmar y enviar esta solicitud?");
 	}
 	/*** FORMULARIO PRINCIPAL ***/
@@ -133,11 +131,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	const fnC2ZZT14 = () => fnFiscal("131004", 1, 0, 0, 10);
 	const fnC2T15 = () => fnFiscal("131200", 0, 1, 0, 10);
 	const fnC2TUE15 = () => fnFiscal("131200", 1, 0, 6, 10);
-	const fnC2T16 = () => fnFiscal("139000", 1, 0, 0, 10, 21);
+	const fnC2T16 = () => fnFiscal("139000", 0, 0, 0, 10, 21);
 	const fnC2UET16 = () => fnFiscal("139000", 1, 0, 6, 10);
-	const fnC2T17 = () => fnFiscal("139001", 1, 0, 0, 10, 21);
+	const fnC2T17 = () => fnFiscal("139001", 0, 0, 0, 10, 21);
 	const fnC2UET17 = () => fnFiscal("139001", 1, 0, 6, 10);
-	const fnC2T18 = () => fnFiscal("139002", 1, 0, 0, 10, 21);
+	const fnC2T18 = () => fnFiscal("139002", 0, 0, 0, 10, 21);
 	const fnC2UET18 = () => fnFiscal("139002", 1, 0, 6, 10);
 	const fnC1T5 = () => fnFiscal("131600", 0, 0, 0, 10, 21);
 	const fnC1UET5 = () => fnFiscal("131600", 1, 0, 6, 10);
@@ -165,9 +163,9 @@ document.addEventListener("DOMContentLoaded", () => {
 		c1epes3: fn323003_010, c1noes3: fn323003_010, c1noue3: fn323003_010, c1nozz3: fn323003_010, c2epes3: fn323003_010, c2noes3: fn323003_010, c2noue3: fn323003_106, c2nozz3: fn323003_010, c3epes3: fn323003_010, c3noes3: fn323003_010, c3noue3: fn323003_106, c3nozz3: fn323003_010,
 		c2epes15: fnC2T15, c2noes15: fnC2T15, c2noue15: fnC2TUE15, c2nozz15: fnC2T15, c3epes15: fnC2T15, c3noes15: fnC2T15, c3noue15: fnC2TUE15, c3nozz15: fnC2T15,
 		c1epes9: fn323003_010, c1noes9: fn323003_010, c1noue9: fn323003_010, c1nozz9: fn323003_010, c2epes9: fn323003_010, c2noes9: fn323003_010, c2noue9: fn323003_106, c2nozz9: fn323003_010, c3epes9: fn323003_010, c3noes9: fn323003_010, c3noue9: fn323003_106, c3nozz9: fn323003_010,
-		c2epes16: fnC2T16, c2noes16: fnC2T16, c2noue16: fnC2UET16, c2nozz16: fnC2T16, c3epes16: fnC2T16, c3noes16: fnC2T16, c3noue16: fnC2UET16, c3nozz16: fnC2T16,
-		c2epes17: fnC2T17, c2noes17: fnC2T17, c2noue17: fnC2UET17, c2nozz17: fnC2T17, c3epes17: fnC2T17, c3noes17: fnC2T17, c3noue17: fnC2UET17, c3nozz17: fnC2T17,
-		c2epes18: fnC2T18, c2noes18: fnC2T18, c2noue18: fnC2UET18, c2nozz18: fnC2T18, c3epes18: fnC2T18, c3noes18: fnC2T18, c3noue18: fnC2UET18, c3nozz18: fnC2T18,
+		c2epes16: fnC2T16, c2noes16: fnC2T16, c2noue16: fnC2UET16, c2nozz16: fnC2UET16, c3epes16: fnC2T16, c3noes16: fnC2T16, c3noue16: fnC2UET16, c3nozz16: fnC2UET16,
+		c2epes17: fnC2T17, c2noes17: fnC2T17, c2noue17: fnC2UET17, c2nozz17: fnC2UET17, c3epes17: fnC2T17, c3noes17: fnC2T17, c3noue17: fnC2UET17, c3nozz17: fnC2UET17,
+		c2epes18: fnC2T18, c2noes18: fnC2T18, c2noue18: fnC2UET18, c2nozz18: fnC2UET18, c3epes18: fnC2T18, c3noes18: fnC2T18, c3noue18: fnC2UET18, c3nozz18: fnC2UET18,
 		c1epes5: fnC1T5, c1noes5: fnC1T5, c1noue5: fnC1T5, c1nozz5: fnC1T5, c2epes5: fnC1T5, c2noes5: fnC1T5, c2noue5: fnC1UET5, c2nozz5: fnC1ZZT5, c3epes5: fnC1T5, c3noes5: fnC1T5, c3noue5: fnC1UET5, c3nozz5: fnC1ZZT5,
 		c1epes19: fnC1T5, c1noes19: fnC1T5, c1noue19: fnC1T5, c1nozz19: fnC1T5, c2epes19: fnC1T5, c2noes19: fnC1T5, c2noue19: fnC2T19, c2nozz19: fnC2ZZT19, c3epes19: fnC1T5, c3noes19: fnC1T5, c3noue19: fnC2T19, c3nozz19: fnC2ZZT19,
 		c1epes1: fnC1T1, c1noes1: fnC1T1, c1noue1: fnC1T1, c1nozz1: fnC1T1, c2epes1: fnC1T1, c2noes1: fnC1T1, c2noue1: fnC2T1, c2nozz1: fnC1T1, c3epes1: fnC1T1, c3noes1: fnC1T1, c3noue1: fnC2T1, c3nozz1: fnC1T1,

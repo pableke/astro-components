@@ -31,7 +31,6 @@ const rutas = new Table(tRutas, {
     afterRender: resume => { }
 });
 
-tabs.setViewEvent(4, tab => formIris.autofocus());
 tabs.setValidEvent(4, tab => {
     if (rutas.isEmpty())
         return !formIris.setError("#origen", "Debe detallar los conceptos asociados a la solicitud.");

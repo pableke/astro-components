@@ -10,10 +10,6 @@ const fnVisible = el => (el.offsetWidth || el.offsetHeight || el.getClientRects(
 
 String.isset = isset;
 String.isstr = isstr;
-HTMLCollection.prototype.find = Array.prototype.find;
-HTMLCollection.prototype.filter = Array.prototype.filter;
-HTMLCollection.prototype.forEach = Array.prototype.forEach;
-HTMLCollection.prototype.findIndex = Array.prototype.findIndex;
 
 export default function(form, opts) {
     opts = opts || {}; // default options
@@ -227,7 +223,8 @@ export default function(form, opts) {
 	// Form Validator
 	const fnSetTip = (el, msg) => fnSetText(form.querySelector("#tip-" + el.name) || divNull, msg);
 	const fnSetInputOk = el => { el.classList.remove(opts.inputErrorClass); fnSetTip(el, ""); }
-	const fnSetInputError = (el, tip) => { el.classList.add(opts.inputErrorClass); fnSetTip(el, i18n.get(tip)); }
+	const fnSetErrorClass = el => { el.classList.add(opts.inputErrorClass); el.focus(); }
+	const fnSetInputError = (el, tip) => { fnSetErrorClass(el); fnSetTip(el, i18n.get(tip)); }
 	const fnToggleError = (el, tip) => { tip ? fnSetInputError(el, tip) : fnSetInputOk(el); }
 	this.closeAlerts = () => {
 		alerts.closeAlerts();
@@ -240,15 +237,14 @@ export default function(form, opts) {
 	this.setError = (el, msg, tip) => {
 		el = isstr(el) ? self.getInput(el) : el;
 		tip && fnSetTip(el, i18n.get(tip)); // Specific tip
-		el.classList.add(opts.inputErrorClass);
-		return self.focus(el).showError(msg);
+		fnSetErrorClass(el); // Style input error
+		return self.showError(msg);
 	}
 	this.setErrors = messages => {
 		if (isstr(messages)) // simple message text
 			alerts.showError(messages);
 		else { // Style error inputs and set focus on first error
-			form.elements.forEach(el => fnToggleError(el, messages[el.name]));
-			self.focus(form.elements.find(el => el.classList.contains(opts.inputErrorClass)));
+			form.elements.eachRight(el => fnToggleError(el, messages[el.name]));
 			alerts.showError(messages.msgError || opts.defaultMsgError);
 		}
 		return self;

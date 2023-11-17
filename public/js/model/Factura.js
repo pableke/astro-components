@@ -72,7 +72,7 @@ function Factura() {
             ok = valid.size("extra", data.extra) ? ok : i18n.reject("Debe indicar un número de recibo válido"); // Required string
             ok = valid.leToday("fMax", data.fMax) ? ok : i18n.reject("Debe indicar la fecha del recibo asociado"); // Required date
         }
-        //ok = valid.size("memo", data.memo) ? ok : i18n.reject("Debe indicar las observaciones asociadas a la solicitud."); // Required string
+        ok = valid.size("memo", data.memo) ? ok : i18n.reject("Debe indicar las observaciones asociadas a la solicitud."); // Required string
         ok = self.isFace() ? (valid.size("#og", data.og) && valid.size("#oc", data.oc) && valid.size("#ut", data.ut)) : ok;
         return self.isPlataforma() ? valid.size("#og", data.og) : ok;
     }

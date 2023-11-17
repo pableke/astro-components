@@ -1,5 +1,6 @@
 
 import alerts from "./Alerts.js";
+import array from "./ArrayBox.js";
 
 const EMPTY = [];
 const fnVoid = () => {}
@@ -9,21 +10,17 @@ const fnParam = param => param;
 const TR1 = "àáâãäåāăąÀÁÂÃÄÅĀĂĄÆßèéêëēĕėęěÈÉĒĔĖĘĚìíîïìĩīĭÌÍÎÏÌĨĪĬòóôõöōŏőøÒÓÔÕÖŌŎŐØùúûüũūŭůÙÚÛÜŨŪŬŮçÇñÑþÐŔŕÿÝ";
 const TR2 = "aaaaaaaaaAAAAAAAAAABeeeeeeeeeEEEEEEEiiiiiiiiIIIIIIIIoooooooooOOOOOOOOOuuuuuuuuUUUUUUUUcCnNdDRryY";
 
-const fnSize = data => data ? data.length : 0; //string o array
 const inRange = (num, min, max) => (min <= num) && (num <= max);
 const insertAt = (str1, str2, i) => str1.substring(0, i) + str2 + str1.substring(i)
 const replaceAt = (str1, str2, i) => str1.substring(0, i) + str2 + str1.substring(i + str2.length);
 
-JSON.size = fnSize; // Mute JSON
-JSON.read = data => data && JSON.parse(data);
-HTMLCollection.prototype.forEach = Array.prototype.forEach; // Extends HTMLCollection prototype
 String.iIndexOf = (str1, str2) => tr(str1).toLowerCase().indexOf(tr(str2).toLowerCase()); // Mute String class with insensitive index
 String.ilike = (str1, str2) => (String.iIndexOf(str1, str2) > -1); // Mute String class with an insensitive search
 globalThis.loadItems = fnVoid; // Hack PF (only for CV-UAE)
 
 function tr(str) {
     var output = str || "";
-    const size = fnSize(str);
+    const size = array.size(str);
     for (let i = 0; i < size; i++) {
         let j = TR1.indexOf(str.charAt(i)); // is char remplazable
         output = (j < 0) ? output : replaceAt(output, TR2.charAt(j), i);
@@ -77,7 +74,7 @@ export default function(block, opts) {
         return self;
     }
 
-    const isChildren = i => inRange(i, 0, fnSize(resultsHTML.children) - 1);
+    const isChildren = i => inRange(i, 0, array.size(resultsHTML.children) - 1);
     const unselect = () => { _index = -1; inputValue.value = ""; return self; }
     const removeList = () => { resultsHTML.innerHTML = ""; return self; }
     const fnClear = () => { unselect(); return removeList(); }
@@ -99,7 +96,7 @@ export default function(block, opts) {
         alerts.loading(); // Show loading indicator
         globalThis.loadItems = (xhr, status, args) => { // Only PF
             globalThis.loadItems = fnVoid; // Avoid extra loads
-            self.render(JSON.read(args?.data)); // specific for PF
+            self.render(array.parse(args?.data)); // specific for PF
         }
         opts.source(autocomplete.value, self); // Fire source
         _searching = false; // restore sarches
@@ -123,7 +120,7 @@ export default function(block, opts) {
             resultsHTML.innerHTML += `<li class="${opts.optionClass}">${label}</li>`;
         });
         resultsHTML.children.forEach((li, i) => {
-            li.onclick = ev => selectItem(li, i);
+            li.addEventListener("click", ev => selectItem(li, i));
         });
         alerts.working(); // fadeOut loading indicator
         return self;
@@ -145,7 +142,7 @@ export default function(block, opts) {
     }
     // Event fired after char is writen in text
     autocomplete.onkeyup = ev => {
-        const size = fnSize(autocomplete.value);
+        const size = array.size(autocomplete.value);
         if (size < opts.minLength)
             return fnClear(); // Min legnth required
         if (size < opts.maxLength) { // Reduce server calls, only for backspace or alfanum

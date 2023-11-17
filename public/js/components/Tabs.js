@@ -1,11 +1,12 @@
 
 import alerts from "./Alerts.js";
+import array from "./ArrayBox.js";
 
 const fnTrue = () => true; // always true
 const mask = (val, i) => ((val >> i) & 1); // check bit at i position
 
-HTMLCollection.prototype.forEach = Array.prototype.forEach;
-HTMLCollection.prototype.findIndex = Array.prototype.findIndex;
+const FOCUSABLED = "[tabindex]:not([type=hidden],[readonly],[disabled])";
+const fnVisible = el => (el.offsetWidth || el.offsetHeight || el.getClientRects().length);
 
 const opts = { // Configuration
     tabClass: "tab-content",
@@ -21,6 +22,16 @@ function Tabs() {
 
     const fnFindIndex = id => tabs.findIndex(tab => (tab.id == ("tab-" + id))); //find index tab by id
     const fnCurrentIndex = () => tabs.findIndex(el => el.classList.contains(opts.activeClass)); //current index tab
+    const autofocus = tab => {
+        const el = tab.querySelectorAll(FOCUSABLED).find(fnVisible);
+        el && el.focus();
+        return self;
+    }
+    const fnSetTab = (tab, index) => {
+        tab.classList.add(opts.activeClass);
+        _tabIndex = index ?? fnCurrentIndex();
+        return autofocus(tab);
+    }
 
     let _tabIndex = fnCurrentIndex(); //current index tab
     let _tabSize = tabs.length - 1; // max tabs size
@@ -28,12 +39,7 @@ function Tabs() {
 
     this.getTab = id => tabs.find(tab => (tab.id == ("tab-" + id))); // Find by id selector
     this.setMask = mask => { _tabMask = mask; return self; } // set mask for tabs
-    this.setActive = id => { // Force active class whithot events and alerts
-        const tab = self.getTab(id);
-        tab && tab.classList.add(opts.activeClass);
-        _tabIndex = fnCurrentIndex(); //current index tab
-        return self;
-    }
+    this.setActive = id => fnSetTab(self.getTab(id)); // Force active class whithot events and alerts
 
     // Set events on tabs actions
     this.setInitEvent = (tab, fn) => { opts["init-tab-" + tab] = fn; return self; }
@@ -63,9 +69,8 @@ function Tabs() {
                 bar.children.forEach(child => child.classList.toggle(opts.activeClass, child.id <= step));
             });
             tab.dataset.back = updateBack ? _tabIndex : tab.dataset.back; // Save source tab index
-            _tabIndex = i; // set current index
             tabs.forEach(tab => tab.classList.remove(opts.activeClass));
-            tab.classList.add(opts.activeClass); // set active tab
+            fnSetTab(tab, i); // set current tab
             const fnView = opts["view-" + tab.id] || fnTrue;
             fnView(tab, self); // Fire when show tab
         }
@@ -97,15 +102,14 @@ function Tabs() {
                 if (href == "#last-tab")
                     return self.lastTab();
                 if (href == "#toggle-tab") {
-                    const hide = link.dataset.hide || "hide";
-                    const target = link.dataset.target || (".info-" + link.id);
-                    document.querySelectorAll(target).forEach(el => el.classList.toggle(hide));
+                    const hide = link.dataset.hide || "hide"; // Hide class
+                    const targets = document.querySelectorAll(link.dataset.target || (".info-" + link.id));
+                    targets.forEach(el => el.classList.toggle(hide));
 
                     const icon = link.querySelector(".icon-" + link.id);
                     if (icon && link.dataset.toggle) // change link icon class?
                         link.dataset.toggle.split(/\s+/).forEach(name => icon.classList.toggle(name));
-                    const input = link.dataset.focus && document.querySelector(link.dataset.focus);
-                    input && input.focus(); // set focus on input
+                    autofocus(targets[0]); // set focus on input
                 }
             });
         });
@@ -119,7 +123,7 @@ function Tabs() {
             return !alerts.showError("Error 500: Internal server error.");
         if (!args) // Has server response
             return self.showTab(tab); // Show tab and return true
-        const msgs = JSON.read(args.msgs); // Parse server messages
+        const msgs = array.parse(args.msgs); // Parse server messages
         const ok = !msgs?.msgError; // is ok?
         ok && self.showTab(tab); // Only show tab if no error
         alerts.showAlerts(msgs); // Always show alerts after change tab

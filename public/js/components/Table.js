@@ -1,49 +1,10 @@
 
+import array from "./ArrayBox.js";
 import i18n from "../i18n/langs.js";
 
 const EMPTY = [];
-const RE_VAR = /@(\w+);/g;
-
 const fnVoid = () => {};
 const fnTrue = () => true;
-const format = (tpl, data) => tpl.replace(RE_VAR, (m, k) => data[k] ?? "");
-
-HTMLCollection.prototype.forEach = Array.prototype.forEach;
-HTMLElement.prototype.render = function(data) {
-    const hide = this.dataset.hide || "hide"; // default hide class
-    if (data) {
-        this.dataset.template = this.dataset.template || this.innerHTML; // save current template
-        this.innerHTML = format(this.dataset.template, data);
-        this.classList.remove(hide);
-    }
-    else
-        this.classList.add(hide);
-    return this;
-}
-
-String.prototype.format = function(fn) { return this.replace(RE_VAR, fn); }
-String.prototype.render = function(data) { return format(this, data); }
-JSON.render = (tpl, data, fnRender, resume) => {
-    const status = {};
-    resume = resume || {};
-    fnRender = fnRender || fnVoid;
-
-    let output = ""; // Initialize result
-    status.size = resume.size = data.length;
-    data.forEach((item, i) => { // render each item
-        status.index = i;
-        status.count = i + 1;
-        fnRender(item, status, resume, data);
-        output += format(tpl, status);
-    });
-    return output;
-}
-JSON.entries = function(tpl, data) {
-	let output = ""; //result buffer
-	for (const k in data)
-		output += tpl.replace("@value;", k).replace("@label;", data[k]);
-	return output;
-}
 
 export default function(table, opts) {
     opts = opts || {}; // default options
@@ -69,7 +30,7 @@ export default function(table, opts) {
     const tplBody = tBody.innerHTML; //body template
     const tplEmpty = opts.msgEmptyTable ? '<tr><td class="no-data" colspan="99">' + i18n.get(opts.msgEmptyTable) + '</td></tr>' : "";
     const tplFoot = table.tFoot.innerHTML; //Footer template
-    const RESUME = { columns: JSON.size(tBody.rows[0]?.cells) }; //Table parameters
+    const RESUME = { columns: array.size(tBody.rows[0]?.cells) }; //Table parameters
     const FOOTER = { columns: RESUME.columns }; //Footer output formated
 
     let _rows = EMPTY; // default = empty array
@@ -106,8 +67,8 @@ export default function(table, opts) {
         FOOTER.size = RESUME.size = _rows.length;
 
         opts.beforeRender(RESUME); // Fired init. event
-        tBody.innerHTML = RESUME.size ? JSON.render(tplBody, _rows, opts.onRender, RESUME) : tplEmpty; // body
-        table.tFoot.innerHTML = format(tplFoot, opts.onFooter(RESUME, FOOTER) || FOOTER); // render formatted footer
+        tBody.innerHTML = RESUME.size ? array.render(tplBody, _rows, opts.onRender, RESUME) : tplEmpty; // body
+        table.tFoot.innerHTML = array.format(tplFoot, opts.onFooter(RESUME, FOOTER) || FOOTER); // render formatted footer
         opts.afterRender(RESUME); // After body and footer is rendered
 
         tBody.classList.remove(opts.hideClass);

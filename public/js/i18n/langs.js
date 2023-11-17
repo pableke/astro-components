@@ -4,12 +4,14 @@ import es from "./es.js";
 
 const isset = val => ((typeof(val) !== "undefined") && (val !== null));
 const isnum = val => ((typeof(val) === "number") || (val instanceof Number));
+const round = (num, scale) => +(Math.round(num + "e+" + scale)  + "e-" + scale);
 
 Number.isset = isset;
 Number.isNumber = isnum;
 Number.prototype.mask = function(i) { return ((this >> i) & 1); } // check bit at i position
 Number.prototype.bitor = function(flags) { return ((this & flags) > 0); } // some flags up?
 Number.prototype.bitand = function(flags) { return ((this & flags) == flags); } // all flags up?
+Number.prototype.round = function(digits) { return round(this, digits ?? 2); }
 
 function Langs() {
 	const self = this; //self instance
@@ -94,13 +96,13 @@ function Langs() {
         return isNaN(num) ? null : num;
     }
     function fnIsoFloat(num, n) {
-        return parseFloat(num.toFixed(n ?? 2)).toLocaleString(_lang.lang, options);
+        return round(num, n ?? 2).toLocaleString(_lang.lang, options);
     }
     function fnFmtFloat(str, dIn, n) { // String to String formated
         const num = fnToFloat(str, dIn); // String to Float type
         return isNaN(num) ? null : fnIsoFloat(num, n);
     }
-    
+
     en.toFloat = str => str && fnToFloat(str, ".");  // String to Float
     en.isoFloat = (num, n) => isset(num) ? fnIsoFloat(num, n) : null; // Float to String formated
     en.fmtFloat = (str, n) => str && fnFmtFloat(str, ".", n); // String to EN String formated

@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const msgEmptyPrestos = "No se han encontrado solicitudes para a la búsqueda seleccionada";
     let tSolicitudes = tabFilter.querySelector("table#solicitudes");
     let prestos = new Table(tSolicitudes, { msgEmptyTable: msgEmptyPrestos });
-    tabs.setViewEvent(2, tab => formFilter.setFocus("#filtro-ej")).setActive(uxxiec.isUxxiec() ? 0 : 2);
+    tabs.setActive(uxxiec.isUxxiec() ? 0 : 2);
     window.loadPrestos = (xhr, status, args) => {
         formFilter.setActions(); // Reload inputs actions
         tSolicitudes = tabFilter.querySelector("table#solicitudes");
@@ -29,7 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
     /*** FORMULARIO PARA EL DC 030 DE LAS GCR ***/
     const f030 = document.forms.find(form => (form.name == "xeco-030"));
     const form030 = new Form(f030);
-    tabs.setViewEvent(3, tab => form030.setFocus("#acOrg030"));
     const acOrg030 = form030.setAutocomplete("#ac-org-030", {
         minLength: 4,
         source: () => form030.click("#find-org-030"),
@@ -59,7 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
     /*** FORMULARIO PRINCIPAL ***/
     const fPresto = document.forms.find(form => (form.name == "xeco-presto"));
     const formPresto = new Form(fPresto);
-    tabs.setViewEvent(1, tab => formPresto.autofocus());
     const tPartidas = fPresto.querySelector("#partidas-tb");
     const lineas = new Table(tPartidas, {
         msgEmptyTable: "No existen partidas asociadas a la solicitud",
