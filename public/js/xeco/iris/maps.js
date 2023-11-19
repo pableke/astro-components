@@ -34,6 +34,7 @@ const rutas = new Table(tRutas, {
 tabs.setValidEvent(4, tab => {
     if (rutas.isEmpty())
         return !formIris.setError("#origen", "Debe detallar los conceptos asociados a la solicitud.");
+    formIris.setval("#rutas-maps", JSON.stringify(rutas.getData()));
     return true;
 });
 

@@ -39,7 +39,7 @@ function Langs() {
         return list.split(",").find(lang => _langs[lang]) || DEFAULT;
     }
 
-    this.get = msg => _lang[msg] || msg;
+    this.get = msg => _lang[msg] || msg || "";
     this.getItem = (msg, index) => _lang[msg][index];
 
     this.getMsgs = () => MSGS;

@@ -1,5 +1,5 @@
 
-import array from "./ArrayBox.js";
+import collection from "./Collection.js";
 import i18n from "../i18n/langs.js";
 
 const EMPTY = [];
@@ -30,7 +30,7 @@ export default function(table, opts) {
     const tplBody = tBody.innerHTML; //body template
     const tplEmpty = opts.msgEmptyTable ? '<tr><td class="no-data" colspan="99">' + i18n.get(opts.msgEmptyTable) + '</td></tr>' : "";
     const tplFoot = table.tFoot.innerHTML; //Footer template
-    const RESUME = { columns: array.size(tBody.rows[0]?.cells) }; //Table parameters
+    const RESUME = { columns: collection.size(tBody.rows[0]?.cells) }; //Table parameters
     const FOOTER = { columns: RESUME.columns }; //Footer output formated
 
     let _rows = EMPTY; // default = empty array
@@ -67,8 +67,8 @@ export default function(table, opts) {
         FOOTER.size = RESUME.size = _rows.length;
 
         opts.beforeRender(RESUME); // Fired init. event
-        tBody.innerHTML = RESUME.size ? array.render(tplBody, _rows, opts.onRender, RESUME) : tplEmpty; // body
-        table.tFoot.innerHTML = array.format(tplFoot, opts.onFooter(RESUME, FOOTER) || FOOTER); // render formatted footer
+        tBody.innerHTML = RESUME.size ? collection.render(tplBody, _rows, opts.onRender, RESUME) : tplEmpty; // body
+        table.tFoot.innerHTML = collection.format(tplFoot, opts.onFooter(RESUME, FOOTER) || FOOTER); // render formatted footer
         opts.afterRender(RESUME); // After body and footer is rendered
 
         tBody.classList.remove(opts.hideClass);

@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 	window.fnSend = () => {
 		if (lineas.isEmpty())
-			return !formFact.setError("#desc", "Debe detallar los conceptos asociados a la solicitud.");
+			return !formFact.setError("#desc", "Debe detallar los conceptos asociados a la solicitud.", "errRequired");
 		formFact.setval("#lineas", JSON.stringify(lineas.getData())).setval("#memo", lineas.getItem(0).desc);
 		return formFact.isValid(factura.validate) && confirm("¿Confirma que desea firmar y enviar esta solicitud?");
 	}
@@ -125,37 +125,37 @@ document.addEventListener("DOMContentLoaded", () => {
 	const fnDefault = () => fnFiscal(null, 0, 0, 0);
 	const fnCP13 = () => fnFiscal(null, 0, 0, 0, 10);
 	const fn323003_010 = () => fnFiscal("323003", 0, 1, 0);
-	const fn323003_106 = () => fnFiscal("323003", 1, 0, 6);
+	const fn323003_106 = () => fnFiscal("323003", 2, 0, 6);
 	const fnC2T14 = () => fnFiscal("131004", 0, 1, 0, 10);
-	const fnC2UET14 = () => fnFiscal("131004", 1, 0, 6, 10);
-	const fnC2ZZT14 = () => fnFiscal("131004", 1, 0, 0, 10);
+	const fnC2UET14 = () => fnFiscal("131004", 2, 0, 6, 10);
+	const fnC2ZZT14 = () => fnFiscal("131004", 2, 0, 0, 10);
 	const fnC2T15 = () => fnFiscal("131200", 0, 1, 0, 10);
-	const fnC2TUE15 = () => fnFiscal("131200", 1, 0, 6, 10);
+	const fnC2TUE15 = () => fnFiscal("131200", 2, 0, 6, 10);
 	const fnC2T16 = () => fnFiscal("139000", 0, 0, 0, 10, 21);
-	const fnC2UET16 = () => fnFiscal("139000", 1, 0, 6, 10);
+	const fnC2UET16 = () => fnFiscal("139000", 2, 0, 6, 10);
 	const fnC2T17 = () => fnFiscal("139001", 0, 0, 0, 10, 21);
-	const fnC2UET17 = () => fnFiscal("139001", 1, 0, 6, 10);
+	const fnC2UET17 = () => fnFiscal("139001", 2, 0, 6, 10);
 	const fnC2T18 = () => fnFiscal("139002", 0, 0, 0, 10, 21);
-	const fnC2UET18 = () => fnFiscal("139002", 1, 0, 6, 10);
+	const fnC2UET18 = () => fnFiscal("139002", 2, 0, 6, 10);
 	const fnC1T5 = () => fnFiscal("131600", 0, 0, 0, 10, 21);
-	const fnC1UET5 = () => fnFiscal("131600", 1, 0, 6, 10);
-	const fnC1ZZT5 = () => fnFiscal("131600", 1, 0, 0, 10);
+	const fnC1UET5 = () => fnFiscal("131600", 2, 0, 6, 10);
+	const fnC1ZZT5 = () => fnFiscal("131600", 2, 0, 0, 10);
 	const fnC2T19 = () => fnFiscal("131600", 0, 5, 2, 10);
 	const fnC2ZZT19 = () => fnFiscal("131600", 0, 2, 0, 10);
 	const fnC1T1 = () => fnFiscal("132500", 0, 0, 0, 4, 21);
-	const fnC2T1 = () => fnFiscal("132500", 1, 0, 6, 4, 21);
+	const fnC2T1 = () => fnFiscal("132500", 2, 0, 6, 4, 21);
 	const fnC1T20 = () => fnFiscal("132700", 0, 0, 0, 10, 21);
-	const fnC1UET20 = () => fnFiscal("132700", 1, 0, 6, 10);
-	const fnC1ZZT20 = () => fnFiscal("132700", 1, 0, 0, 10);
+	const fnC1UET20 = () => fnFiscal("132700", 2, 0, 6, 10);
+	const fnC1ZZT20 = () => fnFiscal("132700", 2, 0, 0, 10);
 	const fnC1T21 = () => fnFiscal("132600", 0, 0, 0, 10, 4);
 	const fn133001 = () => fnFiscal("133001", 0, 0, 0, 10, 4);
 	const fnC2UET22 = () => fnFiscal("133001", 0, 5, 2, 10);
 	const fnC2ZZT22 = () => fnFiscal("133001", 0, 2, 0, 10);
-	const fnC2UET23 = () => fnFiscal("133001", 1, 0, 6, 10);
-	const fnC2ZZT23 = () => fnFiscal("133001", 1, 0, 0, 10);
+	const fnC2UET23 = () => fnFiscal("133001", 2, 0, 6, 10);
+	const fnC2ZZT23 = () => fnFiscal("133001", 2, 0, 0, 10);
 	const fnC1T6 = () => fnFiscal("154000", 0, 0, 0, 10, 21);
 	const fnC2T2 = () => fnFiscal("155100", 0, 0, 0, 4, 21);
-	const fnC2UET2 = () => fnFiscal("155100", 1, 0, 6, 4);
+	const fnC2UET2 = () => fnFiscal("155100", 2, 0, 6, 4);
 	const ECONOMICAS = {
 		cp13: fnCP13, // Cartas de pago
 		c1epes4: fn323003_010, c1noes4: fn323003_010, c1noue4: fn323003_010, c1nozz4: fn323003_010, c2epes4: fn323003_010, c2noes4: fn323003_010, c2noue4: fn323003_106, c2nozz4: fn323003_010, c3epes4: fn323003_010, c3noes4: fn323003_010, c3noue4: fn323003_106, c3nozz4: fn323003_010,

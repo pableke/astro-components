@@ -63,8 +63,6 @@ document.addEventListener("DOMContentLoaded", () => { // on load view
 	});
 	window.isOrganica = () => form.isValid(buzon.isValidOrganica);
 
-	tabs.setViewEvent(0, tab => form.autofocus());
-	tabs.setViewEvent(1, tab => elTipo.focus());
 	tabs.setShowEvent(2, tab => {
 		const factura = formBuzon.getInput("#factura_input").files[0];
 		const justPago = formBuzon.getInput("#justPago_input").files[0];

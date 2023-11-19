@@ -223,8 +223,7 @@ export default function(form, opts) {
 	// Form Validator
 	const fnSetTip = (el, msg) => fnSetText(form.querySelector("#tip-" + el.name) || divNull, msg);
 	const fnSetInputOk = el => { el.classList.remove(opts.inputErrorClass); fnSetTip(el, ""); }
-	const fnSetErrorClass = el => { el.classList.add(opts.inputErrorClass); el.focus(); }
-	const fnSetInputError = (el, tip) => { fnSetErrorClass(el); fnSetTip(el, i18n.get(tip)); }
+	const fnSetInputError = (el, tip) => { el.classList.add(opts.inputErrorClass); el.focus(); fnSetTip(el, i18n.get(tip)); }
 	const fnToggleError = (el, tip) => { tip ? fnSetInputError(el, tip) : fnSetInputOk(el); }
 	this.closeAlerts = () => {
 		alerts.closeAlerts();
@@ -236,15 +235,14 @@ export default function(form, opts) {
 	}
 	this.setError = (el, msg, tip) => {
 		el = isstr(el) ? self.getInput(el) : el;
-		tip && fnSetTip(el, i18n.get(tip)); // Specific tip
-		fnSetErrorClass(el); // Style input error
+		fnSetInputError(el, tip); // Set input error
 		return self.showError(msg);
 	}
 	this.setErrors = messages => {
 		if (isstr(messages)) // simple message text
 			alerts.showError(messages);
 		else { // Style error inputs and set focus on first error
-			form.elements.eachRight(el => fnToggleError(el, messages[el.name]));
+			form.elements.eachPrev(el => fnToggleError(el, messages[el.name]));
 			alerts.showError(messages.msgError || opts.defaultMsgError);
 		}
 		return self;

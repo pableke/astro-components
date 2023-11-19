@@ -1,15 +1,14 @@
 
 import alerts from "./Alerts.js";
-import array from "./ArrayBox.js";
+import collection from "./Collection.js";
 
 const EMPTY = [];
-const fnVoid = () => {}
-const fnEmpty = () => EMPTY;
-const fnParam = param => param;
-
 const TR1 = "àáâãäåāăąÀÁÂÃÄÅĀĂĄÆßèéêëēĕėęěÈÉĒĔĖĘĚìíîïìĩīĭÌÍÎÏÌĨĪĬòóôõöōŏőøÒÓÔÕÖŌŎŐØùúûüũūŭůÙÚÛÜŨŪŬŮçÇñÑþÐŔŕÿÝ";
 const TR2 = "aaaaaaaaaAAAAAAAAAABeeeeeeeeeEEEEEEEiiiiiiiiIIIIIIIIoooooooooOOOOOOOOOuuuuuuuuUUUUUUUUcCnNdDRryY";
 
+const fnVoid = () => {}
+const fnEmpty = () => EMPTY;
+const fnParam = param => param;
 const inRange = (num, min, max) => (min <= num) && (num <= max);
 const insertAt = (str1, str2, i) => str1.substring(0, i) + str2 + str1.substring(i)
 const replaceAt = (str1, str2, i) => str1.substring(0, i) + str2 + str1.substring(i + str2.length);
@@ -20,7 +19,7 @@ globalThis.loadItems = fnVoid; // Hack PF (only for CV-UAE)
 
 function tr(str) {
     var output = str || "";
-    const size = array.size(str);
+    const size = collection.size(str);
     for (let i = 0; i < size; i++) {
         let j = TR1.indexOf(str.charAt(i)); // is char remplazable
         output = (j < 0) ? output : replaceAt(output, TR2.charAt(j), i);
@@ -74,7 +73,7 @@ export default function(block, opts) {
         return self;
     }
 
-    const isChildren = i => inRange(i, 0, array.size(resultsHTML.children) - 1);
+    const isChildren = i => inRange(i, 0, collection.size(resultsHTML.children) - 1);
     const unselect = () => { _index = -1; inputValue.value = ""; return self; }
     const removeList = () => { resultsHTML.innerHTML = ""; return self; }
     const fnClear = () => { unselect(); return removeList(); }
@@ -96,7 +95,7 @@ export default function(block, opts) {
         alerts.loading(); // Show loading indicator
         globalThis.loadItems = (xhr, status, args) => { // Only PF
             globalThis.loadItems = fnVoid; // Avoid extra loads
-            self.render(array.parse(args?.data)); // specific for PF
+            self.render(collection.parse(args?.data)); // specific for PF
         }
         opts.source(autocomplete.value, self); // Fire source
         _searching = false; // restore sarches
@@ -142,7 +141,7 @@ export default function(block, opts) {
     }
     // Event fired after char is writen in text
     autocomplete.onkeyup = ev => {
-        const size = array.size(autocomplete.value);
+        const size = collection.size(autocomplete.value);
         if (size < opts.minLength)
             return fnClear(); // Min legnth required
         if (size < opts.maxLength) { // Reduce server calls, only for backspace or alfanum
@@ -161,6 +160,6 @@ export default function(block, opts) {
             opts.onReset(self);
     }
     autocomplete.onblur = ev => {
-        setTimeout(removeList, 150);
+        setTimeout(removeList, 300);
     }
 }

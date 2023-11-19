@@ -68,10 +68,10 @@ function Factura() {
         let ok = valid.reset().key("acTercero", data.idTercero, "Debe seleccionar un tercero válido"); // autocomplete required key
         ok = valid.key("acOrganica", data.idOrganica, "No ha seleccionado correctamente la orgánica") && ok; // autocomplete required key
 		ok = (self.isRecibo()) ? valid.size("acRecibo", data.refreb, "Debe indicar un número de recibo válido") : ok; //subtipo = ttpp o extension
-		if (self.isDeportes()) {
-            ok = valid.size("extra", data.extra) ? ok : i18n.reject("Debe indicar un número de recibo válido"); // Required string
+		/*if (self.isDeportes()) {
+            ok = valid.size("extra", data.extra, "errRequired") ? ok : i18n.reject("Debe indicar un número de recibo válido"); // Required string
             ok = valid.leToday("fMax", data.fMax) ? ok : i18n.reject("Debe indicar la fecha del recibo asociado"); // Required date
-        }
+        }*/
         ok = valid.size("memo", data.memo) ? ok : i18n.reject("Debe indicar las observaciones asociadas a la solicitud."); // Required string
         ok = self.isFace() ? (valid.size("#og", data.og) && valid.size("#oc", data.oc) && valid.size("#ut", data.ut)) : ok;
         return self.isPlataforma() ? valid.size("#og", data.og) : ok;

@@ -1,12 +1,11 @@
 
 import alerts from "./Alerts.js";
-import array from "./ArrayBox.js";
+import collection from "./Collection.js";
 
 const fnTrue = () => true; // always true
 const mask = (val, i) => ((val >> i) & 1); // check bit at i position
-
-const FOCUSABLED = "[tabindex]:not([type=hidden],[readonly],[disabled])";
 const fnVisible = el => (el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+const FOCUSABLED = "[tabindex]:not([type=hidden],[readonly],[disabled])";
 
 const opts = { // Configuration
     tabClass: "tab-content",
@@ -123,7 +122,7 @@ function Tabs() {
             return !alerts.showError("Error 500: Internal server error.");
         if (!args) // Has server response
             return self.showTab(tab); // Show tab and return true
-        const msgs = array.parse(args.msgs); // Parse server messages
+        const msgs = collection.parse(args.msgs); // Parse server messages
         const ok = !msgs?.msgError; // is ok?
         ok && self.showTab(tab); // Only show tab if no error
         alerts.showAlerts(msgs); // Always show alerts after change tab
