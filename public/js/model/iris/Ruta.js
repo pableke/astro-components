@@ -21,9 +21,13 @@ function Ruta() {
     }
 
     this.validate = function(data) {
-        let ok = valid.reset().size("origen", data.origen, "Debe seleccionar el origen de la etapa"); // autocomplete required string
-        ok = valid.size("destino", data.destino, "Debe seleccionar el destino de la etapa") && ok; // select required number
-        return ok;
+        let okOrigen = valid.reset().size("origen", data.origen); // autocomplete required string
+        okOrigen = valid.isDate("f1", data.f1) && valid.isDate("h1", data.h1) && okOrigen;
+        let ok = valid.size("destino", data.destino) && ok; // select required number
+        ok = valid.isDate("f2", data.f2) && valid.isDate("h2", data.h2) && ok;
+        if (!okOrigen)
+            return i18n.reject("Debe seleccionar el origen de la etapa y la fecha de salida.");
+        return ok || i18n.reject("Debe seleccionar el destino de la etapa y la fecha de llegada.");
     }
 }
 

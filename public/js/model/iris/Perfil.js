@@ -73,11 +73,24 @@ function Perfil() {
 	this.setActividad = val => { parts[2] = val; return fnUpdate(); }
 	this.isCOM = () => (parts[2] == "COM");
 	this.isMUN = () => (parts[2] == "MUN");
+	this.isACS = () => (parts[2] == "ACS");
+	this.isAFO = () => (parts[2] == "AFO");
+	this.isMES = () => (parts[2] == "MES");
+	this.isMesa = self.isMES;
 	this.isMOV = () => (parts[2] == "MOV");
+	this.isATR = () => (parts[2] == "ATR"); //ATR
+	this.isIaeAtr = () => (parts[2] == "IAE+ATR");
+	this.isTribunal = () => (self.isATR() || self.isIaeAtr());
+	this.isOCE = () => (parts[2] == "OCE"); //OCE=COL
+	this.isIaeOce = () => (parts[2] == "IAE+OCE");
+	this.isColaboracion = () => (self.isOCE() || self.isIaeOce());
+	this.is1Dia = () => (self.isMUN() || self.isMES() || self.isACS() || self.isAFO() || self.isATR() || self.isOCE());
 
 	this.getTramite = () => parts[3];
 	this.setTramite = val => { parts[3] = val; return fnUpdate(); }
 	this.isAyL = () => (parts[3] == "AyL");
+	this.isAUT = () => (parts[3] == "AUT");
+	this.isLIQ = () => (parts[3] == "LIQ");
 
 	this.getFinanciacion = () => parts[4];
 	this.setFinanciacion = val => { parts[4] = val; return fnUpdate(); }

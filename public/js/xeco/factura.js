@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			formFact.text("[for=og]", (el.value == 2) ? "Nombre de la plataforma:" : "Órgano Gestor:")
 					.toggle(".grupo-face", el.value == 1).toggle(".grupo-gestor", el.value != 0);
 		});
-        factura.setData(formFact.setActions().getData()); // prepare inputs and load data before render
+        factura.setData(formFact.setval("#lineas").setActions().getData()); // prepare inputs and load data before render
         lineas.render(JSON.read(args?.data)); // Muestro las líneas asociadas a la factura/CP
         tabs.setActions(fFact).showTab(1); // Muestra el tab
 	};

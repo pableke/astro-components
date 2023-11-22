@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
     /*** FORMULARIO PARA EL RECHAZO/CANCELACIÓN DE SOLICITUDES ***/
 	const fReject = document.forms.find(form => (form.name == "xeco-reject"));
     const formReject = new Form(fReject);
-    tabs.setViewEvent(11, tab => formReject.setFocus("#rechazo"));
     window.fnRechazar = () => formReject.isValid(uxxiec.validateReject) && confirm("¿Confirma que desea rechazar esta solicitud?");
     /*** FORMULARIO PARA EL RECHAZO/CANCELACIÓN DE SOLICITUDES ***/
 
@@ -41,6 +40,5 @@ document.addEventListener("DOMContentLoaded", () => {
 	const documentos = new Table(tDocumentos, { msgEmptyTable, onRender: uxxiec.render });
     window.loadUxxiec = (xhr, status, args) => (window.showTab(xhr, status, args, 15) && documentos.render(JSON.read(args.data)));
     window.saveUxxiec = (xhr, status, args) => (alerts.loading() && formUxxi.setval("#operaciones", JSON.stringify(documentos.getData())));
-    tabs.setViewEvent(15, tab => formUxxi.setFocus("#uxxi"));
     /*** FORMULARIO PARA LA CREACIÓN DEL EXPEDIENTE CON UXXI-EC ***/
 });

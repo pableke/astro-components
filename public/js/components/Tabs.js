@@ -4,7 +4,6 @@ import collection from "./Collection.js";
 
 const fnTrue = () => true; // always true
 const mask = (val, i) => ((val >> i) & 1); // check bit at i position
-const fnVisible = el => (el.offsetWidth || el.offsetHeight || el.getClientRects().length);
 const FOCUSABLED = "[tabindex]:not([type=hidden],[readonly],[disabled])";
 
 const opts = { // Configuration
@@ -19,10 +18,11 @@ function Tabs() {
 	const tabs = document.getElementsByClassName(opts.tabClass);
 	const progressbar = document.getElementsByClassName(opts.progressBarClass);
 
+    const fnSet = (name, fn) => { opts[name] = fn; return self; }
     const fnFindIndex = id => tabs.findIndex(tab => (tab.id == ("tab-" + id))); //find index tab by id
     const fnCurrentIndex = () => tabs.findIndex(el => el.classList.contains(opts.activeClass)); //current index tab
     const autofocus = tab => {
-        const el = tab.querySelectorAll(FOCUSABLED).find(fnVisible);
+        const el = tab.querySelectorAll(FOCUSABLED).find(el => el.isVisible());
         el && el.focus();
         return self;
     }
@@ -41,10 +41,11 @@ function Tabs() {
     this.setActive = id => fnSetTab(self.getTab(id)); // Force active class whithot events and alerts
 
     // Set events on tabs actions
-    this.setInitEvent = (tab, fn) => { opts["init-tab-" + tab] = fn; return self; }
-    this.setShowEvent = (tab, fn) => { opts["show-tab-" + tab] = fn; return self; }
-    this.setViewEvent = (tab, fn) => { opts["view-tab-" + tab] = fn; return self; }
-    this.setValidEvent = (tab, fn) => { opts["valid-tab-" + tab] = fn; return self; }
+    this.setValidEvent = (tab, fn) => fnSet("valid-tab-" + tab, fn);
+    this.setInitEvent = (tab, fn) => fnSet("init-tab-" + tab, fn);
+    this.setShowEvent = (tab, fn) => fnSet("show-tab-" + tab, fn);
+    this.setViewEvent = (tab, fn) => fnSet("view-tab-" + tab, fn);
+    this.setViewTab = fn => fnSet("onViewTab", fn);
 
 	// Alerts helpers
 	this.showOk = msg => { alerts.showOk(msg); return self; } // Encapsule showOk message
@@ -70,7 +71,9 @@ function Tabs() {
             tab.dataset.back = updateBack ? _tabIndex : tab.dataset.back; // Save source tab index
             tabs.forEach(tab => tab.classList.remove(opts.activeClass));
             fnSetTab(tab, i); // set current tab
-            const fnView = opts["view-" + tab.id] || fnTrue;
+            let fnView = opts["onViewTab"] || fnTrue;
+            fnView(tab, self); // Fire when show each tab
+            fnView = opts["view-" + tab.id] || fnTrue;
             fnView(tab, self); // Fire when show tab
         }
         delete opts["init-" + tab.id];

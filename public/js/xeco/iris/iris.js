@@ -51,6 +51,11 @@ document.addEventListener("DOMContentLoaded", () => {
             fnPerfil();
         }
     });
+    formIris.setClick("[href='#add-organica']", ev => {
+        const org = acOrganica.getCurrentItem();
+        org && organicas.add(org);
+        acOrganica.reload();
+    });
 	//****** tabla de los conceptos a facturar ******//
 
     const fnPerfil = () => {
@@ -106,10 +111,5 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
     formIris.onChangeInput("#actividad", ev => { perfil.setActividad(ev.target.value); fnPerfil(); })
             .onChangeInput("#tramite", ev => { perfil.setTramite(ev.target.value); fnPerfil(); });
-    formIris.setClick("[href='#add-organica']", ev => {
-        const org = acOrganica.getCurrentItem();
-        org && organicas.add(org);
-        acOrganica.reload();
-    });
 	/*** FORMULARIO PRINCIPAL ***/
 });

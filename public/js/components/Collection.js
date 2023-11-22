@@ -3,6 +3,7 @@ const RE_VAR = /@(\w+);/g;
 const fnSize = data => data ? data.length : 0; //string o array
 const fnParse = data => data && JSON.parse(data); //JSON parse
 const format = (tpl, data) => tpl.replace(RE_VAR, (m, k) => data[k] ?? "");
+const fnVisible = el => (el.offsetWidth || el.offsetHeight || el.getClientRects().length);
 
 function Collection() {
 	const self = this; //self instance
@@ -61,6 +62,7 @@ JSON.size = fnSize;
 JSON.read = fnParse;
 
 // Extends HTMLElement prototype
+HTMLElement.prototype.isVisible = function() { return fnVisible(this); }
 HTMLElement.prototype.render = function(data) {
     const hide = this.dataset.hide || "hide"; // default hide class
     if (data) {

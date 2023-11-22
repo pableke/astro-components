@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.viewPresto = (xhr, status, args) => {
         fnLoadEcoDec(args); // carga las econonomicas a decrementar
-        presto.setData(formPresto.setActions().getData()); // prepare inputs and load data before render
+        presto.setData(formPresto.setval("#partidas").setActions().getData()); // prepare inputs and load data before render
         formPresto.setMode().toggle(".firmable-only", presto.isFirmable()).toggle(".cancelable-only", presto.isCancelable());
         lineas.render(JSON.read(args?.data)); // Load partidas a incrementar
         tabs.showTab(1); // Muestra el tab

@@ -40,8 +40,8 @@ function Factura() {
     this.isEditable = () => !data.id;
     this.isFactura = () => (data.tipo == 1);
     this.isCartaPago = () => (data.tipo == 3);
-    this.isFirmable = () => (data.estado == 5);
-    //this.isRechazada = () => (data.estado == 2);
+    this.isRechazada = () => (data.estado == 2);
+    this.isFirmable = () => ((data.estado == 5) && ((data.fmask & 64) == 64));
     //this.isCancelable = () => (uxxiec.isUae() && data.id && !self.isFirmable() && !self.isRechazada());
     this.isFirmaGaca = () => uxxiec.isUae() && self.isTtpp();
 	this.isEditableUae = () => self.isEditable() || (uxxiec.isUae() && self.isFirmable());

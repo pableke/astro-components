@@ -12,8 +12,8 @@ function Iris() {
 
     this.isEditableP0 = () => !data.id;
     this.isEditable = () => (data.estado == 6);
-    this.isFirmable = () => (data.estado == 5);
     this.isRechazada = () => (data.estado == 2);
+    this.isFirmable = () => ((data.estado == 5) && ((data.fmask & 64) == 64));
     this.isCancelable = () => (uxxiec.isUae() && data.id && !self.isEditable() && !self.isFirmable() && !self.isRechazada());
 	this.isEditableUae = () => self.isEditable() || (uxxiec.isUae() && self.isFirmable());
 

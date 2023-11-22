@@ -6,7 +6,6 @@ import i18n from "../i18n/langs.js";
 const divNull = document.createElement("div");
 const isset = val => (typeof(val) !== "undefined") && (val !== null);
 const isstr = val => (typeof(val) === "string") || (val instanceof String);
-const fnVisible = el => (el.offsetWidth || el.offsetHeight || el.getClientRects().length);
 
 String.isset = isset;
 String.isstr = isstr;
@@ -36,7 +35,7 @@ export default function(form, opts) {
 
 	this.focus = el => { el && el.focus(); return self; }
 	this.setFocus = selector => self.focus(self.getInput(selector));
-	this.autofocus = () => self.focus(form.elements.find(el => (el.matches(FOCUSABLED) && fnVisible(el))));
+	this.autofocus = () => self.focus(form.elements.find(el => (el.matches(FOCUSABLED) && el.isVisible())));
 	this.getInput = selector => form.elements.find(el => el.matches(selector)); // find an element
 	this.getInputs = selector => form.elements.filter(el => el.matches(selector)); // filter elements
 
@@ -89,6 +88,7 @@ export default function(form, opts) {
 			el.selectedIndex = 0;
 		else
 			el.value = value || ""; // String
+		return self;
 	}
 	function fnSetValue(el, value) {
 		if (el.type =="date") // input type = date
@@ -140,7 +140,7 @@ export default function(form, opts) {
 		return data;
 	}
 
-	//this.copy = (el1, el2) => { self.getInput(el1).value = self.getInput(el2).value; return self; }
+	this.copy = (el1, el2) => fnValue(self.getInput(el1), self.getval(el2));
 	this.reset = () => { form.elements.forEach(el => fnValue(el)); return self.autofocus(); } // clear inputs (hidden to) and autofocus
 	this.restart = selector => { const el = self.getInput(selector); el.value = ""; el.focus(); return self; } // remove value + focus
 
@@ -300,7 +300,7 @@ export default function(form, opts) {
 	this.clone = msg => {
 		self.setInsertMode() // inserting mode
 		alerts.showOk(msg || opts.defaultMsgOk); // show message
-		return fnValue(self.getInput("[name='" + opts.pkName + "']"), ""); // input must exists
+		return fnValue(self.getInput("[name='" + opts.pkName + "']")); // input must exists
 	}
 	this.setActions = () => {
 		return fnFor(form.elements, el => {
