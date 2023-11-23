@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 [row.o030, row.dOrg030] = label;
                 row.idEco030 = data.idEco030;
                 row.imp030 = data.imp030;
-                form030.setval("#partidas", JSON.stringify(lineas.getData())); // save data to send to server
+                formPresto.setval("#partidas", JSON.stringify(lineas.getData())); // save data to send to server
                 tabs.backTab().showOk("Datos del documento 030 asociados correctamente."); // Back to presto view
             }
         }
@@ -86,25 +86,33 @@ document.addEventListener("DOMContentLoaded", () => {
         presto.isAfectada(item?.int) && (presto.isTcr() || presto.isFce()) && formPresto.showInfo(info);
         alerts.working(); // Hide loading indicator
     }
-    const fnAutoloadInc = (data, msg) => {
-        const partida = JSON.read(data);
-        if (partida) { //hay partida?
-            partida.imp = 0; //tabla de fila/partida unica
-            lineas.render([ partida ]); //render partidas
-        }
-        else if (acOrgDec.isItem())
-            formPresto.showError(msg);
+    const fnAutoloadInc = (partida, imp) => {
+        partida.imp = imp || 0; //propone un importe
+        lineas.render([ partida ]); //render partida unica
+        formPresto.setval("#impDec", partida.imp);
     }
 
-    window.autoloadL83 = (xhr, status, args) => fnAutoloadInc(args?.data, "Aplicación AIP no encontrada en el sistema.");
-    window.autoloadAnt = (xhr, status, args) => fnAutoloadInc(args?.data, "No se ha encontrado el anticipo en el sistema.");
+    window.autoloadL83 = (xhr, status, args) => {
+        const partida = JSON.read(args?.data);
+        if (partida)
+            fnAutoloadInc(partida, economicasDec[0].imp);
+        else if (acOrgDec.isItem())
+            formPresto.showError("Aplicación AIP no encontrada en el sistema.");
+    }
+    window.autoloadAnt = (xhr, status, args) => {
+        const partida = JSON.read(args?.data);
+        if (partida) //hay partida?
+            fnAutoloadInc(partida, Math.max(0, partida.ih));
+        else if (acOrgDec.isItem())
+            formPresto.showError("No se ha encontrado el anticipo en el sistema.");
+    }
 
     const fnLoadEcoDec = args => {
         economicasDec = JSON.read(args?.economicas);
         if (JSON.size(economicasDec) > 0) // Load options from items
             formPresto.setSelect("#idEcoDec", economicasDec).setval("#idEcoDecPF", economicasDec[0].value).setval("#cd", economicasDec[0].imp);
         else
-            formPresto.setSelect("#idEcoDec", [], "Seleccione una económica").setval("#idEcoDecPF").setval("#cd");
+            formPresto.setSelect("#idEcoDec", [], "Seleccione una económica").setval("#idEcoDecPF").setval("#impDec").setval("#cd");
     }
     window.loadEconomicasDec = (xhr, status, args) => {
         fnLoadEcoDec(args); // carga las econonomicas a decrementar
