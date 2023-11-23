@@ -155,11 +155,9 @@ export default function(block, opts) {
     // Event fired before onblur only when text changes
     autocomplete.onchange = ev => {
         autocomplete.value || self.reset();
+        setTimeout(() => { inputValue.value || opts.onReset(self); }, 270);
     }
     autocomplete.onblur = ev => {
-        setTimeout(() => {
-            inputValue.value || opts.onReset(self);
-            removeList();
-        }, 300);
+        setTimeout(removeList, 280);
     }
 }
