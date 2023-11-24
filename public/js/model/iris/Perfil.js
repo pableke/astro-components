@@ -1,8 +1,8 @@
 
+import uxxiec from "../Uxxiec.js";
 import perfiles from "../../data/iris/perfiles.js"
 import i18n from "../../i18n/iris/langs.js";
 import valid from "../../i18n/validators.js";
-import uxxiec from "../Uxxiec.js";
 
 const PERFIL = "P,PAS,COM,AyL,OTR";
 const DEFAULT = { // default => actividad=COM/MUN, tramite=AyL

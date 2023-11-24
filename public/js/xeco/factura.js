@@ -67,9 +67,10 @@ document.addEventListener("DOMContentLoaded", () => {
 					.toggle(".grupo-face", el.value == 1).toggle(".grupo-gestor", el.value != 0);
 		});
         factura.setData(formFact.setval("#lineas").setActions().getData()); // prepare inputs and load data before render
+		formFact.setMode().toggle(".firmable-only", factura.isFirmable()).toggle(".rechazable-only", factura.isRechazable());
         lineas.render(JSON.read(args?.data)); // Muestro las líneas asociadas a la factura/CP
-        tabs.setActions(fFact).showTab(1); // Muestra el tab
-	};
+        tabs.showTab(1); // Muestra el tab
+	}
     window.createFactura = (xhr, status, args) => {
 		acTercero = formFact.setAutocomplete("#ac-tercero", {
 			delay: 500, //milliseconds between keystroke occurs and when a search is performed

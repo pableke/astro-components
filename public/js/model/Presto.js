@@ -1,7 +1,7 @@
 
+import uxxiec from "./Uxxiec.js";
 import i18n from "../i18n/langs.js";
 import valid from "../i18n/validators.js";
-import uxxiec from "./Uxxiec.js";
 
 function Partida(presto) {
 	const self = this; //self instance
@@ -63,6 +63,8 @@ function Presto() {
     let data; // Current presto data type
     this.getData = name => (name ? data[name] : data);
     this.setData = input => { data = input; return self; }
+
+    this.getUxxiec = () => uxxiec;
     this.getPartida = () => partida;
 
     this.isTcr = () => (data.tipo == 1);
@@ -78,8 +80,8 @@ function Presto() {
     this.isEditable = () => !data.id;
     this.isRechazada = () => (data.estado == 2);
     this.isFirmable = () => ((data.estado == 5) && ((data.fmask & 64) == 64));
+    this.isRechazable = () => (data.id && (uxxiec.isUae() || self.isFirmable()));
     //this.isEjecutable = () => (uxxiec.isUae() && [1, 3, 4].includes(data.estado));
-    this.isCancelable = () => (uxxiec.isUae() && data.id && !self.isFirmable() && !self.isRechazada());
 	//this.isEditableUae = () => self.isEditable() || (uxxiec.isUae() && self.isFirmable());
 
     this.isPartidaDec = () => (self.isTcr() || self.isL83() || self.isAnt() || self.isAfc());

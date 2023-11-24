@@ -25,12 +25,15 @@ export default function(form, opts) {
 	opts.numberFormatClass = opts.numberFormatClass || "ui-number"; // Number type
 	opts.inputErrorClass = opts.inputErrorClass || "ui-error"; // Input error styles
 	//opts.tipErrorClass = opts.tipErrorClass || "ui-errtip"; // Tip error style
-	opts.insertOnlyClass = opts.insertOnlyClass || "insert-only"; // Elements for insert
-	opts.updateOnlyClass = opts.updateOnlyClass || "update-only"; // Elements for update
+	opts.insertOnlyClass = opts.insertOnlyClass || "insert-only"; // Show elements for insert
+	opts.updateOnlyClass = opts.updateOnlyClass || "update-only"; // Show elements for update
+	opts.updateDisabledClass = opts.updateDisabledClass || "update-disabled"; // Disable elements for update
 	opts.negativeNumClass = opts.negativeNumClass || "text-red"; // Negative numbers styles
 
 	const self = this; //self instance
-	const INPUTS = "input,select,textarea";
+	const EMPTY = ""; // Empty string
+	const DISABLED = "disabled"; // Attribute and style
+	const INPUTS = "input,select,textarea"; // All input fields
 	const FOCUSABLED = "[tabindex]:not([type=hidden],[readonly],[disabled])";
 
 	this.focus = el => { el && el.focus(); return self; }
@@ -62,15 +65,23 @@ export default function(form, opts) {
 	this.show = selector => fnEach(selector, fnShow);
 	this.hide = selector => fnEach(selector, fnHide);
 	this.toggle = (selector, force) => force ? self.show(selector) : self.hide(selector);
-	this.disabled = (force, selector) => fnFor(self.getInputs(selector || INPUTS), el => el.toggleAttribute("disabled", force)); // Update attribute only
+	this.disabled = (force, selector) => fnFor(self.getInputs(selector || INPUTS), el => el.classList.toggle(DISABLED, el.toggleAttribute(DISABLED, force))); // Update attribute and style
 	this.readonly = (force, selector) => fnFor(self.getInputs(selector || INPUTS), el => el.classList.toggle("readonly", el.toggleAttribute("readonly", force))); // Update attribute and style
 
 	this.setInsertMode = () => {
 		fnFor(form.getElementsByClassName(opts.insertOnlyClass), fnShow);
+		fnFor(form.getElementsByClassName(opts.updateDisabledClass), el => {
+			el.removeAttribute(DISABLED);
+			el.classList.remove(DISABLED);
+		});
 		return fnFor(form.getElementsByClassName(opts.updateOnlyClass), fnHide);
 	}
 	this.setUpdateMode = () => {
 		fnFor(form.getElementsByClassName(opts.insertOnlyClass), fnHide);
+		fnFor(form.getElementsByClassName(opts.updateDisabledClass), el => {
+			el.setAttribute(DISABLED, EMPTY);
+			el.classList.add(DISABLED);
+		});
 		return fnFor(form.getElementsByClassName(opts.updateOnlyClass), fnShow);
 	}
 	this.setMode = id => {
@@ -80,19 +91,19 @@ export default function(form, opts) {
 
 	// Value property
 	const fnNumber = (el, value) => {
-		el.value = value || ""; // Show formatted value and style
+		el.value = value || EMPTY; // Show formatted value and style
 		el.classList.toggle(opts.negativeNumClass, el.value.startsWith("-"));
 	}
 	function fnValue(el, value) {
 		if ((el.tagName == "SELECT") && !value)
 			el.selectedIndex = 0;
 		else
-			el.value = value || ""; // String
+			el.value = value || EMPTY; // String
 		return self;
 	}
 	function fnSetValue(el, value) {
 		if (el.type =="date") // input type = date
-			el.value = value ? value.substring(0, 10) : "";
+			el.value = value ? value.substring(0, 10) : EMPTY;
 		else if (el.classList.contains(opts.floatFormatClass))
 			fnNumber(el, i18n.isoFloat(value));
 		else if (el.classList.contains(opts.integerFormatClass))
@@ -142,7 +153,7 @@ export default function(form, opts) {
 
 	this.copy = (el1, el2) => fnValue(self.getInput(el1), self.getval(el2));
 	this.reset = () => { form.elements.forEach(el => fnValue(el)); return self.autofocus(); } // clear inputs (hidden to) and autofocus
-	this.restart = selector => { const el = self.getInput(selector); el.value = ""; el.focus(); return self; } // remove value + focus
+	this.restart = selector => { const el = self.getInput(selector); el.value = EMPTY; el.focus(); return self; } // remove value + focus
 
 	// Inputs helpers
 	this.setAutocomplete = (selector, opts) => {
@@ -158,16 +169,16 @@ export default function(form, opts) {
 
 	this.setSelect = function(selector, items, emptyOption) {
 		const select = self.getInput(selector); // Get select element
-		emptyOption = emptyOption ? `<option>${emptyOption}</option>` : ""; // Text for empty first option
+		emptyOption = emptyOption ? `<option>${emptyOption}</option>` : EMPTY; // Text for empty first option
 		const fnItem = item => `<option value="${item.value}">${item.label}</option>`; // Item list
-		return fnSetText(select, emptyOption + items.map(fnItem).join("")); // Render items
+		return fnSetText(select, emptyOption + items.map(fnItem).join(EMPTY)); // Render items
 	}
 	this.setOptions = function(selector, values, keys, emptyOption) {
 		const select = self.getInput(selector); // Get select element
-		emptyOption = emptyOption ? `<option>${emptyOption}</option>` : ""; // Text for empty first option
+		emptyOption = emptyOption ? `<option>${emptyOption}</option>` : EMPTY; // Text for empty first option
 		const fnKeys = (val, i) => `<option value="${keys[i]}">${val}</option>`; // Default options template
 		const fnDefault = (val, i) => `<option value="${i+1}">${val}</option>`; // 1, 2, 3... Number array
-		return fnSetText(select, emptyOption + values.map(keys ? fnKeys : fnDefault).join(""));
+		return fnSetText(select, emptyOption + values.map(keys ? fnKeys : fnDefault).join(EMPTY));
 	}
 	this.toggleOptions = function(selector, flags) {
 		const select = form.elements.find(el => (el.options && el.matches(selector)));
@@ -222,7 +233,7 @@ export default function(form, opts) {
 
 	// Form Validator
 	const fnSetTip = (el, msg) => fnSetText(form.querySelector("#tip-" + el.name) || divNull, msg);
-	const fnSetInputOk = el => { el.classList.remove(opts.inputErrorClass); fnSetTip(el, ""); }
+	const fnSetInputOk = el => { el.classList.remove(opts.inputErrorClass); fnSetTip(el, EMPTY); }
 	const fnSetInputError = (el, tip) => { el.classList.add(opts.inputErrorClass); el.focus(); fnSetTip(el, i18n.get(tip)); }
 	const fnToggleError = (el, tip) => { tip ? fnSetInputError(el, tip) : fnSetInputOk(el); }
 	this.closeAlerts = () => {
@@ -280,7 +291,7 @@ export default function(form, opts) {
 		//opts.headers = { "Content-Type": form.enctype || "application/x-www-form-urlencoded" };
 
 		const res = await globalThis.fetch(opts.action, opts);
-		const type = res.headers.get("content-type") || "";
+		const type = res.headers.get("content-type") || EMPTY;
 		const data = await (type.includes("application/json") ? res.json() : res.text());
 		alerts.working(); // always force to hide loadin div
 		return res.ok ? data : !self.setErrors(data);

@@ -42,7 +42,7 @@ function Factura() {
     this.isCartaPago = () => (data.tipo == 3);
     this.isRechazada = () => (data.estado == 2);
     this.isFirmable = () => ((data.estado == 5) && ((data.fmask & 64) == 64));
-    //this.isCancelable = () => (uxxiec.isUae() && data.id && !self.isFirmable() && !self.isRechazada());
+    this.isRechazable = () => (data.id && (uxxiec.isUae() || self.isFirmable()));
     this.isFirmaGaca = () => uxxiec.isUae() && self.isTtpp();
 	this.isEditableUae = () => self.isEditable() || (uxxiec.isUae() && self.isFirmable());
 

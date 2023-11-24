@@ -3,11 +3,10 @@ import Form from "../../components/Form.js";
 import Table from "../../components/Table.js";
 import tabs from "../../components/Tabs.js";
 import iris from "../../model/iris/Iris.js";
-import perfil from "../../model/iris/Perfil.js";
-import uxxiec from "../../model/Uxxiec.js";
-import i18n from "../../i18n/iris/langs.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+    const uxxiec = iris.getUxxiec();
+    const perfil = iris.getPerfil();
     let acOrganica;
 
 	/*** Filtro + listado de solicitudes ***/
@@ -73,13 +72,11 @@ document.addEventListener("DOMContentLoaded", () => {
     window.viewIris = (xhr, status, args) => {
         const data = formIris.setActions().getData();
         iris.setData(data); // prepare inputs and load data before render
-		perfil.setPerfil(data.perfil); // load perfil del servidor
         organicas.render(JSON.read(args.data)); // Muestro las líneas asociadas a la solicitud
         window.loadRutas(formIris, JSON.read(args.rutas)); // Muestro las rutas asociadas a la solicitud
         formIris.setval("#actividad", perfil.getActividad()).setval("#tramite", perfil.getTramite())
-                .disabled(data.id, ".ui-perfi").toggle("#ac-organica", !data.id || !uxxiec.isUxxiec())
-                .setMode(data.id).toggle(".editable-only", iris.isEditable())
-                .toggle(".firmable-only", iris.isFirmable()).toggle(".cancelable-only", iris.isCancelable());
+                .toggle("#ac-organica", !data.id || !uxxiec.isUxxiec()).setMode(data.id)
+                .toggle(".firmable-only", iris.isFirmable()).toggle(".rechazable-only", iris.isRechazable()).toggle(".editable-only", iris.isEditable());
         tabs.showTab(args.tab || 1); // Muestra el tab
 	};
     window.createIris = (xhr, status, args) => {
