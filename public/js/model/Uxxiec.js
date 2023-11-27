@@ -18,6 +18,7 @@ function Uxxiec() {
     this.setUxxiec = val => self.setUsuEc(val == "true");
     this.isUae = () => uae;
     this.setUae = val => self.setUsuUae(val == "true");
+    this.setData = data => self.setNif(data.nif).setUxxiec(data.usuec).setUae(data.uae);
 
     this.render = (data, output) => {
         output.num = data.num;

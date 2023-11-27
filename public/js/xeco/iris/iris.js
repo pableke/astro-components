@@ -11,8 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	/*** Filtro + listado de solicitudes ***/
     const tabFilter = tabs.getTab(2);
-	const fFilter = document.forms.find(form => (form.name == "xeco-filter"));
-    const formFilter = new Form(fFilter);
+    const formFilter = new Form("xeco-filter");
     const msgEmptyIris = "No se han encontrado solicitudes para a la búsqueda seleccionada";
     let tSolicitudes = tabFilter.querySelector("table#solicitudes");
     let tIris = new Table(tSolicitudes, { msgEmptyTable: msgEmptyIris });
@@ -26,8 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /*** Filtro + listado de solicitudes ***/
 
 	/*** FORMULARIO PRINCIPAL ***/
-    const fIris = document.forms.find(form => (form.name == "xeco-iris"));
-    const formIris = new Form(fIris);
+    const formIris = new Form("xeco-iris");
     tabs.setValidEvent(3, tab => formIris.isValid(iris.validate));
     window.fnSavePerfil = () => {
 		if (organicas.isEmpty())
@@ -38,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	//****** tabla de organicas ******//
 	const organica = perfil.getOrganica();
-	const tOrganicas = fIris.querySelector("#organicas");
+	const tOrganicas = formIris.querySelector("#organicas");
     const organicas = new Table(tOrganicas, {
         msgEmptyTable: "No existen orgánicas asociadas a la comunicación.",
         //beforeRender: resume => { },
@@ -88,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			select: item => item.nif,
 			afterSelect: item => {
                 perfil.setRolByNif(item.nif).setColectivo(item.ci);
-                fIris.querySelector("#email").href = "mailto:" + item.email;
+                formIris.querySelector("#email").href = "mailto:" + item.email;
                 fnPerfil();
             },
 			onReset: () => {

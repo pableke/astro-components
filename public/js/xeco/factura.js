@@ -1,6 +1,5 @@
 
 import Form from "../components/Form.js";
-import Table from "../components/Table.js";
 import tabs from "../components/Tabs.js";
 import factura from "../model/Factura.js";
 import i18n from "../i18n/langs.js";
@@ -10,33 +9,26 @@ document.addEventListener("DOMContentLoaded", () => {
 	var acTercero; // Autocomplete de terceros
 
 	/*** Filtro + listado de solicitudes ***/
-    const tabFilter = tabs.getTab(2);
-	const fFilter = document.forms.find(form => (form.name == "xeco-filter"));
-    const formFilter = new Form(fFilter);
-    const msgEmptyFacturas = "No se han encontrado solicitudes para a la búsqueda seleccionada";
-    let tSolicitudes = tabFilter.querySelector("table#solicitudes");
-    let facturas = new Table(tSolicitudes, { msgEmptyTable: msgEmptyFacturas });
+    const formFilter = new Form("xeco-filter");
+    const OPTS_FILTER = { msgEmptyTable: "No se han encontrado solicitudes para a la búsqueda seleccionada" };
+    let facturas = formFilter.setTable("#solicitudes", OPTS_FILTER);
     window.loadFacturas = (xhr, status, args) => {
         formFilter.setActions(); // Reload inputs actions
-        tSolicitudes = tabFilter.querySelector("table#solicitudes");
-        facturas = new Table(tSolicitudes, { msgEmptyTable: msgEmptyFacturas });
+        facturas = formFilter.setTable("#solicitudes", OPTS_FILTER);
         window.showTab(xhr, status, args, 2);
     }
     window.updateFactura = (xhr, status, args) => window.showTab(xhr, status, args, 2) && facturas.hide(".firma-" + args.id).text(".estado-" + args.id, "Procesando...");
     /*** Filtro + listado de solicitudes ***/
 
 	/*** FORMULARIO PRINCIPAL ***/
-    const fFact = document.forms.find(form => (form.name == "xeco-fact"));
-    const formFact = new Form(fFact);
-
-	//****** tabla de los conceptos a facturar ******//
 	const fnCalcIva = iva => {
 		const resume = lineas.getResume();
 		const impIva = resume.imp * (iva / 100);
 		lineas.text("#imp-iva", i18n.isoFloat(impIva) + " €").text("#imp-total", i18n.isoFloat(resume.imp + impIva) + " €");
 	}
-	const tLineas = fFact.querySelector("#conceptos");
-    const lineas = new Table(tLineas, {
+
+    const formFact = new Form("xeco-fact");
+    const lineas = formFact.setTable("#lineas-fact", {
         msgEmptyTable: "No existen conceptos asociados a la solicitud",
         beforeRender: resume => { resume.imp = 0; factura.setIva(formFact.valueOf("#iva")); },
         onRender: linea.render,
@@ -48,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		},
 		"change-iva": el => fnCalcIva(+el.value)
     });
-	//****** tabla de los conceptos a facturar ******//
 
 	const resetDelegaciones = () => formFact.setSelect("#delegacion", [], "Seleccione una delegación").setval("#idDelegacion");
     window.loadDelegaciones = (xhr, status, args) => {
@@ -66,10 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			formFact.text("[for=og]", (el.value == 2) ? "Nombre de la plataforma:" : "Órgano Gestor:")
 					.toggle(".grupo-face", el.value == 1).toggle(".grupo-gestor", el.value != 0);
 		});
-        factura.setData(formFact.setval("#lineas").setActions().getData()); // prepare inputs and load data before render
-		formFact.setMode().toggle(".firmable-only", factura.isFirmable()).toggle(".rechazable-only", factura.isRechazable());
-        lineas.render(JSON.read(args?.data)); // Muestro las líneas asociadas a la factura/CP
-        tabs.showTab(1); // Muestra el tab
+		xecoFact.view(JSON.read(args?.data), 1); // Muestra el tab
 	}
     window.createFactura = (xhr, status, args) => {
 		acTercero = formFact.setAutocomplete("#ac-tercero", {
@@ -107,12 +95,15 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 			ev.preventDefault();
 		});
-		window.viewFactura(xhr, status, args);
+        factura.setData(formFact.setval("#lineas-json").setActions().getData()); // prepare inputs and load data before render
+		formFact.setMode().toggle(".firmable-only", factura.isFirmable()).toggle(".rechazable-only", factura.isRechazable());
+        lineas.render(JSON.read(args?.data)); // Muestro las líneas asociadas a la factura/CP
+        tabs.showTab(1); // Muestra el tab
 	}
 	window.fnSend = () => {
 		if (lineas.isEmpty())
 			return !formFact.setError("#desc", "Debe detallar los conceptos asociados a la solicitud.", "errRequired");
-		formFact.setval("#lineas", JSON.stringify(lineas.getData())).setval("#memo", lineas.getItem(0).desc);
+		formFact.stringify("#lineas-json", lineas).setval("#memo", lineas.getItem(0).desc);
 		return formFact.isValid(factura.validate) && confirm("¿Confirma que desea firmar y enviar esta solicitud?");
 	}
 	/*** FORMULARIO PRINCIPAL ***/

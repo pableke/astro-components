@@ -39,6 +39,12 @@ function Collection() {
             output += tpl.replace("@value;", k).replace("@label;", data[k]);
         return output;
     }
+    this.params = function(data) {
+        const results = [];
+        for (const name in data)
+            results.push({ name, value: data[name] });
+        return results;
+    }
 
     // Extends Array prototype
     function fnEachPrev(fn) { self.eachPrev(this, fn); }

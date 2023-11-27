@@ -1,15 +1,15 @@
 
+import collection from "../components/Collection.js";
 import Form from "../components/Form.js";
-import Table from "../components/Table.js";
 import tabs from "../components/Tabs.js";
 import buzon from "../model/Buzon.js";
 
 document.addEventListener("DOMContentLoaded", () => { // on load view
 	let justPagoRequired = false;
 
-	const fBuzon = document.forms.find(form => (form.name == "xeco-buzon"));
-	const formBuzon = new Form(fBuzon);
+	const formBuzon = new Form("xeco-buzon");
 	const elTipo = formBuzon.getInput("#tipo");
+
 	function updateBuzonOrganica() {
 		const isIsu = buzon.isIsu(table.getCurrentItem());
 		justPagoRequired = ((+elTipo.value == 2) && isIsu);
@@ -20,21 +20,21 @@ document.addEventListener("DOMContentLoaded", () => { // on load view
 		formBuzon.toggle("#justPago", justPagoRequired).hide("#check-jp");
 	}
 
-	const fOrganicas = document.forms.find(form => (form.name == "xeco-organicas"));
-	const formOrganicas = new Form(fOrganicas);
-	function fnSend(data, action) { // load data and send form to server
-		formOrganicas.setval("#id-organica", data.org).setval("#cod-organica", data.oCod).setval("#id-ut", data.grp)
-					.click(action).reset();
-		return form.reset(); // autofocus
+	const formOrganicas = new Form("xeco-organicas");
+	const table = formOrganicas.setTable("#organcias");
+
+	const fnSend = action => {
+		const fnCall = window[action]; // p:remoteCommand server call
+		const data = table.getCurrentItem(); // load data and send form to server
+		fnCall(collection.params({ org: data.org, cod: data.oCod, ut: data.grp }));
+		return formOrganicas.reset(); // autofocus
 	}
 
-	const tOrganicas = tabs.getTab(0).querySelector("#organcias");
-	const table = new Table(tOrganicas);
 	table.set("onRender", buzon.render)
 		.set("msgEmptyTable", "No dispone de orgánicas recientes")
-		.set("#report", () => fnSend(table.getCurrentItem(), "#report"))
-		.set("onRemove", () => fnSend(table.getCurrentItem(), "#remove"))
-		.render(JSON.read(tOrganicas.previousElementSibling.innerHTML));
+		.set("#report", () => fnSend("report"))
+		.set("onRemove", () => fnSend("remove"))
+		.render(JSON.read(formOrganicas.html("#organcias-json")));
 	table.set("#buzon", () => {
 		const data = table.getCurrentItem();
 		formBuzon.setval("#buzon-id-org", data.org).setval("#buzon-cod-org", data.oCod)
@@ -52,16 +52,14 @@ document.addEventListener("DOMContentLoaded", () => { // on load view
 		tabs.showTab(1);
 	});
 
-	const fTablero = document.forms.find(form => (form.name == "xeco-tablero"));
-	const form = new Form(fTablero);
-	form.setAutocomplete("#ac-organica", {
+	formOrganicas.setAutocomplete("#ac-organica", {
 		minLength: 4,
-		source: () => form.click("#find-organica"),
+		source: term => window.findOrganica([{name: "cod", value: term}]),
 		render: item => item.label,
 		select: item => item.value,
-		afterSelect: () => form.click("#find-unidades-tramit")
+		afterSelect: item => window.setUnidadesTramit([{name: "org", value: item.value}])
 	});
-	window.isOrganica = () => form.isValid(buzon.isValidOrganica);
+	window.isOrganica = () => formOrganicas.isValid(buzon.isValidOrganica);
 
 	tabs.setShowEvent(2, tab => {
 		const factura = formBuzon.getInput("#factura_input").files[0];
@@ -75,18 +73,13 @@ document.addEventListener("DOMContentLoaded", () => { // on load view
 	});
 
 	window.loadUnidadesTramit = (xhr, status, args) => {
-		const utSelect = form.getInput("#tramit");
-		const block = fTablero.querySelector("#unidades-tramit");
-		block.classList.toggle("hide", JSON.size(utSelect.children) < 2);
+		const utSelect = formOrganicas.getInput("#tramit");
+		formOrganicas.toggle("#unidades-tramit", JSON.size(utSelect.children) > 1);
 	}
 	window.reloadOrganicas = (xhr, status, args) => {
-		const data = JSON.read(args?.data); // new data
-		if (!data) return; // Nada que hacer
-		if (data.msgError)
-			formOrganicas.showError(data.msgError);
-		else {
-			table.render(data); // reload table
-			form.reset().showOk("saveOk"); // clear inputs, autofocus and message
+		if (window.showTab(xhr, status, args, 0)) {
+			table.render(JSON.read(args.data)); // reload table
+			formOrganicas.reset().showOk("saveOk"); // clear inputs, autofocus and message
 		}
 	}
 });

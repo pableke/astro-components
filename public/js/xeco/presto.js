@@ -1,7 +1,6 @@
 
 import alerts from "../components/Alerts.js";
 import Form from "../components/Form.js";
-import Table from "../components/Table.js";
 import tabs from "../components/Tabs.js";
 import presto from "../model/Presto.js";
 import uxxiec from "../model/Uxxiec.js";
@@ -10,25 +9,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const partida = presto.getPartida();
 
     /*** Filtro + listado de solicitudes ***/
-    const tabFilter = tabs.getTab(2);
-	const fFilter = document.forms.find(form => (form.name == "xeco-filter"));
-    const formFilter = new Form(fFilter);
-    const msgEmptyPrestos = "No se han encontrado solicitudes para a la búsqueda seleccionada";
-    let tSolicitudes = tabFilter.querySelector("table#solicitudes");
-    let prestos = new Table(tSolicitudes, { msgEmptyTable: msgEmptyPrestos });
+    const formFilter = new Form("xeco-filter");
+    const OPTS_FILTER = { msgEmptyTable: "No se han encontrado solicitudes para a la búsqueda seleccionada" };
+    let prestos = formFilter.setTable("#solicitudes", OPTS_FILTER);
     tabs.setActive(uxxiec.isUxxiec() ? 0 : 2);
     window.loadPrestos = (xhr, status, args) => {
         formFilter.setActions(); // Reload inputs actions
-        tSolicitudes = tabFilter.querySelector("table#solicitudes");
-        prestos = new Table(tSolicitudes, { msgEmptyTable: msgEmptyPrestos });
+        prestos = formFilter.setTable("#solicitudes", OPTS_FILTER);
         window.showTab(xhr, status, args, 2);
     }
     window.updatePresto = (xhr, status, args) => window.showTab(xhr, status, args, 2) && prestos.hide(".firma-" + args.id).text(".estado-" + args.id, "Procesando...");
     /*** Filtro + listado de solicitudes ***/
 
     /*** FORMULARIO PARA EL DC 030 DE LAS GCR ***/
-    const f030 = document.forms.find(form => (form.name == "xeco-030"));
-    const form030 = new Form(f030);
+    const form030 = new Form("xeco-030");
     const acOrg030 = form030.setAutocomplete("#ac-org-030", {
         minLength: 4,
         source: () => form030.click("#find-org-030"),
@@ -48,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 [row.o030, row.dOrg030] = label;
                 row.idEco030 = data.idEco030;
                 row.imp030 = data.imp030;
-                formPresto.setval("#partidas", JSON.stringify(lineas.getData())); // save data to send to server
+                formPresto.stringify("#partidas-json", lineas); // save data to send to server
                 tabs.backTab().showOk("Datos del documento 030 asociados correctamente."); // Back to presto view
             }
         }
@@ -56,10 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
     /*** FORMULARIO PARA EL DC 030 DE LAS GCR ***/
 
     /*** FORMULARIO PRINCIPAL ***/
-    const fPresto = document.forms.find(form => (form.name == "xeco-presto"));
-    const formPresto = new Form(fPresto);
-    const tPartidas = fPresto.querySelector("#partidas-tb");
-    const lineas = new Table(tPartidas, {
+    const formPresto = new Form("xeco-presto");
+    const lineas = formPresto.setTable("#partidas-inc", {
         msgEmptyTable: "No existen partidas asociadas a la solicitud",
         beforeRender: resume => { resume.imp = 0; },
         onRender: partida.render,
@@ -150,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.viewPresto = (xhr, status, args) => {
         fnLoadEcoDec(args); // carga las econonomicas a decrementar
-        presto.setData(formPresto.setval("#partidas").setActions().getData()); // prepare inputs and load data before render
+        presto.setData(formPresto.setval("#partidas-inc").setActions().getData()); // prepare inputs and load data before render
         formPresto.setMode().toggle(".firmable-only", presto.isFirmable()).toggle(".rechazable-only", presto.isRechazable());
         lineas.render(JSON.read(args?.data)); // Load partidas a incrementar
         tabs.showTab(1); // Muestra el tab
@@ -211,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (formPresto.isValid(presto.validate)) { //todas las validaciones estan ok?
             partidas.sort((a, b) => (b.imp - a.imp)); //orden por importe desc.
             partidas[0].mask = partidas[0].mask | 1; //marco la primera como principal
-            formPresto.setval("#partidas", JSON.stringify(partidas)); // save data to send to server
+            formPresto.stringify("#partidas-json", lineas); // save data to send to server
             return confirm("¿Confirma que desea firmar y enviar esta solicitud?");
         }
         return false;

@@ -1,4 +1,5 @@
 
+import Table from "./Table.js";
 import Autocomplete from "./Autocomplete.js";
 import alerts from "./Alerts.js";
 import i18n from "../i18n/langs.js";
@@ -11,7 +12,9 @@ String.isset = isset;
 String.isstr = isstr;
 
 export default function(form, opts) {
-    opts = opts || {}; // default options
+	form = isstr(form) ? document.forms.find(el => (el.name == form)) : form; // Find by name
+	opts = opts || {}; // default options
+
 	opts.pkName = opts.pkName || "id"; // primary key name
 	opts.hideClass = opts.hideClass || "hide"; // hidden class name
 	opts.defaultMsgOk = opts.defaultMsgOk || "saveOk"; // default key for message ok
@@ -32,7 +35,6 @@ export default function(form, opts) {
 
 	const self = this; //self instance
 	const EMPTY = ""; // Empty string
-	const DISABLED = "disabled"; // Attribute and style
 	const INPUTS = "input,select,textarea"; // All input fields
 	const FOCUSABLED = "[tabindex]:not([type=hidden],[readonly],[disabled])";
 
@@ -41,6 +43,7 @@ export default function(form, opts) {
 	this.autofocus = () => self.focus(form.elements.find(el => (el.matches(FOCUSABLED) && el.isVisible())));
 	this.getInput = selector => form.elements.find(el => el.matches(selector)); // find an element
 	this.getInputs = selector => form.elements.filter(el => el.matches(selector)); // filter elements
+	this.querySelector = selector => form.querySelector(selector);
 
 	// Alerts helpers
 	this.showOk = msg => { alerts.showOk(msg); return self; } // Encapsule showOk message
@@ -65,24 +68,18 @@ export default function(form, opts) {
 	this.show = selector => fnEach(selector, fnShow);
 	this.hide = selector => fnEach(selector, fnHide);
 	this.toggle = (selector, force) => force ? self.show(selector) : self.hide(selector);
-	this.disabled = (force, selector) => fnFor(self.getInputs(selector || INPUTS), el => el.classList.toggle(DISABLED, el.toggleAttribute(DISABLED, force))); // Update attribute and style
+	this.disabled = (force, selector) => fnFor(self.getInputs(selector || INPUTS), el => el.classList.toggle("disabled", el.toggleAttribute("disabled", force))); // Update attribute and style
 	this.readonly = (force, selector) => fnFor(self.getInputs(selector || INPUTS), el => el.classList.toggle("readonly", el.toggleAttribute("readonly", force))); // Update attribute and style
 
 	this.setInsertMode = () => {
 		fnFor(form.getElementsByClassName(opts.insertOnlyClass), fnShow);
-		fnFor(form.getElementsByClassName(opts.updateDisabledClass), el => {
-			el.removeAttribute(DISABLED);
-			el.classList.remove(DISABLED);
-		});
-		return fnFor(form.getElementsByClassName(opts.updateOnlyClass), fnHide);
+		fnFor(form.getElementsByClassName(opts.updateOnlyClass), fnHide);
+		return self.disabled(false, "." + opts.updateDisabledClass);
 	}
 	this.setUpdateMode = () => {
 		fnFor(form.getElementsByClassName(opts.insertOnlyClass), fnHide);
-		fnFor(form.getElementsByClassName(opts.updateDisabledClass), el => {
-			el.setAttribute(DISABLED, EMPTY);
-			el.classList.add(DISABLED);
-		});
-		return fnFor(form.getElementsByClassName(opts.updateOnlyClass), fnShow);
+		fnFor(form.getElementsByClassName(opts.updateOnlyClass), fnShow);
+		return self.disabled(true, "." + opts.updateDisabledClass);
 	}
 	this.setMode = id => {
 		id = id || self.getval("[name='" + opts.pkName + "']");
@@ -156,10 +153,9 @@ export default function(form, opts) {
 	this.restart = selector => { const el = self.getInput(selector); el.value = EMPTY; el.focus(); return self; } // remove value + focus
 
 	// Inputs helpers
-	this.setAutocomplete = (selector, opts) => {
-		const block = form.querySelector(selector);
-		return block && new Autocomplete(block, opts);
-	}
+	this.setTable = (selector, opts) => new Table(form.querySelector(selector), opts);
+	this.stringify = (selector, table) => self.setval(selector, JSON.stringify(table.getData()));
+	this.setAutocomplete = (selector, opts) => new Autocomplete(form.querySelector(selector), opts);
 	this.setDateRange = (f1, f2) => {
 		f1 = self.getInput(f1);
 		f2 = self.getInput(f2);
@@ -336,5 +332,5 @@ export default function(form, opts) {
 	}
 
 	// Form initialization
-	self.setActions().autofocus().beforeReset(ev => { self.closeAlerts().autofocus(); });
+	self.setActions().autofocus().beforeReset(ev => self.closeAlerts().autofocus());
 }
