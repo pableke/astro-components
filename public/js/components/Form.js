@@ -30,7 +30,7 @@ export default function(form, opts) {
 	//opts.tipErrorClass = opts.tipErrorClass || "ui-errtip"; // Tip error style
 	opts.insertOnlyClass = opts.insertOnlyClass || "insert-only"; // Show elements for insert
 	opts.updateOnlyClass = opts.updateOnlyClass || "update-only"; // Show elements for update
-	opts.updateDisabledClass = opts.updateDisabledClass || "update-disabled"; // Disable elements for update
+	opts.updateReadonlyClass = opts.updateReadonlyClass || "update-readonly"; // Readonly for elements to update
 	opts.negativeNumClass = opts.negativeNumClass || "text-red"; // Negative numbers styles
 
 	const self = this; //self instance
@@ -56,7 +56,12 @@ export default function(form, opts) {
 	const fnFor = (list, fn) => { list.forEach(fn); return self; }
 	const fnEach = (selector, fn) => fnFor(form.querySelectorAll(selector), fn);
 	const fnSetText = (el, text) => { el.innerHTML = text; return self; }
-    this.html = selector => form.querySelector(selector).innerHTML;
+	const fnUpdate = (selector, fn) => {
+		selector = selector || INPUTS; // Default = inputs type
+		return fnFor(form.elements, el => el.matches(selector) && fn(el));
+	}
+
+	this.html = selector => form.querySelector(selector).innerHTML;
 	this.text = (selector, text) => fnEach(selector, el => fnSetText(el, text)); // Update all texts info in form
 	this.render = (selector, data) => { // HTMLElement.prototype.render is implemented in Table component
 		data = data || i18n.getLang(); // Default data = current language
@@ -68,18 +73,18 @@ export default function(form, opts) {
 	this.show = selector => fnEach(selector, fnShow);
 	this.hide = selector => fnEach(selector, fnHide);
 	this.toggle = (selector, force) => force ? self.show(selector) : self.hide(selector);
-	this.disabled = (force, selector) => fnFor(self.getInputs(selector || INPUTS), el => el.classList.toggle("disabled", el.toggleAttribute("disabled", force))); // Update attribute and style
-	this.readonly = (force, selector) => fnFor(self.getInputs(selector || INPUTS), el => el.classList.toggle("readonly", el.toggleAttribute("readonly", force))); // Update attribute and style
+	this.disabled = (force, selector) => fnUpdate(selector, el => el.classList.toggle("disabled", el.toggleAttribute("disabled", force))); // Update attribute and style
+	this.readonly = (force, selector) => fnUpdate(selector, el => el.classList.toggle("readonly", el.toggleAttribute("readonly", force))); // Update attribute and style
 
 	this.setInsertMode = () => {
 		fnFor(form.getElementsByClassName(opts.insertOnlyClass), fnShow);
 		fnFor(form.getElementsByClassName(opts.updateOnlyClass), fnHide);
-		return self.disabled(false, "." + opts.updateDisabledClass);
+		return self.readonly(false, "." + opts.updateReadonlyClass);
 	}
 	this.setUpdateMode = () => {
 		fnFor(form.getElementsByClassName(opts.insertOnlyClass), fnHide);
 		fnFor(form.getElementsByClassName(opts.updateOnlyClass), fnShow);
-		return self.disabled(true, "." + opts.updateDisabledClass);
+		return self.readonly(true, "." + opts.updateReadonlyClass);
 	}
 	this.setMode = id => {
 		id = id || self.getval("[name='" + opts.pkName + "']");
@@ -117,11 +122,8 @@ export default function(form, opts) {
 	}
 	this.setValue = (el, value) => el ? fnSetValue(el, value) : self;
 	this.setval = (selector, value) => self.setValue(self.getInput(selector), value);
-	this.setValues = data => fnFor(form.elements, el => (isset(data[el.name]) && fnSetValue(el, data[el.name]))); // update element value only if data exists
-	this.setData = data => { // JSON to View
-		fnFor(form.elements, el => fnSetValue(el, data[el.name]));
-		return self.setMode(data[opts.pkName]);
-	}
+	this.setValues = (data, selector) => fnUpdate(selector, el => fnSetValue(el, data[el.name]));
+	this.setData = (data, selector) => self.setValues(data, selector).setMode(data[opts.pkName]); // JSON to View
 
 	function fnParseValue(el) {
 		if (el.classList.contains(opts.floatFormatClass))
@@ -135,21 +137,24 @@ export default function(form, opts) {
 	this.getValue = el => el && fnParseValue(el);
 	this.getval = selector => self.getInput(selector).value;
 	this.valueOf = selector => self.getValue(self.getInput(selector));
-	this.getData = data => { // View to JSON
+	this.getData = (data, selector) => { // View to JSON
 		data = data || {}; // Results container
-		form.elements.forEach(el => {
+		fnUpdate(selector, el => {
+			if (!el.name)
+				return; // No value to save
 			if ((el.type === "checkbox") && el.checked) {
 				data[el.name] = data[el.name] || [];
 				data[el.name].push(el.value); // Array type
 			}
-			else if (el.name)
+			else
 				data[el.name] = fnParseValue(el);
 		});
 		return data;
 	}
 
 	this.copy = (el1, el2) => fnValue(self.getInput(el1), self.getval(el2));
-	this.reset = () => { form.elements.forEach(el => fnValue(el)); return self.autofocus(); } // clear inputs (hidden to) and autofocus
+	this.clear = selector => fnUpdate(selector, el => fnValue(el));
+	this.reset = selector => self.clear(selector).autofocus(); // clear inputs (hidden to) and autofocus
 	this.restart = selector => { const el = self.getInput(selector); el.value = EMPTY; el.focus(); return self; } // remove value + focus
 
 	// Inputs helpers
@@ -169,12 +174,12 @@ export default function(form, opts) {
 		const fnItem = item => `<option value="${item.value}">${item.label}</option>`; // Item list
 		return fnSetText(select, emptyOption + items.map(fnItem).join(EMPTY)); // Render items
 	}
-	this.setOptions = function(selector, values, keys, emptyOption) {
+	this.setOptions = function(selector, labels, values, emptyOption) {
 		const select = self.getInput(selector); // Get select element
 		emptyOption = emptyOption ? `<option>${emptyOption}</option>` : EMPTY; // Text for empty first option
-		const fnKeys = (val, i) => `<option value="${keys[i]}">${val}</option>`; // Default options template
-		const fnDefault = (val, i) => `<option value="${i+1}">${val}</option>`; // 1, 2, 3... Number array
-		return fnSetText(select, emptyOption + values.map(keys ? fnKeys : fnDefault).join(EMPTY));
+		const fnOptions = (label, i) => `<option value="${values[i]}">${label}</option>`; // Default options template
+		const fnDefault = (label, i) => `<option value="${i+1}">${label}</option>`; // 1, 2, 3... Number array
+		return fnSetText(select, emptyOption + labels.map(values ? fnOptions : fnDefault).join(EMPTY));
 	}
 	this.toggleOptions = function(selector, flags) {
 		const select = form.elements.find(el => (el.options && el.matches(selector)));
@@ -243,20 +248,19 @@ export default function(form, opts) {
 	this.setError = (el, msg, tip) => {
 		el = isstr(el) ? self.getInput(el) : el;
 		fnSetInputError(el, tip); // Set input error
-		return self.showError(msg);
+		return self.showError(msg); // Show error message
 	}
 	this.setErrors = messages => {
 		if (isstr(messages)) // simple message text
-			alerts.showError(messages);
-		else { // Style error inputs and set focus on first error
-			form.elements.eachPrev(el => fnToggleError(el, messages[el.name]));
-			alerts.showError(messages.msgError || opts.defaultMsgError);
-		}
-		return self;
+			return self.showError(messages);
+		// Style error inputs and set focus on first error
+		messages = messages || i18n.getMsgs(); // default messages
+		form.elements.eachPrev(el => fnToggleError(el, messages[el.name]));
+		return self.showError(messages.msgError || opts.defaultMsgError);
 	}
 	this.isValid = fnValidate => {
 		const data = self.closeAlerts().getData();
-		return fnValidate(data) ? data : !self.setErrors(i18n.getMsgs());
+		return fnValidate(data) ? data : !self.setErrors();
 	}
 	this.validate = async fnValidate => {
 		const data = self.isValid(fnValidate);
@@ -305,9 +309,9 @@ export default function(form, opts) {
 		});
 	}
 	this.clone = msg => {
-		self.setInsertMode() // inserting mode
+		fnValue(self.getInput("[name='" + opts.pkName + "']")); // PK=""
 		alerts.showOk(msg || opts.defaultMsgOk); // show message
-		return fnValue(self.getInput("[name='" + opts.pkName + "']")); // input must exists
+		return self.setInsertMode() // inserting mode
 	}
 	this.setActions = () => {
 		return fnFor(form.elements, el => {

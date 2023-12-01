@@ -51,14 +51,19 @@ function Partida(presto) {
     }
 }
 
+function Partidas(presto) {
+	const self = this; //self instance
+    const partida = new Partida(presto);
+
+    let data; // Current presto data type
+    this.getData = () => data;
+    this.setData = partidas => { data = partidas; return self; }
+    this.getPartida = () => partida;
+}
+
 function Presto() {
 	const self = this; //self instance
     const partida = new Partida(self);
-    /*const ESTADOS = [ "Sin Enviar", "Aceptada", "Rechazada", "Ejecutada", "Notificada", "Enviada", "Sin Enviar" ];
-    const TIPOS = [
-            "-", "Transferencia de Crédito", "Fondo de Cobertura GENCOM", "Liquidación de Contrato de Art. 83 LOU", "Generación de Crédito FA", 
-		"Anticipos sobre Recaudación A83, TTPP y Cátedras", "Fondo de Cobertura", "Generación de Crédito GENCOM", "Ampliación FC"
-    ];*/
 
     let data; // Current presto data type
     this.getData = name => (name ? data[name] : data);
@@ -73,9 +78,6 @@ function Presto() {
     this.isGcr = () => (data.tipo == 4);
     this.isAnt = () => (data.tipo == 5);
     this.isAfc = () => (data.tipo == 8);
-    //this.getEstado = () => ESTADOS[data.estado];
-    //this.getTipo = () => TIPOS[data.tipo];
-    //this.getCodigo = () => data.codigo || "";
 
     this.isEditable = () => !data.id;
     this.isRechazada = () => (data.estado == 2);

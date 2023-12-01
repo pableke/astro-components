@@ -3,36 +3,28 @@ import Form from "../../components/Form.js";
 import Table from "../../components/Table.js";
 import tabs from "../../components/Tabs.js";
 import iris from "../../model/iris/Iris.js";
+import i18n from "../../i18n/iris/langs.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const uxxiec = iris.getUxxiec();
     const perfil = iris.getPerfil();
     let acOrganica;
 
-	/*** Filtro + listado de solicitudes ***/
-    const tabFilter = tabs.getTab(2);
-    const formFilter = new Form("xeco-filter");
-    const msgEmptyIris = "No se han encontrado solicitudes para a la búsqueda seleccionada";
-    let tSolicitudes = tabFilter.querySelector("table#solicitudes");
-    let tIris = new Table(tSolicitudes, { msgEmptyTable: msgEmptyIris });
-    window.loadIris = (xhr, status, args) => {
-        formFilter.setActions(); // Reload inputs actions
-        tSolicitudes = tabFilter.querySelector("table#solicitudes");
-        tIris = new Table(tSolicitudes, { msgEmptyTable: msgEmptyIris });
-        window.showTab(xhr, status, args, 2);
-    }
-    window.updateIris = (xhr, status, args) => window.showTab(xhr, status, args, 2) && iris.hide(".firma-" + args.id).text(".estado-" + args.id, "Procesando...");
-    /*** Filtro + listado de solicitudes ***/
-
 	/*** FORMULARIO PRINCIPAL ***/
     const formIris = new Form("xeco-iris");
-    tabs.setValidEvent(3, tab => formIris.isValid(iris.validate));
     window.fnSavePerfil = () => {
 		if (organicas.isEmpty())
 			return !formIris.setError("#acOrganica", "Debe asociar al menos una orgánica a la comunicación.");
         formIris.setval("#presupuesto", JSON.stringify(organicas.getData()));
-		return formIris.isValid(perfil.validate) && confirm("¿Confirma que desea firmar y enviar esta comunicación?");
+		return formIris.isValid(perfil.validate);
 	}
+
+    formIris.onChangeInput("#actividad", ev => { perfil.setActividad(ev.target.value); fnPerfil(); })
+            .onChangeInput("#tramite", ev => { perfil.setTramite(ev.target.value); fnPerfil(); })
+            .setOptions("#desp-mun", i18n.get("despMun"))
+            .onChangeSelect("#desp-mun", el => formIris.toggle(".matricula-mun", el.value == "1"))
+            .setOptions("#desp-maps", i18n.get("despMaps"))
+            .onChangeSelect("#desp-maps", el => formIris.toggle(".matricula-maps", el.value == "1"));
 
 	//****** tabla de organicas ******//
 	const organica = perfil.getOrganica();
@@ -53,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
         org && organicas.add(org);
         acOrganica.reload();
     });
-	//****** tabla de los conceptos a facturar ******//
+	//****** tabla de organicas ******//
 
     const fnPerfil = () => {
         const data = perfil.getData();
@@ -72,9 +64,12 @@ document.addEventListener("DOMContentLoaded", () => {
         iris.setData(data); // prepare inputs and load data before render
         organicas.render(JSON.read(args.data)); // Muestro las líneas asociadas a la solicitud
         window.loadRutas(formIris, JSON.read(args.rutas)); // Muestro las rutas asociadas a la solicitud
+        window.loadDietas(formIris, JSON.read(args.gastos)); // Cargo las dietas asociadas a la solicitud
         formIris.setval("#actividad", perfil.getActividad()).setval("#tramite", perfil.getTramite())
                 .toggle("#ac-organica", !data.id || !uxxiec.isUxxiec()).setMode(data.id)
-                .toggle(".firmable-only", iris.isFirmable()).toggle(".rechazable-only", iris.isRechazable()).toggle(".editable-only", iris.isEditable());
+                .toggle(".firmable-only", iris.isFirmable()).toggle(".rechazable-only", iris.isRechazable()).toggle(".editable-only", iris.isEditable())
+                .toggle(".mun-only", perfil.isMUN()).toggle(".colaboracion-only", perfil.isColaboracion())
+                .toggle(".aut-only", perfil.isAUT()).toggle(".act1dia-only", perfil.is1Dia());
         tabs.showTab(args.tab || 1); // Muestra el tab
 	};
     window.createIris = (xhr, status, args) => {
@@ -104,7 +99,5 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         window.viewIris(xhr, status, args);
 	}
-    formIris.onChangeInput("#actividad", ev => { perfil.setActividad(ev.target.value); fnPerfil(); })
-            .onChangeInput("#tramite", ev => { perfil.setTramite(ev.target.value); fnPerfil(); });
 	/*** FORMULARIO PRINCIPAL ***/
 });

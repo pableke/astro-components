@@ -7,7 +7,7 @@ const fnVisible = el => (el.offsetWidth || el.offsetHeight || el.getClientRects(
 
 function Collection() {
 	const self = this; //self instance
-    
+
     this.size = fnSize;
     this.parse = fnParse;
     this.format = format;
@@ -44,6 +44,21 @@ function Collection() {
         for (const name in data)
             results.push({ name, value: data[name] });
         return results;
+    }
+
+    this.copy = function(data, keys) {
+        const results = {}; // output container
+        keys.forEach(key => { results[key] = data[key]; });
+        return results;
+    }
+    this.clear = function(data, keys) {
+        if (keys)
+            keys.forEach(key => delete data[key]);
+        else {
+            for (let key in data)
+                delete data[key];
+        }
+        return self;
     }
 
     // Extends Array prototype

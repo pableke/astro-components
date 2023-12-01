@@ -19,8 +19,9 @@ function Tabs() {
 	const progressbar = document.getElementsByClassName(opts.progressBarClass);
 
     const fnSet = (name, fn) => { opts[name] = fn; return self; }
+    const fnActive = el => el.classList.contains(opts.activeClass);
     const fnFindIndex = id => tabs.findIndex(tab => (tab.id == ("tab-" + id))); //find index tab by id
-    const fnCurrentIndex = () => tabs.findIndex(el => el.classList.contains(opts.activeClass)); //current index tab
+    const fnCurrentIndex = () => tabs.findIndex(fnActive); //current index tab
     const autofocus = tab => {
         const el = tab.querySelectorAll(FOCUSABLED).find(el => el.isVisible());
         el && el.focus();
@@ -39,6 +40,7 @@ function Tabs() {
     this.getTab = id => tabs.find(tab => (tab.id == ("tab-" + id))); // Find by id selector
     this.setMask = mask => { _tabMask = mask; return self; } // set mask for tabs
     this.setActive = id => fnSetTab(self.getTab(id)); // Force active class whithot events and alerts
+    this.isActive = id => fnActive(self.getTab(id)); // is current active tab
 
     // Set events on tabs actions
     this.setValidEvent = (tab, fn) => fnSet("valid-tab-" + tab, fn);

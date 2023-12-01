@@ -32,7 +32,7 @@ export default {
     notFound: "Element not found!",
     noResults: "No results founds",
 
-    //array options
+    //Collections
     msgBool: ["No", "Yes"],
 
     //datepicker language

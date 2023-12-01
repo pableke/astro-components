@@ -11,7 +11,7 @@ Number.isNumber = isnum;
 Number.prototype.mask = function(i) { return ((this >> i) & 1); } // check bit at i position
 Number.prototype.bitor = function(flags) { return ((this & flags) > 0); } // some flags up?
 Number.prototype.bitand = function(flags) { return ((this & flags) == flags); } // all flags up?
-Number.prototype.round = function(digits) { return round(this, digits ?? 2); }
+Number.prototype.round = function(digits) { return round(this, digits ?? 2); } // default round 2 decimals
 
 function Langs() {
 	const self = this; //self instance
@@ -81,8 +81,10 @@ function Langs() {
     // Add i18n Date formats
     en.isoDate = str => str && str.substring(0, 10); //Iso string = yyyy-mm-dd
     es.isoDate = str => str && (str.substring(8, 10) + "/" + str.substring(5, 7) + "/" + str.substring(0, 4)); //Iso string to dd/mm/yyyy
+	this.enDate = en.isoDate; //yyyy-mm-dd
     this.isoDate = str => _lang.isoDate(str);
 	this.isoTime = str => str && str.substring(11, 19); //hh:MM:ss
+	this.isoTimeShort = str => str && str.substring(11, 16); //hh:MM
 	this.isoDateTime = str => self.isoDate(str) + " " + self.isoTime(str); //ISO date + hh:MM:ss
 
     // Add i18n Float formats

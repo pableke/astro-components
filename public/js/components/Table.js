@@ -40,10 +40,10 @@ export default function(table, opts) {
     this.getData = () => _rows;
     this.getIndex = () => _index;
     this.getItem = i => _rows[i ?? _index];
-    this.getCurrentItem = () => _rows[_index];
-    this.getCurrentRow = () => tBody.children[_index];
     this.isItem = () => (_index > -1) && (_index < _rows.length);
+    this.getCurrentItem = () => _rows[_index];
     this.getLastItem = () => _rows[_rows.length - 1];
+    this.getCurrentRow = () => tBody.children[_index];
     this.isEmpty = () => !_rows.length;
     this.size = () => _rows.length;
 

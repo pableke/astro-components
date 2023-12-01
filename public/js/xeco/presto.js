@@ -7,19 +7,7 @@ import uxxiec from "../model/Uxxiec.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const partida = presto.getPartida();
-
-    /*** Filtro + listado de solicitudes ***/
-    const formFilter = new Form("xeco-filter");
-    const OPTS_FILTER = { msgEmptyTable: "No se han encontrado solicitudes para a la búsqueda seleccionada" };
-    let prestos = formFilter.setTable("#solicitudes", OPTS_FILTER);
     tabs.setActive(uxxiec.isUxxiec() ? 0 : 2);
-    window.loadPrestos = (xhr, status, args) => {
-        formFilter.setActions(); // Reload inputs actions
-        prestos = formFilter.setTable("#solicitudes", OPTS_FILTER);
-        window.showTab(xhr, status, args, 2);
-    }
-    window.updatePresto = (xhr, status, args) => window.showTab(xhr, status, args, 2) && prestos.hide(".firma-" + args.id).text(".estado-" + args.id, "Procesando...");
-    /*** Filtro + listado de solicitudes ***/
 
     /*** FORMULARIO PARA EL DC 030 DE LAS GCR ***/
     const form030 = new Form("xeco-030");
@@ -142,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.viewPresto = (xhr, status, args) => {
         fnLoadEcoDec(args); // carga las econonomicas a decrementar
-        presto.setData(formPresto.setval("#partidas-inc").setActions().getData()); // prepare inputs and load data before render
+        presto.setData(formPresto.setval("#partidas-json").setActions().getData()); // prepare inputs and load data before render
         formPresto.setMode().toggle(".firmable-only", presto.isFirmable()).toggle(".rechazable-only", presto.isRechazable());
         lineas.render(JSON.read(args?.data)); // Load partidas a incrementar
         tabs.showTab(1); // Muestra el tab

@@ -113,7 +113,7 @@ function Validators() {
 	this.isDateTime = (name, value, msg) => {
         if (!value) // iso date validation
             return !i18n.setError("errRequired", name); // required
-		if (!/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d[\.\d{1,3}]?$/.test(value)) // RE_DATE_TIME format
+		if (!/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d{1,3}$/.test(value)) // RE_DATE_TIME format
             return !i18n.setError(msg || "errDate", name); // not valid
         return true;
     }

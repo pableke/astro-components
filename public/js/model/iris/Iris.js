@@ -22,12 +22,12 @@ function Iris() {
     this.isEditable = () => (data.estado == 6);
     this.isRechazada = () => (data.estado == 2);
     this.isFirmable = () => ((data.estado == 5) && ((data.fmask & 64) == 64));
-    this.isRechazable = () => (data.id && (uxxiec.isUae() || self.isFirmable()));
+    this.isRechazable = () => (data.id && !self.isEditable() && (uxxiec.isUae() || self.isFirmable()));
 	this.isEditableUae = () => self.isEditable() || (uxxiec.isUae() && self.isFirmable());
 
     this.validate = function(data) {
         let ok = valid.reset().size("objeto", data.objeto, "Debe seleccionar el objeto de la comisión"); // required string
-        return ok ||i18n.reject("errForm");
+        return ok || i18n.reject("errForm");
     }
 }
 

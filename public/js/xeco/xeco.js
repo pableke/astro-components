@@ -6,6 +6,18 @@ import uxxiec from "../model/Uxxiec.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     /*** Filtro + listado de solicitudes ***/
+    const formFilter = new Form("xeco-filter");
+    const OPTS_FILTER = { msgEmptyTable: "No se han encontrado solicitudes para a la búsqueda seleccionada" };
+    let solicitudes = formFilter.setTable("#solicitudes", OPTS_FILTER);
+    window.loadFiltro = (xhr, status, args) => {
+        formFilter.setActions(); // Reload inputs actions
+        solicitudes = formFilter.setTable("#solicitudes", OPTS_FILTER);
+        window.showTab(xhr, status, args, 2);
+    }
+    window.updateList = (xhr, status, args) => {
+        window.showTab(xhr, status, args, 2) && solicitudes.hide(".firma-" + args.id).text(".estado-" + args.id, "Procesando...");
+    }
+
     window.fnIntegrar = link => confirm("¿Confirma que desea integrar esta solicitud en UXXI-EC?") && window.loading() && !link.classList.add("hide");
     window.fnFirmar = () => confirm("¿Confirma que desea firmar esta solicitud?") && window.loading();
     window.fnRemove = () => confirm("¿Confirmas que desea eliminar esta solicitud?") && window.loading();
