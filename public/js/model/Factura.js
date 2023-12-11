@@ -1,5 +1,5 @@
 
-import i18n from "../i18n/langs.js";
+import i18n from "../i18n/langs/langs.js";
 import valid from "../i18n/validators.js";
 import uxxiec from "./Uxxiec.js";
 
@@ -28,14 +28,33 @@ function Linea(factura) {
     }
 }
 
+function Lineas(factura) {
+	const self = this; //self instance
+    const linea = new Linea(factura);
+
+    let data; // Current presto data type
+    this.getData = () => data;
+    this.setData = lineas => { data = lineas; return self; }
+
+    this.getLinea = () => linea;
+    this.size = () => JSON.size(data);
+    this.isEmpty = () => !self.size();
+
+    this.validate = () => { // Todas las solicitudes tienen partidas a incrementar
+        return data.length || !i18n.setInputError("desc", "errRequired", "Debe detallar los conceptos asociados a la solicitud.");
+    }
+}
+
 function Factura() {
 	const self = this; //self instance
-    const linea = new Linea(self);
+    const lineas = new Lineas(self);
 
     let data; // Current factura data type
     this.getData = name => (name ? data[name] : data);
     this.setData = input => { data = input; return self; }
-    this.getLinea = () => linea;
+    this.getLineas = () => lineas;
+    this.setLineas = data => { lineas.setData(data); return self; }
+    this.getLinea = lineas.getLinea;
 
     this.isEditable = () => !data.id;
     this.isFactura = () => (data.tipo == 1);
@@ -59,6 +78,7 @@ function Factura() {
 
     this.isFace = () => (data.face == 1); //factura electronica FACe
     this.isPlataforma = () => (data.face == 2); //factura electronica Otras
+    this.setFace = val => { data.face = val; return self; }
 
     this.render = (data, output, resume) => {
         resume.imp += data.imp; // sum
@@ -73,8 +93,9 @@ function Factura() {
             ok = valid.leToday("fMax", data.fMax) ? ok : i18n.reject("Debe indicar la fecha del recibo asociado"); // Required date
         }*/
         ok = valid.size("memo", data.memo) ? ok : i18n.reject("Debe indicar las observaciones asociadas a la solicitud."); // Required string
-        ok = self.isFace() ? (valid.size("#og", data.og) && valid.size("#oc", data.oc) && valid.size("#ut", data.ut)) : ok;
-        return self.isPlataforma() ? valid.size("#og", data.og) : ok;
+        ok = self.isFace() ? (valid.size("og", data.og) && valid.size("oc", data.oc) && valid.size("ut", data.ut)) : ok;
+        ok = self.isPlataforma() ? valid.size("og", data.og) : ok;
+        return lineas.validate() && ok;
     }
 }
 

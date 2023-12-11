@@ -1,5 +1,5 @@
 
-import i18n from "../i18n/langs.js";
+import i18n from "../i18n/langs/langs.js";
 import valid from "../i18n/validators.js";
 
 function Uxxiec() {

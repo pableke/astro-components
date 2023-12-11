@@ -11,20 +11,27 @@ function Rutas() {
 
     this.getRuta = () => ruta;
     this.size = () => JSON.size(data);
-    this.isEmpty = () => (self.size() > 0);
-    this.getFirst = () => ruta[0];
-    this.getLast = () => ruta[data.length - 1];
+    this.isEmpty = () => !self.size();
+    this.getFirst = () => data[0];
+    this.getLast = () => data[data.length - 1];
     this.getStart = () => self.getFirst().dt1;
     this.getStartDate = () => new Date(self.getStart());
     this.getEnd = () => self.getLast().dt2;
     this.getEndDate = () => new Date(self.getEnd());
     this.is1Dia = () => self.getStart().startsWith(self.getEnd().substring(0, 10));
 
-    const diffDays = () => (self.getEndDate() - self.getStartDate()) / (1000 * 3600 * 24); // Date difference in days
-    this.getNumNoches = () => (self.isEmpty() || self.is1Dia()) ? 0 : diffDays();
+    const fnDiffDays = () => self.getStartDate().diffDays(self.getEndDate());
+    this.getNumNoches = () => (self.isEmpty() || self.is1Dia()) ? 0 : fnDiffDays();
     this.getNumDias = () => {
         if (self.isEmpty()) return 0;
-        return self.is1Dia() ? 1 : diffDays();
+        return self.is1Dia() ? 1 : fnDiffDays();
+    }
+
+    this.getRutaByDate = fecha => {
+        let ruta = self.getFirst(); // Ruta de salida
+        const fMax = (new Date(fecha)).addHours(29).toISOString(); // fMAx = hora de salida + 5h del dia siguiente
+        data.forEach(r => { ruta = (r.dt2 < fMax) ? r : ruta; }); // Ultima fecha de llegada mas proxima a fMax
+        return ruta;
     }
 
     this.render = function() {
@@ -41,11 +48,11 @@ function Rutas() {
 		if (self.isEmpty())
 			return i18n.reject("errItinerario");
 		let r1 = data[0];
-		if (!ruta.validateRuta(r1))
+		if (!ruta.validate(r1))
 			return false;
 		for (let i = 1; i < data.length; i++) {
 			let r2 = data[i];
-			if (!ruta.validateRuta(r2))
+			if (!ruta.validate(r2))
 				return false; //stop
 			if (r1.pais2 != r2.pais1)
 				return !i18n.setError("errItinerarioPaises", "destino");

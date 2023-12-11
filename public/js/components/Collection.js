@@ -46,9 +46,12 @@ function Collection() {
         return results;
     }
 
-    this.copy = function(data, keys) {
+    this.clone = function(data, keys) {
         const results = {}; // output container
-        keys.forEach(key => { results[key] = data[key]; });
+        if (keys)
+            keys.forEach(key => { results[key] = data[key]; });
+        else
+            Object.assign(results, data);
         return results;
     }
     this.clear = function(data, keys) {
@@ -60,6 +63,10 @@ function Collection() {
         }
         return self;
     }
+
+    // Extends Object
+    Object.clone = self.clone;
+    Object.clear = self.clear;
 
     // Extends Array prototype
     function fnEachPrev(fn) { self.eachPrev(this, fn); }

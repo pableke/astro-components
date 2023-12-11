@@ -15,9 +15,12 @@ export default {
     errDateGt: "Date must be greater than current",
     errNumber: "Wrong number format",
     errGt0: "Price must be great than 0.00 &euro;", 
+    errExceeded: "exceeded amount!", 
     errFormat: "Wrong format!",
     errReclave: "Passwords typed do not match",
     errRange: "Value out of allowed range",
+    notAllowed: "Value not allowed",
+    notValid: "Invalid value!",
 
     //confirm cuestions
     saveOk: "Element saved successfully!",
@@ -31,6 +34,7 @@ export default {
     linkOk: "Elements linked successfully!",
     notFound: "Element not found!",
     noResults: "No results founds",
+    selectOption: "Select an option",
 
     //Collections
     msgBool: ["No", "Yes"],

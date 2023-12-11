@@ -3,6 +3,7 @@ import tabs from "../../components/Tabs.js";
 import iris from "../../model/iris/Iris.js";
 import itinerario from "../../model/iris/Rutas.js";
 //import MUNICIPIO from "../../data/iris/cartagena.js";
+//import i18n from "../../i18n/iris/langs.js";
 
 const ADDRESS_COMPONENT = [ "Cartagena", "30393", "30394", "30395", "30396", "30397", "30398", "30399", "30593", "30594", "30835", "30868", "30201", "30202", "30203", "30204", "30205", "30300", "30310", "30319", "30330", "30350", "30351", "30365", "30366", "30367", "30368", "30369", "30370", "30380", "30381", "30382", "30383", "30384", "30385", "30387", "30389", "30390", "30391", "30392"];
 const OPTIONS = {
@@ -12,6 +13,7 @@ const OPTIONS = {
 };
 
 const tabRuta = tabs.getTab(4);
+const perfil = iris.getPerfil();
 const ruta = itinerario.getRuta();
 const inputOrigen = document.getElementById("origen");
 const inputDestino = document.getElementById("destino");
@@ -20,11 +22,12 @@ var formIris, rutas; // Global IRIS form
 const fnEnd = ok => ok ? formIris.stringify("#rutas-json", rutas) : !formIris.setErrors();
 window.fnSave = () => {
     const perfil = iris.getPerfil();
-    const data = formIris.isValid(iris.validate);
-    if (!data)
-        return false;
-    if (perfil.isMUN())
-        return fnEnd(ruta.validateMun(data) && rutas.add(data));
+    if (!formIris.isValid(iris.validate))
+        return false; // validaciones comunes
+    if (perfil.isMUN()) {
+        const data = formIris.isValid(ruta.validateMun, ".ui-mun");
+        return fnEnd(data && rutas.add(data));
+    }
     if (tabs.isActive(4) && perfil.isCOM())
         return fnEnd(itinerario.validate());
     return true;
@@ -38,12 +41,14 @@ window.loadRutas = function(form, data) {
 	rutas.render(data);
     if (rutas.size()) {
         const last = itinerario.getLast();
-        inputOrigen.value = last.destino; // Init origen
-        formIris.setval("#f1", i18n.enDate(last.dt2)).setval("#h1", i18n.enDate(last.dt2));
+        const selector = perfil.isMUN() ? ".grupo-matricula-mun" : ".grupo-matricula-maps";
+        formIris.setValues(ruta.setData(Object.clone(last)).nextPlace().getData(), ".ui-ruta")
+                .setValues(last, ".ui-mun").toggle(selector, last.desp == 1);
     }
     else {
-        inputOrigen.value = ruta.getCT();
-        formIris.clear(".ui-mun");
+        formIris.clear(".ui-mun").show(".grupo-matricula-mun")
+                .clear(".ui-ruta").hide(".grupo-matricula-maps");
+        inputOrigen.value = ruta.setData({}).setOrigenCT().getCT();
     }
 }
 
@@ -58,18 +63,6 @@ window.initMap = function() {
     //destino.bindTo("bounds", map);
     //map.data.addGeoJson(MUNICIPIO); //municipio de cartagena
 
-    /*function setViewport(place, input) {
-        // User entered the name of a Place that was not suggested
-        if (!place.geometry || !place.geometry.location)
-            return formIris.setError(input, "No details available for input: '" + place.name + "'");
-        // If the place has a geometry, then present it on a map.
-        if (place.geometry.viewport)
-            map.fitBounds(place.geometry.viewport)
-        else {
-            map.setCenter(place.geometry.location);
-            map.setZoom(17);
-        }
-    }*/
     function fnGetComponent(place, type) { //get short name from type address component
         let component = place.address_components.find(address => address.types.includes(type));
         return component && component.short_name;
@@ -79,21 +72,13 @@ window.initMap = function() {
     //get postal code / locality short name from place (30XXX, Cartagena, Murcia,...)
     const fnLocality = place => fnGetComponent(place, "postal_code") || fnGetComponent(place, "locality");
 
-    tabRuta.querySelector("#add-ruta").addEventListener("click", ev => {
-        const data = formIris.isValid(ruta.validate);
+    tabRuta.querySelector("[href='#add-ruta']").addEventListener("click", ev => {
+        const data = formIris.isValid(ruta.validateRuta, ".ui-ruta");
         if (!data)
             return;
-        const p1 = ruta.setData(data).getOrigen();
-        if (!p1 && rutas.isEmpty()) //primera ruta
-            inputOrigen.value = ruta.setOrigenCT().getCT();
-        else if (!p1)
-            return formIris.setError(inputOrigen, "Debe seleccionar el origen de la ruta", "errRequired");
-        else if (p1 && p1.geometry) //ha seleccionado un origen?
-            ruta.setPlace1(p1.geometry.location.lat(), p1.geometry.location.lng(), fnCountry(p1));
-
-        const p2 = ruta.getDestino();
-        data.mask = (ADDRESS_COMPONENT.includes(fnLocality(p1)) && ADDRESS_COMPONENT.includes(fnLocality(p2))) ? 4 : 0;
-        ruta.setPlace2(p2.geometry.location.lat(), p2.geometry.location.lng(), fnCountry(p2));
+        const loc1 = fnLocality(ruta.getOrigen());
+        const loc2 = fnLocality(ruta.getDestino());
+        data.mask = (ADDRESS_COMPONENT.includes(loc1) && ADDRESS_COMPONENT.includes(loc2)) ? 4 : 0;
 
         if (ruta.isVehiculoPropio()) //calculate distance
             distance.getDistanceMatrix({
@@ -118,14 +103,31 @@ window.initMap = function() {
             rutas.add(data);
 
         // Re-init form
-        ruta.nextPlace(); // re-init places
-        inputOrigen.value = inputDestino.value; //origen = destino anterior
-        inputDestino.value = null;
-        formIris.copy("#f1", "#f2").setval("#f2").copy("#h1", "#h2").setval("#h2");
+        formIris.setValues(ruta.nextPlace().getData(), ".ui-ruta");
         inputDestino.focus();
     });
 
     // Get the place details from autocomplete to origen and destino
-    origen.addListener("place_changed", function() { ruta.setOrigen(origen.getPlace()); /*setViewport(p1, this);*/ });
-    destino.addListener("place_changed", function() { ruta.setDestino(destino.getPlace()); /*setViewport(p2, this);*/ });
+    /*function setViewport(place, input) {
+        // User entered the name of a Place that was not suggested
+        if (!place.geometry || !place.geometry.location)
+            return formIris.setError(input, "No details available for input: '" + place.name + "'");
+        // If the place has a geometry, then present it on a map.
+        if (place.geometry.viewport)
+            map.fitBounds(place.geometry.viewport)
+        else {
+            map.setCenter(place.geometry.location);
+            map.setZoom(17);
+        }
+    }*/
+    origen.addListener("place_changed", function() {
+        const place = origen.getPlace();
+        /*setViewport(place, this);*/
+        ruta.setOrigen(place, fnCountry(place));
+    });
+    destino.addListener("place_changed", function() {
+        const place = destino.getPlace();
+        /*setViewport(place, this);*/
+        ruta.setDestino(place, fnCountry(place));
+    });
 }

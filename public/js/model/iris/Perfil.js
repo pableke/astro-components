@@ -4,11 +4,6 @@ import perfiles from "../../data/iris/perfiles.js"
 import i18n from "../../i18n/iris/langs.js";
 import valid from "../../i18n/validators.js";
 
-const PERFIL = "P,PAS,COM,AyL,OTR";
-const DEFAULT = { // default => actividad=COM/MUN, tramite=AyL
-	pasos: 0b111011, actividad: 3, tramite: 7, titulo: "Perfil no encontrado"
-};
-
 function Organica(perfil) {
 	const self = this; //self instance
 
@@ -40,7 +35,7 @@ function Perfil() {
 
     let data, parts;
 	const fnUpdate = () => {
-		data = perfiles[self.getPerfil()] || DEFAULT;
+		data = perfiles[self.getPerfil()] || perfiles.default;
 		return self;
 	}
 
@@ -48,8 +43,8 @@ function Perfil() {
 	this.getOrganica = () => organica;
     this.getPerfil = () => parts.join(",");
 	this.setPerfil = perfil => {
-		perfil = perfil || PERFIL;
-		data = perfiles[perfil] || DEFAULT;
+		perfil = perfil || "P,PAS,COM,AyL,OTR";
+		data = perfiles[perfil] || perfiles.default;
 		parts = perfil.split(",");
 		return self;
 	}

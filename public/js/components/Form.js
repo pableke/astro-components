@@ -2,13 +2,11 @@
 import Table from "./Table.js";
 import Autocomplete from "./Autocomplete.js";
 import alerts from "./Alerts.js";
-import i18n from "../i18n/langs.js";
+import i18n from "../i18n/langs/langs.js";
 
 const divNull = document.createElement("div");
-const isset = val => (typeof(val) !== "undefined") && (val !== null);
 const isstr = val => (typeof(val) === "string") || (val instanceof String);
 
-String.isset = isset;
 String.isstr = isstr;
 
 export default function(form, opts) {
@@ -137,8 +135,8 @@ export default function(form, opts) {
 	this.getValue = el => el && fnParseValue(el);
 	this.getval = selector => self.getInput(selector).value;
 	this.valueOf = selector => self.getValue(self.getInput(selector));
-	this.getData = (data, selector) => { // View to JSON
-		data = data || {}; // Results container
+	this.getData = selector => { // View to JSON
+		const data = {}; // Results container
 		fnUpdate(selector, el => {
 			if (!el.name)
 				return; // No value to save
@@ -208,8 +206,7 @@ export default function(form, opts) {
 	this.click = selector => { form.querySelector(selector).click(); return self; } // Fire event
 
 	this.onChangeInput = (selector, fn) => {
-		const el = self.getInput(selector);
-		return fnEvent(el, "change", fn);
+		return fnEvent(self.getInput(selector), "change", fn);
 	}
 	this.onChangeSelect = (selector, fn) => {
 		const el = self.getInput(selector);
@@ -233,10 +230,14 @@ export default function(form, opts) {
 	}
 
 	// Form Validator
-	const fnSetTip = (el, msg) => fnSetText(form.querySelector("#tip-" + el.name) || divNull, msg);
-	const fnSetInputOk = el => { el.classList.remove(opts.inputErrorClass); fnSetTip(el, EMPTY); }
-	const fnSetInputError = (el, tip) => { el.classList.add(opts.inputErrorClass); el.focus(); fnSetTip(el, i18n.get(tip)); }
-	const fnToggleError = (el, tip) => { tip ? fnSetInputError(el, tip) : fnSetInputOk(el); }
+	const fnSetTip = (el, msg) => fnSetText(form.querySelector("[id='tip-" + el.id + "']") || divNull, msg);
+	const fnSetInputOk = el => { el.classList.remove(opts.inputErrorClass); return fnSetTip(el, EMPTY); }
+	const fnSetInputError = (el, tip) => {
+		el.focus(); // set focus on error
+		el.classList.add(opts.inputErrorClass);
+		return fnSetTip(el, i18n.get(tip));
+	}
+	const fnToggleError = (el, tip) => tip ? fnSetInputError(el, tip) : fnSetInputOk(el);
 	this.closeAlerts = () => {
 		alerts.closeAlerts();
 		return fnFor(form.elements, fnSetInputOk);
@@ -250,20 +251,21 @@ export default function(form, opts) {
 		fnSetInputError(el, tip); // Set input error
 		return self.showError(msg); // Show error message
 	}
-	this.setErrors = messages => {
+	this.setErrors = (messages, selector) => {
 		if (isstr(messages)) // simple message text
 			return self.showError(messages);
 		// Style error inputs and set focus on first error
+		selector = selector || INPUTS; // Default = inputs type
 		messages = messages || i18n.getMsgs(); // default messages
-		form.elements.eachPrev(el => fnToggleError(el, messages[el.name]));
+		form.elements.eachPrev(el => (el.matches(selector) && fnToggleError(el, messages[el.name])));
 		return self.showError(messages.msgError || opts.defaultMsgError);
 	}
-	this.isValid = fnValidate => {
-		const data = self.closeAlerts().getData();
-		return fnValidate(data) ? data : !self.setErrors();
+	this.isValid = (fnValidate, selector) => {
+		const data = self.closeAlerts().getData(selector);
+		return fnValidate(data) ? data : !self.setErrors(i18n.getMsgs(), selector);
 	}
-	this.validate = async fnValidate => {
-		const data = self.isValid(fnValidate);
+	this.validate = async (fnValidate, selector) => {
+		const data = self.isValid(fnValidate, selector);
 		if (data) { // Is valid data?
 			const insertar = (opts.insert && !data[opts.pkName]); // insert or update
 			const fnUpdate = (data, info) => self.setOk(info); // Default acction

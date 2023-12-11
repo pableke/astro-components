@@ -7,6 +7,7 @@ import uxxiec from "../model/Uxxiec.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const partida = presto.getPartida();
+    const partidas = presto.getPartidas();
     tabs.setActive(uxxiec.isUxxiec() ? 0 : 2);
 
     /*** FORMULARIO PARA EL DC 030 DE LAS GCR ***/
@@ -19,20 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
         afterSelect: item => form030.setval("#idEco030", item.imp)
     });
     form030.setClick("#save-030", ev => {
-        const row = lineas.getCurrentItem();
-        const data = form030.isValid(partida.validate030);
-        if (row && data) {
-            if (row.imp < data.imp030)
-                return form030.setError("#imp030", "El importe del documento 030 excede al del 080.")
-            const label = data.acOrg030.split(" - ");
-            if (label) { // Update partida inc.
-                row.idOrg030 = +data.idOrg030;
-                [row.o030, row.dOrg030] = label;
-                row.idEco030 = data.idEco030;
-                row.imp030 = data.imp030;
-                formPresto.stringify("#partidas-json", lineas); // save data to send to server
-                tabs.backTab().showOk("Datos del documento 030 asociados correctamente."); // Back to presto view
-            }
+        partida.setData(lineas.getCurrentItem());
+        if (form030.isValid(partida.validate030)) {
+            formPresto.stringify("#partidas-json", lineas); // save data to send to server
+            tabs.backTab().showOk("Datos del documento 030 asociados correctamente."); // Back to presto view
         }
     });
     /*** FORMULARIO PARA EL DC 030 DE LAS GCR ***/
@@ -63,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let economicasDec, acOrgDec, acOrgInc;
     const fnAvisoFa = item => { //aviso para organicas afectadas en TCR o FCE
         const info = "La orgánica seleccionada es afectada, por lo que su solicitud solo se aceptará para determinado tipo de operaciones.";
-        presto.isAfectada(item?.int) && (presto.isTcr() || presto.isFce()) && formPresto.showInfo(info);
+        partida.isAfectada(item?.int) && (presto.isTcr() || presto.isFce()) && formPresto.showInfo(info);
         alerts.working(); // Hide loading indicator
     }
     const fnAutoloadInc = (partida, imp) => {
@@ -119,9 +110,8 @@ document.addEventListener("DOMContentLoaded", () => {
     window.fnAddPartidaInc = () => formPresto.isValid(partida.validate);
     window.loadPartidaInc = (xhr, status, args) => {
         const partida = JSON.read(args.data);
-        const row = lineas.getData().find(row => ((row.o == partida.o) && (row.e == partida.e)));
-        if (row) // compruebo si la partida existía previamente
-            return formPresto.setError("#acOrgInc", "¡Partida ya asociada a la solicitud!");
+        if (!partidas.setData(lineas).validatePartida(partida)) // compruebo si la partida existía previamente
+            return formPresto.setError("#acOrgInc", "¡Partida ya asociada a la solicitud!", "notAllowed");
         partida.imp030 = partida.imp = formPresto.valueOf("#impInc"); // Importe de la partida a añadir
         lineas.add(partida); // Add and remove PK autocalculated in extraeco.v_presto_partidas_inc
         acOrgInc.reload();
@@ -182,15 +172,9 @@ document.addEventListener("DOMContentLoaded", () => {
         window.viewPresto(xhr, status, args);
     }
     window.fnSend = () => {
-        const resume = lineas.getResume();
-        const partidas = lineas.getData();
-        if (!partidas.length) // Todas las solicitudes tienen partidas a incrementar
-            return !formPresto.setError("#acOrgInc", "Debe seleccionar al menos una partida a incrementar!", "errRequired");
-        if (presto.isPartidaDec() && (resume.imp != formPresto.valueOf("#impDec"))) // Valido los importes a decrementar e incrementar
-            return !formPresto.setError("#impDec", "¡Los importes a decrementar e incrementar no coinciden!");
+        partidas.setData(lineas); // Cargo las partidas para su validación
         if (formPresto.isValid(presto.validate)) { //todas las validaciones estan ok?
-            partidas.sort((a, b) => (b.imp - a.imp)); //orden por importe desc.
-            partidas[0].mask = partidas[0].mask | 1; //marco la primera como principal
+            partidas.setPrincipal(); //marco la primera como principal
             formPresto.stringify("#partidas-json", lineas); // save data to send to server
             return confirm("¿Confirma que desea firmar y enviar esta solicitud?");
         }

@@ -1,5 +1,7 @@
 
 import perfil from "./Perfil.js";
+import rutas from "./Rutas.js";
+import gastos from "./Gastos.js";
 import uxxiec from "../Uxxiec.js";
 import i18n from "../../i18n/iris/langs.js";
 import valid from "../../i18n/validators.js";
@@ -17,6 +19,8 @@ function Iris() {
 
     this.getUxxiec = () => uxxiec;
     this.getPerfil = () => perfil;
+    this.getRutas = () => rutas;
+    this.getGAstos = () => gastos;
 
     this.isEditableP0 = () => !data.id;
     this.isEditable = () => (data.estado == 6);

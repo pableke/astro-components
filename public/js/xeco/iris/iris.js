@@ -22,9 +22,10 @@ document.addEventListener("DOMContentLoaded", () => {
     formIris.onChangeInput("#actividad", ev => { perfil.setActividad(ev.target.value); fnPerfil(); })
             .onChangeInput("#tramite", ev => { perfil.setTramite(ev.target.value); fnPerfil(); })
             .setOptions("#desp-mun", i18n.get("despMun"))
-            .onChangeSelect("#desp-mun", el => formIris.toggle(".matricula-mun", el.value == "1"))
-            .setOptions("#desp-maps", i18n.get("despMaps"))
-            .onChangeSelect("#desp-maps", el => formIris.toggle(".matricula-maps", el.value == "1"));
+            .onChangeInput("#desp-mun", ev => formIris.toggle(".grupo-matricula-mun", ev.target.value == "1"))
+            .setOptions("#desp-maps", i18n.get("despMaps"), null, i18n.get("selectOption"))
+            .onChangeInput("#desp-maps", ev => formIris.toggle(".grupo-matricula-maps", ev.target.value == "1"))
+            .onChangeInput("[name=matricula]", ev => formIris.setval("#matricula-pf", ev.target.value));
 
 	//****** tabla de organicas ******//
 	const organica = perfil.getOrganica();

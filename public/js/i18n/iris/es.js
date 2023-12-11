@@ -1,7 +1,8 @@
 
 export default {
-    titPerfil1: "Comunicación de Datos y Documentación para Liquidación de Comisión de Servicio",
-    titPerfil6: "Comunicación de Datos y Documentación para Liquidación por Desplazamiento Dentro del Término Municipal",
+    titPerfil01: "Comunicación de Datos y Documentación para Liquidación de Comisión de Servicio",
+    titPerfil06: "Comunicación de Datos y Documentación para Liquidación por Desplazamiento Dentro del Término Municipal",
+    titPerfilErr: "Perfil no encontrado",
 
     // Collections
     despMun: [ "Vehículo Propio", "Transportes Públicos" ],

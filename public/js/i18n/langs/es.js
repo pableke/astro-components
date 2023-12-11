@@ -16,9 +16,12 @@ export default {
     errDateGt: "La fecha debe ser mayor a la actual",
     errNumber: "Valor no numérico",
     errGt0: "El importe debe ser mayor de 0,00 &euro;", 
+    errExceeded: "Importe excedido", 
     errFormat: "¡Formato incorrecto!",
     errReclave: "Las claves introducidas no coinciden",
     errRange: "Valor fuera del rango permitido",
+    notAllowed: "Valor no permitido",
+    notValid: "Valor Incorrecto",
 
     //confirm cuestions
     saveOk: "Datos actualizados correctamente",
@@ -32,6 +35,7 @@ export default {
     linkOk: "Registros asociados correctamente.",
     notFound: "Elemento no encontrado en el sistema",
     noResults: "No se han encontrado registros asociados",
+    selectOption: "Seleccione un opción",
 
     //Collections
     msgBool: ["No", "Si"],
