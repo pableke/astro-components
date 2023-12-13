@@ -13,7 +13,7 @@ gulp.task("minify-css", done => {
 
 // Tasks to minify JS"s
 gulp.task("minify-js", done => {
-	fs.rmSync("dist/js", { recursive: true, force: true });
+	fs.rmSync("dist/js", { recursive: true, force: true }); // Remove previous unused files
 	const CV = "C:/CampusVirtualV2/workspaceGIT/campusvirtual/applications/uae/src/main/webapp/resources/js";
 	gulp.src(JS_FILES).pipe(uglify()).pipe(gulp.dest("dist/js")).on("end", () => {
 		gulp.src("dist/js/**/*.js").pipe(gulp.dest(CV)).on("end", done); // deply JS in Campus Virtual

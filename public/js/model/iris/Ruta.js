@@ -92,9 +92,8 @@ function Ruta() {
         return output;
     }
 
-    function fnValidate(data) {
-console.log(data);
-        let ok = valid.size("origen", data.origen) && valid.size("destino", data.destino);
+    this.validate = data => {
+        let ok = valid.reset().size("origen", data.origen) && valid.size("destino", data.destino);
         if (!Number.isNumber(data.lat1) || !Number.isNumber(data.lng1) || !data.pais1)
             ok = !i18n.setInputError("origen", "errRequired", "Localización incorrecta para el origen de la etapa.");
         if (!Number.isNumber(data.lat2) || !Number.isNumber(data.lng2) || !data.pais2)
@@ -105,10 +104,9 @@ console.log(data);
             ok = valid.size20("matricula", data.matricula) && ok;
         return valid.isDateTime("f1", data.dt1) && valid.isDateTime("f2", data.dt2) && ok;
     }
-    this.validate = data => { valid.reset(); return fnValidate(data); }
     this.validateMun = function(data) {
         data.f2 = data.f1;
-        data.destino = data.origen;
+        data.origen = data.destino;
         self.setData(data).setOrigenCT().setDestinoCT();
         return self.validate(data);
     }
@@ -116,9 +114,9 @@ console.log(data);
         data.desp = ruta.desp;
         data.dt1 = ruta.f1 + "T" + ruta.h1 + MS0;
         data.dt2 = ruta.f2 + "T" + ruta.h2 + MS0;
-        let ok = valid.reset().isTime("h1", ruta.h1 + TSS);
-        ok = valid.isTime("h2", ruta.h2 + TSS) && ok;
-        return fnValidate(data) && ok;
+        let ok = self.validate(data);
+        ok = valid.isTime("h1", ruta.h1 + TSS) && ok;
+        return valid.isTime("h2", ruta.h2 + TSS) && ok;
     }
 }
 

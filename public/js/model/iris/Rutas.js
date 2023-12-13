@@ -4,10 +4,14 @@ import i18n from "../../i18n/iris/langs.js";
 
 function Rutas() {
 	const self = this; //self instance
-    let data;
 
+    let data, resume; // Current data table
     this.getData = () => data;
-    this.setData = rutas => { data = rutas; return self; }
+    this.setData = table => {
+        data = table.getData();
+        resume = table.getResume();
+        return self;
+    }
 
     this.getRuta = () => ruta;
     this.size = () => JSON.size(data);
@@ -34,19 +38,9 @@ function Rutas() {
         return ruta;
     }
 
-    this.render = function() {
-        return {
-            msgEmptyTable: "No existen etapas asociadas a la comunicación.",
-            beforeRender: resume => { resume.km2 = 0; },
-            onRender: ruta.render,
-            onFooter: ruta.resume,
-            afterRender: resume => { }
-        };
-    }
-
     this.validate = function() {
 		if (self.isEmpty())
-			return i18n.reject("errItinerario");
+			return !i18n.setInputError("destino", "errRequired", "errItinerario");
 		let r1 = data[0];
 		if (!ruta.validate(r1))
 			return false;
@@ -55,11 +49,11 @@ function Rutas() {
 			if (!ruta.validate(r2))
 				return false; //stop
 			if (r1.pais2 != r2.pais1)
-				return !i18n.setError("errItinerarioPaises", "destino");
+				return !i18n.setInputError("destino", "errRequired", "errItinerarioPaises");
 			if (r1.dt2 > r2.dt1) //rutas ordenadas
-				return !i18n.setError("errItinerarioFechas", "destino");
+				return !i18n.setInputError("destino", "errRequired", "errItinerarioFechas");
 			if (data[0].origen == r2.origen)
-				return !i18n.setError("errMulticomision", "destino");
+				return !i18n.setInputError("destino", "errRequired", "errMulticomision");
 			r1 = r2; //go next route
 		}
 		return true;

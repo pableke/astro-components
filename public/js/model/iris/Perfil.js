@@ -4,7 +4,7 @@ import perfiles from "../../data/iris/perfiles.js"
 import i18n from "../../i18n/iris/langs.js";
 import valid from "../../i18n/validators.js";
 
-function Organica(perfil) {
+function Organica() {
 	const self = this; //self instance
 
 	this.is642 = mask => ((mask & 8) == 8); //contiene alguna aplicacion 642?
@@ -29,9 +29,49 @@ function Organica(perfil) {
     }
 }
 
+function Organicas(perfil) {
+	const self = this; //self instance
+	const organica = new Organica();
+
+    let data, resume; // Current data table
+    this.getData = () => data;
+    this.setData = table => {
+        data = table.getData();
+        resume = table.getResume();
+        return self;
+    }
+
+	this.getOrganica = () => organica;
+    this.size = () => JSON.size(data);
+    this.isEmpty = () => !self.size();
+
+	this.refinanciar = () => {
+		let result = "OTR";
+		if (self.size()) {
+			const ORG_300518 = "300518";
+			data.forEach(org => {
+				result = (org.o.startsWith(ORG_300518) && organica.is642(org.mask)) ? "ISU" : result; //apli=642
+				result = (org.o.startsWith(ORG_300518) && organica.is643(org.mask) && (result != "ISU")) ? "A83" : result; //apli=643
+				result = (organica.isTTPP(org.o) && (result == "OTR")) ? "ACA" : result; //TTPP o Master
+			});
+			if (data.length > 1) {
+				if (result == "ISU") return perfil.setFinanciacion("xSU");
+				if (result == "A83") return perfil.setFinanciacion("x83");
+				if (result == "ACA") return perfil.setFinanciacion("xAC");
+				return perfil.setFinanciacion("xOT");
+			}
+		}
+		return perfil.setFinanciacion(result);
+	}
+
+	this.validate = function() {
+        return data.length || !i18n.setInputError("acOrganica", "errRequired", "Debe asociar al menos una orgánica a la comunicación.");
+	}
+}
+
 function Perfil() {
 	const self = this; //self instance
-	const organica = new Organica(self);
+	const organicas = new Organicas(self);
 
     let data, parts;
 	const fnUpdate = () => {
@@ -40,7 +80,8 @@ function Perfil() {
 	}
 
 	this.getData = () => data;
-	this.getOrganica = () => organica;
+	this.getOrganicas = () => organicas;
+	this.getOrganica = () => organicas.getOrganica();
     this.getPerfil = () => parts.join(",");
 	this.setPerfil = perfil => {
 		perfil = perfil || "P,PAS,COM,AyL,OTR";
@@ -93,28 +134,12 @@ function Perfil() {
 	this.isA83 = () => ((parts[4] == "A83") || (parts[4] == "x83"));
 	this.isACA = () => ((parts[4] == "ACA") || (parts[4] == "xAC"));
 	this.isOTR = () => ((parts[4] == "OTR") || (parts[4] == "xOT"));
-	this.refinanciar = organicas => {
-		let result = "OTR";
-		if (organicas.length) {
-			const ORG_300518 = "300518";
-			organicas.forEach(org => {
-				result = (org.o.startsWith(ORG_300518) && organica.is642(org.mask)) ? "ISU" : result; //apli=642
-				result = (org.o.startsWith(ORG_300518) && organica.is643(org.mask) && (result != "ISU")) ? "A83" : result; //apli=643
-				result = (organica.isTTPP(org.o) && (result == "OTR")) ? "ACA" : result; //TTPP o Master
-			});
-			if (organicas.length > 1) {
-				if (result == "ISU") return self.setFinanciacion("xSU");
-				if (result == "A83") return self.setFinanciacion("x83");
-				if (result == "ACA") return self.setFinanciacion("xAC");
-				return self.setFinanciacion("xOT");
-			}
-		}
-		return self.setFinanciacion(result);
-	}
+	this.refinanciar = table => organicas.setData(table).refinanciar();
 
 	this.validate = data => {
-        let ok = valid.reset().size20("acInteresado", data.nifInteresado, "Debe seleccionar un interesado válido"); // autocomplete required key
-		return (parts && parts[0] && parts[1] && parts[2] && parts[3] && parts[4]) ? ok : i18n.reject("Perfil no encontrado");
+        let ok = valid.reset().size20("acInteresado", data.nifInteresado, "Debe seleccionar un interesado válido"); // Autocomplete required key
+		ok = (parts && parts[0] && parts[1] && parts[2] && parts[3] && parts[4]) ? ok : i18n.reject("Perfil no encontrado"); // Is perfil valid?
+		return organicas.validate() && ok;
 	}
 }
 

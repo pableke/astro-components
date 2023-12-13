@@ -12,12 +12,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	/*** FORMULARIO PRINCIPAL ***/
     const formIris = new Form("xeco-iris");
-    window.fnSavePerfil = () => {
-		if (organicas.isEmpty())
-			return !formIris.setError("#acOrganica", "Debe asociar al menos una orgánica a la comunicación.");
-        formIris.setval("#presupuesto", JSON.stringify(organicas.getData()));
-		return formIris.isValid(perfil.validate);
-	}
+    window.fnSavePerfil = () => formIris.isValid(perfil.validate); // validate perfil paso=0
+    window.fnSave = () => tabs.isValid(); // call tab validator paso=n
+
+    const fnPerfil = () => {
+        const data = perfil.getData();
+        if (formIris.getval("#nifInteresado"))
+            formIris.text(".titulo", data.titulo).text("#colectivo", perfil.getColectivo()).show(".info-colectivo");
+        else
+            formIris.text(".titulo", "Nueva comunicación").text("#colectivo", "").hide(".info-colectivo");
+        formIris.setval("#perfil", perfil.getPerfil())
+                .toggleOptions("#actividad", data.actividad).toggleOptions("#tramite", data.tramite)
+                .text("#responsables", organicas.getData().map(org => org.r).join(","));
+        tabs.setMask(data.pasos);
+    }
 
     formIris.onChangeInput("#actividad", ev => { perfil.setActividad(ev.target.value); fnPerfil(); })
             .onChangeInput("#tramite", ev => { perfil.setTramite(ev.target.value); fnPerfil(); })
@@ -36,8 +44,9 @@ document.addEventListener("DOMContentLoaded", () => {
         onRender: organica.render,
         //onFooter: organica.resume,
         afterRender: resume => {
-            perfil.refinanciar(organicas.getData());
-            formIris.hide(".fin-info").show(".fin-" + perfil.getFinanciacion());
+            perfil.refinanciar(organicas);
+            formIris.stringify("#organicas-json", organicas)
+                    .hide(".fin-info").show(".fin-" + perfil.getFinanciacion());
             fnPerfil();
         }
     });
@@ -48,31 +57,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 	//****** tabla de organicas ******//
 
-    const fnPerfil = () => {
-        const data = perfil.getData();
-        if (formIris.getval("#nifInteresado"))
-            formIris.text(".titulo", data.titulo).text("#colectivo", perfil.getColectivo()).show(".info-colectivo");
-        else
-            formIris.text(".titulo", "Nueva comunicación").text("#colectivo", "").hide(".info-colectivo");
-        formIris.setval("#perfil", perfil.getPerfil())
-                .toggleOptions("#actividad", data.actividad).toggleOptions("#tramite", data.tramite)
-                .text("#responsables", organicas.getData().map(org => org.r).join(","));
-        tabs.setMask(data.pasos);
-    }
-
     window.viewIris = (xhr, status, args) => {
+        if (!window.showTab(xhr, status, args, args.tab))
+            return false; // Server error => stop
         const data = formIris.setActions().getData();
-        iris.setData(data); // prepare inputs and load data before render
-        organicas.render(JSON.read(args.data)); // Muestro las líneas asociadas a la solicitud
+        iris.setData(data); // Prepare inputs and load data before render
+        organicas.render(JSON.read(args.data)); // Organicas asociadas a la solicitud
+        formIris.toggle("#ac-organica", !data.id || !uxxiec.isUxxiec()).setMode(data.id)
+                .setval("#actividad", perfil.getActividad()).setval("#tramite", perfil.getTramite())
+                .toggle(".firmable-only", iris.isFirmable()).toggle(".rechazable-only", iris.isRechazable()).toggle(".editable-only", iris.isEditable())
+                .toggle(".mun-only", perfil.isMUN()).readonly(!iris.isEditable(), ".ui-mun")
+                .toggle(".oce-only", perfil.isColaboracion()).readonly(!iris.isEditable(), ".ui-oce")
+                .toggle(".aut-only", perfil.isAUT()).readonly(!iris.isEditable(), ".ui-aut")
+                .toggle(".act1dia-only", perfil.is1Dia()).readonly(!iris.isEditable(), ".ui-1dia");
         window.loadRutas(formIris, JSON.read(args.rutas)); // Muestro las rutas asociadas a la solicitud
         window.loadDietas(formIris, JSON.read(args.gastos)); // Cargo las dietas asociadas a la solicitud
-        formIris.setval("#actividad", perfil.getActividad()).setval("#tramite", perfil.getTramite())
-                .toggle("#ac-organica", !data.id || !uxxiec.isUxxiec()).setMode(data.id)
-                .toggle(".firmable-only", iris.isFirmable()).toggle(".rechazable-only", iris.isRechazable()).toggle(".editable-only", iris.isEditable())
-                .toggle(".mun-only", perfil.isMUN()).toggle(".colaboracion-only", perfil.isColaboracion())
-                .toggle(".aut-only", perfil.isAUT()).toggle(".act1dia-only", perfil.is1Dia());
-        tabs.showTab(args.tab || 1); // Muestra el tab
 	};
+    window.viweGasto = (xhr, status, args) => {
+        args.tab = 6; // Go to tab for gastos
+        window.viewIris(xhr, status, args);
+    }
     window.createIris = (xhr, status, args) => {
         formIris.setAutocomplete("#ac-interesado", {
 			delay: 500, //milliseconds between keystroke occurs and when a search is performed
@@ -98,6 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
             afterSelect: item => { !uxxiec.isUxxiec() && organicas.render([item]); }
             //onReset: () => { }
         });
+        args.tab = 1; // Go to tab for perfil
         window.viewIris(xhr, status, args);
 	}
 	/*** FORMULARIO PRINCIPAL ***/

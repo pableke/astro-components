@@ -1,5 +1,4 @@
 
-const isset = val => ((typeof(val) !== "undefined") && (val !== null));
 const isnum = val => ((typeof(val) === "number") || (val instanceof Number));
 const round = (num, scale) => +(Math.round(num + "e+" + scale)  + "e-" + scale);
 
@@ -7,7 +6,6 @@ function I18n() {
 	const self = this; //self instance
     let lang = "en"; //default language
 
-    this.isset = isset;
     this.setLang = val => { lang = val; return self; } // especific language
 
     // String formats
@@ -41,7 +39,7 @@ function I18n() {
         const num = parseFloat(sign + whole.replace(/\D+/g, "") + decimal); //float value
         return isNaN(num) ? null : num;
     }
-    this.isoFloat = (num, n) => {// Float to String formated
+    this.isoFloat = (num, n) => { // Float to String formated
         return isnum(num) ? round(num, n ?? 2).toLocaleString(lang, options) : null;
     }
     this.fmtFloat = (str, dIn, n) => { // String to String formated
@@ -56,7 +54,7 @@ function I18n() {
         const num = parseInt(sign + str.replace(/\D+/g, "")); // Integer number
         return isNaN(num) ? null : num;
     }
-    this.isoInt = num => {// Int to String formated
+    this.isoInt = num => { // Int to String formated
         return isnum(num) ? num.toLocaleString(lang) : null;
     }
     this.fmtInt = str => { // String to String formated
@@ -65,7 +63,6 @@ function I18n() {
 }
 
 // Extends Number prototype
-Number.isset = isset;
 Number.isNumber = isnum;
 Number.prototype.mask = function(i) { return ((this >> i) & 1); } // check bit at i position
 Number.prototype.bitor = function(flags) { return ((this & flags) > 0); } // some flags up?

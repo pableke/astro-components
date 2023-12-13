@@ -73,7 +73,7 @@ function Partidas(presto) {
 	const self = this; //self instance
     const partida = new Partida(presto);
 
-    let data, resume; // Current presto data type
+    let data, resume; // Current data table
     this.getData = () => data;
     this.setData = table => {
         data = table.getData();

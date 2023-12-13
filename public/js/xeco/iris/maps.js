@@ -19,28 +19,29 @@ const inputOrigen = document.getElementById("origen");
 const inputDestino = document.getElementById("destino");
 var formIris, rutas; // Global IRIS form
 
-const fnEnd = ok => ok ? formIris.stringify("#rutas-json", rutas) : !formIris.setErrors();
-window.fnSave = () => {
-    const perfil = iris.getPerfil();
-    if (!formIris.isValid(iris.validate))
-        return false; // validaciones comunes
+tabs.setValidEvent(4, () => formIris.isValid(iris.validateRutas));
+tabs.setValidEvent(3, () => {
     if (perfil.isMUN()) {
         const data = formIris.isValid(ruta.validateMun, ".ui-mun");
-        return fnEnd(data && rutas.add(data));
+        data && rutas.render([data]); //afterRender event save json
+        return formIris.isValid(iris.validateRutas);
     }
-    if (tabs.isActive(4) && perfil.isCOM())
-        return fnEnd(itinerario.validate());
-    return true;
-}
-tabs.setValidEvent(3, window.fnSave).setValidEvent(4, window.fnSave);
+    return formIris.isValid(iris.validate);
+});
 
 window.loadRutas = function(form, data) {
     formIris = form;
-    rutas = rutas || formIris.setTable("#rutas-maps", itinerario.render());
-    itinerario.setData(data);
+    rutas = rutas || formIris.setTable("#rutas-maps", {
+        msgEmptyTable: "No existen etapas asociadas a la comunicación.",
+        beforeRender: resume => { resume.km2 = 0; },
+        onRender: ruta.render,
+        onFooter: ruta.resume,
+        afterRender: resume => formIris.stringify("#rutas-json", rutas)
+    });
 	rutas.render(data);
+    itinerario.setData(rutas);
     if (rutas.size()) {
-        const last = itinerario.getLast();
+        const last = rutas.getLastItem();
         const selector = perfil.isMUN() ? ".grupo-matricula-mun" : ".grupo-matricula-maps";
         formIris.setValues(ruta.setData(Object.clone(last)).nextPlace().getData(), ".ui-ruta")
                 .setValues(last, ".ui-mun").toggle(selector, last.desp == 1);
@@ -95,6 +96,7 @@ window.initMap = function() {
                     for (let j = 0; j < results.length; j++) {
                         const element = results[j];
                         data.km2 = element.distance.value/1000; //to km
+                        data.imp = data.km2 * .26; //imp gasolina
                     }
                 }
                 rutas.add(data);

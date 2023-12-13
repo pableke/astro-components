@@ -33,21 +33,27 @@ function Tabs() {
         return autofocus(tab);
     }
 
-    let _tabIndex = fnCurrentIndex(); //current index tab
+    let _tabIndex = fnCurrentIndex(); // current index tab
     let _tabSize = tabs.length - 1; // max tabs size
     let _tabMask = ~0; // all 11111....
 
+    this.getCurrent = () => tabs[_tabIndex]; // current tab
     this.getTab = id => tabs.find(tab => (tab.id == ("tab-" + id))); // Find by id selector
     this.setMask = mask => { _tabMask = mask; return self; } // set mask for tabs
     this.setActive = id => fnSetTab(self.getTab(id)); // Force active class whithot events and alerts
-    this.isActive = id => fnActive(self.getTab(id)); // is current active tab
+    this.isActive = id => fnActive(self.getTab(id)); // is current tab active
 
     // Set events on tabs actions
-    this.setValidEvent = (tab, fn) => fnSet("valid-tab-" + tab, fn);
+    const fnCallEvent = (name, tab) => {
+        const fn = opts[name + "-" + tab.id] || fnTrue;
+        return fn(tab, self);
+    }
+
     this.setInitEvent = (tab, fn) => fnSet("init-tab-" + tab, fn);
     this.setShowEvent = (tab, fn) => fnSet("show-tab-" + tab, fn);
     this.setViewEvent = (tab, fn) => fnSet("view-tab-" + tab, fn);
-    this.setViewTab = fn => fnSet("onViewTab", fn);
+    this.setValidEvent = (tab, fn) => fnSet("valid-tab-" + tab, fn);
+    this.isValid = () => fnCallEvent("valid", tabs[_tabIndex]); // is current tab valid
 
 	// Alerts helpers
 	this.showOk = msg => { alerts.showOk(msg); return self; } // Encapsule showOk message
@@ -61,22 +67,18 @@ function Tabs() {
         if (i == _tabIndex) // is current tab
             return self; // nothing to do
         const tab = tabs[i]; // get next tab
-        const fnInit = opts["init-" + tab.id] || fnTrue; // Event handler fire once
-        const fnShow = opts["show-" + tab.id] || fnTrue; // Event handler fire each access to tab
-        const fnValid = ((i > _tabIndex) && opts["valid-" + tabs[_tabIndex].id]) || fnTrue; // Event fired before leave current tab to next tab
-        if (fnValid(tab) && fnInit(tab) && fnShow(tab)) { // Validate change tab
+        const ok = (i < _tabIndex) || self.isValid(); // Event fired before leave current tab to next tab
+        // If valid => Init event handler fire once and then Show event handler fire each access to tab
+        if (ok && fnCallEvent("init", tab) && fnCallEvent("show", tab)) { // Validate change tab
             alerts.closeAlerts(); // Close all previous messages
             const step = "step-" + i; //go to a specific step on progressbar
             progressbar.forEach(bar => { // progressbar is optional
                 bar.children.forEach(child => child.classList.toggle(opts.activeClass, child.id <= step));
             });
             tab.dataset.back = updateBack ? _tabIndex : tab.dataset.back; // Save source tab index
-            tabs.forEach(tab => tab.classList.remove(opts.activeClass));
+            tabs.forEach(tab => tab.classList.remove(opts.activeClass)); // update tabs style
             fnSetTab(tab, i); // set current tab
-            let fnView = opts["onViewTab"] || fnTrue;
-            fnView(tab, self); // Fire when show each tab
-            fnView = opts["view-" + tab.id] || fnTrue;
-            fnView(tab, self); // Fire when show tab
+            fnCallEvent("view", tab); // Fire when show tab
         }
         delete opts["init-" + tab.id];
         alerts.working().top(); // go up
@@ -123,13 +125,14 @@ function Tabs() {
     // Init. view and PF navigation (only for CV-UAE)
     self.setActions(document);
     window.showTab = (xhr, status, args, tab) => {
-        if (status != "success")
+        if (!xhr || (status != "success"))
             return !alerts.showError("Error 500: Internal server error.");
         if (!args) // Has server response
             return self.showTab(tab); // Show tab and return true
         const msgs = collection.parse(args.msgs); // Parse server messages
         const ok = !msgs?.msgError; // is ok?
-        ok && self.showTab(tab); // Only show tab if no error
+        if (ok && globalThis.isset(tab))
+            self.showTab(tab); // Show tab if NO error
         alerts.showAlerts(msgs); // Always show alerts after change tab
         return ok;
     }

@@ -20,7 +20,7 @@ function Iris() {
     this.getUxxiec = () => uxxiec;
     this.getPerfil = () => perfil;
     this.getRutas = () => rutas;
-    this.getGAstos = () => gastos;
+    this.getGastos = () => gastos;
 
     this.isEditableP0 = () => !data.id;
     this.isEditable = () => (data.estado == 6);
@@ -32,6 +32,10 @@ function Iris() {
     this.validate = function(data) {
         let ok = valid.reset().size("objeto", data.objeto, "Debe seleccionar el objeto de la comisión"); // required string
         return ok || i18n.reject("errForm");
+    }
+    this.validateRutas = function(data) {
+        const ok = self.validate(data);
+        return rutas.validate() && ok;
     }
 }
 

@@ -2,12 +2,14 @@
 const RE_VAR = /@(\w+);/g;
 const fnSize = data => data ? data.length : 0; //string o array
 const fnParse = data => data && JSON.parse(data); //JSON parse
+const isset = val => ((typeof(val) !== "undefined") && (val !== null));
 const format = (tpl, data) => tpl.replace(RE_VAR, (m, k) => data[k] ?? "");
 const fnVisible = el => (el.offsetWidth || el.offsetHeight || el.getClientRects().length);
 
 function Collection() {
 	const self = this; //self instance
 
+    this.isset = isset;
     this.size = fnSize;
     this.parse = fnParse;
     this.format = format;
@@ -84,6 +86,9 @@ function Collection() {
     NodeList.prototype.find = Array.prototype.find;
     NodeList.prototype.filter = Array.prototype.filter;
 }
+
+// Client / Server global functions
+globalThis.isset = isset;
 
 // Mute JSON
 JSON.size = fnSize;
