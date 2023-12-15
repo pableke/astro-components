@@ -1,6 +1,5 @@
 
 import i18n from "../../i18n/iris/langs.js";
-import valid from "../../i18n/validators.js";
 
 const TSS = ":00"; // Seg.
 const H24 = "00:00"; // 24H
@@ -15,8 +14,12 @@ function Ruta() {
     let data, origen, destino;
 
     this.getData = () => data;
+    this.setRuta = ruta => {
+        data = ruta;
+        return self;
+    }
     this.setData = input => {
-        data = input;
+        self.setRuta(input);
         data.h1 = data.h1 || H24;
         data.h2 = data.h2 || H24;
 		data.dt1 = data.dt1 || (data.f1 + "T" + data.h1 + MS0);
@@ -24,11 +27,22 @@ function Ruta() {
         return self;
     }
 
-	this.isSalidaTemprana = ruta => (ruta.dt1.getHours() < 14);
+	this.unlink = () => { delete data.g; return self; }
+	this.isUnlinked = () => !data.g;
+	this.isLinked = () => data.g;
+
+    this.isSalidaTemprana = ruta => (ruta.dt1.getHours() < 14);
 	this.isSalidaTardia = ruta => (ruta.dt1.getHours() > 21);
 	this.isLlegadaTemprana = ruta => (ruta.dt2.getHours() < 14);
 	this.isLlegadaTardia = ruta => (ruta.dt2.getHours() < 5);
 	this.isLlegadaCena = ruta => (ruta.dt2.getHours() > 21);
+
+    this.setMedioTransporte = tipo => { data.desp = tipo; return self; }
+    this.isVehiculoPropio = () => (data.desp == 1);
+	this.isVehiculoAlquiler = () => (data.desp == 4);
+	this.isVehiculoAjeno = () => (data.desp == 5);
+	this.isDespSinFactura = () => (self.isVehiculoPropio() || self.isVehiculoAjeno());
+	this.isOtros = () => (data.desp == 9);
 
     this.getCT = () => CT_NAME;
     this.getOrigen = () => origen;
@@ -58,9 +72,6 @@ function Ruta() {
         return self.setPlace2(loc.lat(), loc.lng(), pais);
     }
     this.setDestinoCT = () => self.setPlace2(CT_LAT, CT_LNG, CT_PAIS);
-
-    this.setMedioTransporte = tipo => { data.desp = tipo; return self; }
-    this.isVehiculoPropio = () => (data.desp == 1);
     this.nextPlace = () => {
         data.origen = data.destino;
         if (destino)
@@ -93,7 +104,7 @@ function Ruta() {
     }
 
     this.validate = data => {
-        let ok = valid.reset().size("origen", data.origen) && valid.size("destino", data.destino);
+        let ok = i18n.reset().size("origen", data.origen) && i18n.size("destino", data.destino);
         if (!Number.isNumber(data.lat1) || !Number.isNumber(data.lng1) || !data.pais1)
             ok = !i18n.setInputError("origen", "errRequired", "Localización incorrecta para el origen de la etapa.");
         if (!Number.isNumber(data.lat2) || !Number.isNumber(data.lng2) || !data.pais2)
@@ -101,8 +112,8 @@ function Ruta() {
         if (!data.desp || (data.desp < 1))
             ok = !i18n.setInputError("desp", "errRequired", "Debe seleccionar un medio de transporte.");
         if (data.desp == 1)
-            ok = valid.size20("matricula", data.matricula) && ok;
-        return valid.isDateTime("f1", data.dt1) && valid.isDateTime("f2", data.dt2) && ok;
+            ok = i18n.size20("matricula", data.matricula) && ok;
+        return i18n.isDateTime("f1", data.dt1) && i18n.isDateTime("f2", data.dt2) && ok;
     }
     this.validateMun = function(data) {
         data.f2 = data.f1;
@@ -115,8 +126,8 @@ function Ruta() {
         data.dt1 = ruta.f1 + "T" + ruta.h1 + MS0;
         data.dt2 = ruta.f2 + "T" + ruta.h2 + MS0;
         let ok = self.validate(data);
-        ok = valid.isTime("h1", ruta.h1 + TSS) && ok;
-        return valid.isTime("h2", ruta.h2 + TSS) && ok;
+        ok = i18n.isTime("h1", ruta.h1 + TSS) && ok;
+        return i18n.isTime("h2", ruta.h2 + TSS) && ok;
     }
 }
 

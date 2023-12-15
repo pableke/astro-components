@@ -2,7 +2,7 @@
 import Form from "../components/Form.js";
 import tabs from "../components/Tabs.js";
 import factura from "../model/Factura.js";
-import i18n from "../i18n/langs/langs.js";
+import i18n from "../i18n/langs.js";
 import fiscal from "../data/fiscal.js"
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.viewFactura(xhr, status, args);
 	}
 	window.fnSend = () => {
-		factura.setLineas(lineas.getData());
+		factura.setLineas(lineas);
 		if (formFact.isValid(factura.validate)) {
 			formFact.stringify("#lineas-json", lineas);
 			return confirm("¿Confirma que desea firmar y enviar esta solicitud?");

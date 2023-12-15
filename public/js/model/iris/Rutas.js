@@ -7,10 +7,13 @@ function Rutas() {
 
     let data, resume; // Current data table
     this.getData = () => data;
-    this.setData = table => {
-        data = table.getData();
-        resume = table.getResume();
+    this.setRutas = rutas => {
+        data = rutas;
         return self;
+    }
+    this.setData = table => {
+        resume = table.getResume();
+        return self.setRutas(table.getData());
     }
 
     this.getRuta = () => ruta;
@@ -31,6 +34,9 @@ function Rutas() {
         return self.is1Dia() ? 1 : fnDiffDays();
     }
 
+    this.isSaved = () => data.every(ruta => ruta.id);
+    this.getRutasVp = () => data.filter(r => ruta.setRuta(r).isVehiculoPropio());
+    this.getRutasOut = () => data.filter(r => (ruta.setRuta(r).isUnlinked() && !ruta.isDespSinFactura()));
     this.getRutaByDate = fecha => {
         let ruta = self.getFirst(); // Ruta de salida
         const fMax = (new Date(fecha)).addHours(29).toISOString(); // fMAx = hora de salida + 5h del dia siguiente

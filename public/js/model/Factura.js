@@ -1,6 +1,5 @@
 
-import i18n from "../i18n/langs/langs.js";
-import valid from "../i18n/validators.js";
+import i18n from "../i18n/langs.js";
 import uxxiec from "./Uxxiec.js";
 
 function Linea(factura) {
@@ -22,8 +21,8 @@ function Linea(factura) {
     }
 
     this.validate = function(data) {
-        let ok = valid.reset().gt0("imp", data.imp); // float required
-        ok = valid.size("desc", data.desc) && ok; // string required
+        let ok = i18n.reset().gt0("imp", data.imp); // float required
+        ok = i18n.size("desc", data.desc) && ok; // string required
         return ok || i18n.reject("El concepto indicado no es válido!"); // Main form message
     }
 }
@@ -34,7 +33,13 @@ function Lineas(factura) {
 
     let data; // Current presto data type
     this.getData = () => data;
-    this.setData = lineas => { data = lineas; return self; }
+    this.setLineas = lineas => {
+        data = lineas;
+        return self;
+    }
+    this.setData = table => {
+        return self.setLineas(table.getData());
+    }
 
     this.getLinea = () => linea;
     this.size = () => JSON.size(data);
@@ -53,7 +58,7 @@ function Factura() {
     this.getData = name => (name ? data[name] : data);
     this.setData = input => { data = input; return self; }
     this.getLineas = () => lineas;
-    this.setLineas = data => { lineas.setData(data); return self; }
+    this.setLineas = table => { lineas.setData(table); return self; }
     this.getLinea = lineas.getLinea;
 
     this.isEditable = () => !data.id;
@@ -85,16 +90,16 @@ function Factura() {
         return output;
     }
     this.validate = function(data) {
-        let ok = valid.reset().key("acTercero", data.idTercero, "Debe seleccionar un tercero válido"); // autocomplete required key
-        ok = valid.key("acOrganica", data.idOrganica, "No ha seleccionado correctamente la orgánica") && ok; // autocomplete required key
-		ok = (self.isRecibo()) ? valid.size("acRecibo", data.refreb, "Debe indicar un número de recibo válido") : ok; //subtipo = ttpp o extension
+        let ok = i18n.reset().isKey("acTercero", data.idTercero, "Debe seleccionar un tercero válido"); // autocomplete required key
+        ok = i18n.isKey("acOrganica", data.idOrganica, "No ha seleccionado correctamente la orgánica") && ok; // autocomplete required key
+		ok = (self.isRecibo()) ? i18n.size("acRecibo", data.refreb, "Debe indicar un número de recibo válido") : ok; //subtipo = ttpp o extension
 		/*if (self.isDeportes()) {
-            ok = valid.size("extra", data.extra, "errRequired") ? ok : i18n.reject("Debe indicar un número de recibo válido"); // Required string
-            ok = valid.leToday("fMax", data.fMax) ? ok : i18n.reject("Debe indicar la fecha del recibo asociado"); // Required date
+            ok = i18n.size("extra", data.extra, "errRequired") ? ok : i18n.reject("Debe indicar un número de recibo válido"); // Required string
+            ok = i18n.leToday("fMax", data.fMax) ? ok : i18n.reject("Debe indicar la fecha del recibo asociado"); // Required date
         }*/
-        ok = valid.size("memo", data.memo) ? ok : i18n.reject("Debe indicar las observaciones asociadas a la solicitud."); // Required string
-        ok = self.isFace() ? (valid.size("og", data.og) && valid.size("oc", data.oc) && valid.size("ut", data.ut)) : ok;
-        ok = self.isPlataforma() ? valid.size("og", data.og) : ok;
+        ok = i18n.size("memo", data.memo) ? ok : i18n.reject("Debe indicar las observaciones asociadas a la solicitud."); // Required string
+        ok = self.isFace() ? (i18n.size("og", data.og) && i18n.size("oc", data.oc) && i18n.size("ut", data.ut)) : ok;
+        ok = self.isPlataforma() ? i18n.size("og", data.og) : ok;
         return lineas.validate() && ok;
     }
 }

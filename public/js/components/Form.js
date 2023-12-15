@@ -2,7 +2,7 @@
 import Table from "./Table.js";
 import Autocomplete from "./Autocomplete.js";
 import alerts from "./Alerts.js";
-import i18n from "../i18n/langs/langs.js";
+import i18n from "../i18n/langs.js";
 
 const divNull = document.createElement("div");
 const isstr = val => (typeof(val) === "string") || (val instanceof String);
@@ -166,18 +166,18 @@ export default function(form, opts) {
 		return fnEvent(f2, "blur", ev => f1.setAttribute("max", f2.value));
 	}
 
-	this.setSelect = function(selector, items, emptyOption) {
-		const select = self.getInput(selector); // Get select element
+	this.setSelect = function(el, items, emptyOption) {
+		el = isstr(el) ? self.getInput(el) : el; // Get select/optgroup element
 		emptyOption = emptyOption ? `<option>${emptyOption}</option>` : EMPTY; // Text for empty first option
 		const fnItem = item => `<option value="${item.value}">${item.label}</option>`; // Item list
-		return fnSetText(select, emptyOption + items.map(fnItem).join(EMPTY)); // Render items
+		return fnSetText(el, emptyOption + items.map(fnItem).join(EMPTY)); // Render items
 	}
-	this.setOptions = function(selector, labels, values, emptyOption) {
-		const select = self.getInput(selector); // Get select element
+	this.setOptions = function(el, labels, values, emptyOption) {
+		el = isstr(el) ? self.getInput(el) : el; // Get select/optgroup element
 		emptyOption = emptyOption ? `<option>${emptyOption}</option>` : EMPTY; // Text for empty first option
 		const fnOptions = (label, i) => `<option value="${values[i]}">${label}</option>`; // Default options template
 		const fnDefault = (label, i) => `<option value="${i+1}">${label}</option>`; // 1, 2, 3... Number array
-		return fnSetText(select, emptyOption + labels.map(values ? fnOptions : fnDefault).join(EMPTY));
+		return fnSetText(el, emptyOption + labels.map(values ? fnOptions : fnDefault).join(EMPTY));
 	}
 	this.toggleOptions = function(selector, flags) {
 		const select = form.elements.find(el => (el.options && el.matches(selector)));

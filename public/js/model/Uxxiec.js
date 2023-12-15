@@ -1,6 +1,5 @@
 
-import i18n from "../i18n/langs/langs.js";
-import valid from "../i18n/validators.js";
+import i18n from "../i18n/langs.js";
 
 function Uxxiec() {
 	const self = this; //self instance
@@ -33,7 +32,7 @@ function Uxxiec() {
         return true;
     }
     this.validateReject = data => {
-        return valid.reset().size("rechazo", data.rechazo) || i18n.reject("Debe indicar un motivo para el rechazo de la solicitud."); // Required string
+        return i18n.reset().size("rechazo", data.rechazo) || i18n.reject("Debe indicar un motivo para el rechazo de la solicitud."); // Required string
     }
 }
 

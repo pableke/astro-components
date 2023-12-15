@@ -2,7 +2,6 @@
 import uxxiec from "../Uxxiec.js";
 import perfiles from "../../data/iris/perfiles.js"
 import i18n from "../../i18n/iris/langs.js";
-import valid from "../../i18n/validators.js";
 
 function Organica() {
 	const self = this; //self instance
@@ -113,6 +112,7 @@ function Perfil() {
 	this.isAFO = () => (parts[2] == "AFO");
 	this.isMES = () => (parts[2] == "MES");
 	this.isMesa = self.isMES;
+	this.isA7J = () => (parts[2] == "A7J");
 	this.isMOV = () => (parts[2] == "MOV");
 	this.isATR = () => (parts[2] == "ATR"); //ATR
 	this.isIaeAtr = () => (parts[2] == "IAE+ATR");
@@ -121,6 +121,10 @@ function Perfil() {
 	this.isIaeOce = () => (parts[2] == "IAE+OCE");
 	this.isColaboracion = () => (self.isOCE() || self.isIaeOce());
 	this.is1Dia = () => (self.isMUN() || self.isMES() || self.isACS() || self.isAFO() || self.isATR() || self.isOCE());
+	this.isLocalizaciones = () => self.isMUN() || self.isAUT() || self.isA7J();
+	this.isRutas = () => !self.isLocalizaciones() && !self.is1Dia();
+	this.isFacturaUpct = () => !(self.isAUT() || self.isA7J() || self.isACS() || self.isAFO() || self.isATR() || self.isOCE() || self.isMES());
+	this.isDocMovilidad = () => !this.isAUT() && (this.isMOV() || this.isA7J());
 
 	this.getTramite = () => parts[3];
 	this.setTramite = val => { parts[3] = val; return fnUpdate(); }
@@ -137,7 +141,7 @@ function Perfil() {
 	this.refinanciar = table => organicas.setData(table).refinanciar();
 
 	this.validate = data => {
-        let ok = valid.reset().size20("acInteresado", data.nifInteresado, "Debe seleccionar un interesado válido"); // Autocomplete required key
+        let ok = i18n.reset().size20("acInteresado", data.nifInteresado, "Debe seleccionar un interesado válido"); // Autocomplete required key
 		ok = (parts && parts[0] && parts[1] && parts[2] && parts[3] && parts[4]) ? ok : i18n.reject("Perfil no encontrado"); // Is perfil valid?
 		return organicas.validate() && ok;
 	}

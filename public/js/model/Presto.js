@@ -1,7 +1,6 @@
 
 import uxxiec from "./Uxxiec.js";
 import i18n from "../i18n/presto/langs.js";
-import valid from "../i18n/validators.js";
 
 function Partida(presto) {
 	const self = this; //self instance
@@ -43,17 +42,17 @@ function Partida(presto) {
     }
 
     this.validate = data => {
-        let ok = valid.reset().key("acOrgInc", data.idOrgInc, ERR_ORGANICA); // autocomplete required key
-        ok = valid.key("idEcoInc", data.idEcoInc, "Debe seleccionar una económica") && ok; // select required number
-        ok = valid.gt0("impInc", data.impInc) && ok; // float number > 0
+        let ok = i18n.reset().isKey("acOrgInc", data.idOrgInc, ERR_ORGANICA); // autocomplete required key
+        ok = i18n.isKey("idEcoInc", data.idEcoInc, "Debe seleccionar una económica") && ok; // select required number
+        ok = i18n.gt0("impInc", data.impInc) && ok; // float number > 0
         return ok || i18n.reject("No ha seleccionada correctamente la partida a incrementar.");
     }
     this.validate030 = data030 => {
         if (!data) // Debo cargar previamente la partida seleccionada
             return i18n.reject("No se ha encontrado la partida asociada al documento 080.");
-        let ok = valid.reset().key("acOrg030", data030.idOrg030, ERR_ORGANICA); // autocomplete required key
-        ok = valid.key("idEco030", data030.idEco030, "Debe seleccionar una económica") && ok; // select required number
-        ok = valid.gt0("imp030", data030.imp030) && ok; // float number > 0
+        let ok = i18n.reset().isKey("acOrg030", data030.idOrg030, ERR_ORGANICA); // autocomplete required key
+        ok = i18n.isKey("idEco030", data030.idEco030, "Debe seleccionar una económica") && ok; // select required number
+        ok = i18n.gt0("imp030", data030.imp030) && ok; // float number > 0
         const label = data030.acOrg030?.split(" - "); // Code separator
         ok = label ? ok : !i18n.setError(ERR_ORGANICA, "acOrg030");
         if (!ok)
@@ -75,10 +74,13 @@ function Partidas(presto) {
 
     let data, resume; // Current data table
     this.getData = () => data;
-    this.setData = table => {
-        data = table.getData();
-        resume = table.getResume();
+    this.setPartidas = partidas => {
+        data = partidas;
         return self;
+    }
+    this.setData = table => {
+        resume = table.getResume();
+        return self.setPartidas(table.getData());
     }
 
     this.getImporte = () => resume.imp;
@@ -135,8 +137,8 @@ function Presto() {
         return output;
     }
     this.validate = data => {
-        let ok = valid.reset().key("acOrgDec", data.idOrgDec, "Debe seleccionar la orgánica que disminuye"); // autocomplete required key
-        ok = valid.key("idEcoDec", data.idEcoDec, "Debe seleccionar la económica que disminuye") && ok; // select required number
+        let ok = i18n.reset().isKey("acOrgDec", data.idOrgDec, "Debe seleccionar la orgánica que disminuye"); // autocomplete required key
+        ok = i18n.isKey("idEcoDec", data.idEcoDec, "Debe seleccionar la económica que disminuye") && ok; // select required number
         ok || i18n.setError("No ha seleccionada correctamente la partida que disminuye."); // Main form message
 
         const imp = data.impDec ?? 0; // los importes pueden ser nulos segun el tipo de presto
@@ -144,10 +146,10 @@ function Presto() {
             ok = !i18n.setInputError("impDec", "notValid", "¡Los importes a decrementar e incrementar no coinciden!");
         const cd = self.isAnt() ? imp : (data.cd ?? 0); // los anticipos no validan el CD
         ok = (imp > cd) ? !i18n.setInputError("impDec", "errExceeded", "El importe de la partida que disminuye supera el crédito disponible") : ok;
-        ok = valid.size("memo", data.memo) ? ok : i18n.reject("Debe asociar una memoria justificativa a la solicitud."); // Required string
+        ok = i18n.size("memo", data.memo) ? ok : i18n.reject("Debe asociar una memoria justificativa a la solicitud."); // Required string
         if (data.urgente == "2") { // Solicitud urgente
-            ok = valid.size("extra", data.extra) ? ok : i18n.reject("Debe indicar un motivo para la urgencia de esta solicitud."); // Required string
-            ok = valid.geToday("fMax", data.fMax) ? ok : i18n.reject("Debe indicar una fecha maxima de resolución para esta solicitud."); // Required date
+            ok = i18n.size("extra", data.extra) ? ok : i18n.reject("Debe indicar un motivo para la urgencia de esta solicitud."); // Required string
+            ok = i18n.geToday("fMax", data.fMax) ? ok : i18n.reject("Debe indicar una fecha maxima de resolución para esta solicitud."); // Required date
         }
         return partidas.validate() && ok;
     }

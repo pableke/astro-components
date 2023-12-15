@@ -1,6 +1,6 @@
 
 import collection from "./Collection.js";
-import i18n from "../i18n/langs/langs.js";
+import i18n from "../i18n/langs.js";
 
 const EMPTY = [];
 const fnVoid = () => {};

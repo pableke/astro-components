@@ -39,7 +39,6 @@ window.loadRutas = function(form, data) {
         afterRender: resume => formIris.stringify("#rutas-json", rutas)
     });
 	rutas.render(data);
-    itinerario.setData(rutas);
     if (rutas.size()) {
         const last = rutas.getLastItem();
         const selector = perfil.isMUN() ? ".grupo-matricula-mun" : ".grupo-matricula-maps";
@@ -51,6 +50,8 @@ window.loadRutas = function(form, data) {
                 .clear(".ui-ruta").hide(".grupo-matricula-maps");
         inputOrigen.value = ruta.setData({}).setOrigenCT().getCT();
     }
+    const rutasOut = itinerario.setData(rutas).getRutasOut();
+    formIris.toggle(".rutas-out", rutasOut.length);
 }
 
 window.initMap = function() {

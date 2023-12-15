@@ -4,7 +4,6 @@ import rutas from "./Rutas.js";
 import gastos from "./Gastos.js";
 import uxxiec from "../Uxxiec.js";
 import i18n from "../../i18n/iris/langs.js";
-import valid from "../../i18n/validators.js";
 
 function Iris() {
 	const self = this; //self instance
@@ -30,7 +29,7 @@ function Iris() {
 	this.isEditableUae = () => self.isEditable() || (uxxiec.isUae() && self.isFirmable());
 
     this.validate = function(data) {
-        let ok = valid.reset().size("objeto", data.objeto, "Debe seleccionar el objeto de la comisión"); // required string
+        let ok = i18n.reset().size("objeto", data.objeto, "Debe seleccionar el objeto de la comisión"); // required string
         return ok || i18n.reject("errForm");
     }
     this.validateRutas = function(data) {

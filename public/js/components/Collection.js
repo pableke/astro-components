@@ -97,14 +97,8 @@ JSON.read = fnParse;
 // Extends HTMLElement prototype
 HTMLElement.prototype.isVisible = function() { return fnVisible(this); }
 HTMLElement.prototype.render = function(data) {
-    const hide = this.dataset.hide || "hide"; // default hide class
-    if (data) {
-        this.dataset.template = this.dataset.template || this.innerHTML; // save current template
-        this.innerHTML = format(this.dataset.template, data);
-        this.classList.remove(hide);
-    }
-    else
-        this.classList.add(hide);
+    this.dataset.template = this.dataset.template || this.innerHTML; // save current template
+    this.innerHTML = format(this.dataset.template, data);
     return this;
 }
 

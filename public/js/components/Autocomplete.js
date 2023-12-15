@@ -15,7 +15,7 @@ const replaceAt = (str1, str2, i) => str1.substring(0, i) + str2 + str1.substrin
 
 String.iIndexOf = (str1, str2) => tr(str1).toLowerCase().indexOf(tr(str2).toLowerCase()); // Mute String class with insensitive index
 String.ilike = (str1, str2) => (String.iIndexOf(str1, str2) > -1); // Mute String class with an insensitive search
-globalThis.loadItems = fnVoid; // Hack PF (only for CV-UAE)
+window.loadItems = fnVoid; // Hack PF (only for CV-UAE)
 
 function tr(str) {
     var output = str || "";

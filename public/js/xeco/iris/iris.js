@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = formIris.setActions().getData();
         iris.setData(data); // Prepare inputs and load data before render
         organicas.render(JSON.read(args.data)); // Organicas asociadas a la solicitud
-        formIris.toggle("#ac-organica", !data.id || !uxxiec.isUxxiec()).setMode(data.id)
+        formIris.toggle("#ac-organica", !data.id || !uxxiec.isUxxiec()).setMode(data.id).render(".i18n")
                 .setval("#actividad", perfil.getActividad()).setval("#tramite", perfil.getTramite())
                 .toggle(".firmable-only", iris.isFirmable()).toggle(".rechazable-only", iris.isRechazable()).toggle(".editable-only", iris.isEditable())
                 .toggle(".mun-only", perfil.isMUN()).readonly(!iris.isEditable(), ".ui-mun")
@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 .toggle(".aut-only", perfil.isAUT()).readonly(!iris.isEditable(), ".ui-aut")
                 .toggle(".act1dia-only", perfil.is1Dia()).readonly(!iris.isEditable(), ".ui-1dia");
         window.loadRutas(formIris, JSON.read(args.rutas)); // Muestro las rutas asociadas a la solicitud
-        window.loadDietas(formIris, JSON.read(args.gastos)); // Cargo las dietas asociadas a la solicitud
+        window.loadGastos(formIris, JSON.read(args.gastos)); // Cargo las dietas asociadas a la solicitud
 	};
     window.viweGasto = (xhr, status, args) => {
         args.tab = 6; // Go to tab for gastos

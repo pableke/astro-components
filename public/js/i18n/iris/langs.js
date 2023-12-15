@@ -1,7 +1,7 @@
 
 import en from "./en.js";
 import es from "./es.js";
-import i18n from "../langs/langs.js";
+import i18n from "../langs.js";
 
 // Lenguaje especifico del proyecto actual
 const main = i18n.getLangs();

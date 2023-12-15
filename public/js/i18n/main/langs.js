@@ -1,7 +1,6 @@
 
 import en from "./en.js";
 import es from "./es.js";
-import i18n from "../i18n.js";
 
 function Langs() {
 	const self = this; //self instance
@@ -9,20 +8,14 @@ function Langs() {
     const KEY_ERR = "msgError"; // Error key
     const MSGS = {}; // Messages container
 
-    let _langs = { en, es };
+    let _langs = { en, es }; // All langs
     let _lang = en; // Default language
 	let errors = 0; // Errors counter
 
     this.getLangs = () => _langs;
-	this.setLangs = langs => {
-		_langs = langs;
-		_lang = langs.en;
-		return self;
-	}
-    this.getLang = lang => _langs[lang] || _lang;
+    this.getLang = () => _lang;
     this.setLang = lang => { // especific language
         _lang = _langs[lang] || _lang;
-        i18n.setLang(_lang.lang);
         return self;
     }
 
@@ -69,35 +62,6 @@ function Langs() {
 
     const BOOLEAN_TRUE = ["1", "true", "yes", "on"];
     this.boolval = str => globalThis.isset(str) ? _lang.msgBool[+BOOLEAN_TRUE.includes("" + str)] : null;
-
-    // Add i18n Date formats
-    en.isoDate = i18n.isoDate; //Iso string = yyyy-mm-dd
-    es.isoDate = i18n.esDate; //Iso string to dd/mm/yyyy
-	this.enDate = i18n.isoDate; //Iso string = yyyy-mm-dd
-	this.isoTime = i18n.isoTime; //Iso hh:MM:ss
-	this.isoTimeShort = i18n.isoTimeShort; //Iso hh:MM
-    this.isoDate = str => _lang.isoDate(str); // String locale date
-	this.isoDateTime = str => self.isoDate(str) + " " + i18n.isoTime(str); //ISO date + hh:MM:ss
-
-    en.isoFloat = i18n.isoFloat; // Float to String formated
-    en.toFloat = str => i18n.toFloat(str, ".");  // String to Float
-    en.fmtFloat = (str, n) => i18n.fmtFloat(str, ".", n); // String to EN String formated
-
-    es.isoFloat = i18n.isoFloat; // Float to String formated
-    es.toFloat = str => i18n.toFloat(str, ",");  // String to Float
-    es.fmtFloat = (str, n) => i18n.fmtFloat(str, ",", n); // String to EN String formated
-
-    this.toFloat = str => _lang.toFloat(str);
-    this.isoFloat = num => _lang.isoFloat(num);
-    this.isoFloat2 = num => _lang.isoFloat(num);
-    this.isoFloat3 = num => _lang.isoFloat(num, 3);
-    this.fmtFloat = str => _lang.fmtFloat(str);
-    this.fmtFloat2 = str => _lang.fmtFloat(str);
-    this.fmtFloat3 = str => _lang.fmtFloat(str, 3);
-
-    this.toInt = i18n.toInt; // String to Int
-    this.isoInt = i18n.isoInt; // Int to String formated
-    this.fmtInt = i18n.fmtInt; // String to EN String formated
 
     // Initialize langs
     const initLang = () => self.setLang(self.getIsoLang());
