@@ -151,7 +151,7 @@ export default function(form, opts) {
 	}
 
 	this.copy = (el1, el2) => fnValue(self.getInput(el1), self.getval(el2));
-	this.clear = selector => fnUpdate(selector, el => fnValue(el));
+	this.clear = selector => fnUpdate(selector, el => fnValue(el)); // clear inputs (hidden to)
 	this.reset = selector => self.clear(selector).autofocus(); // clear inputs (hidden to) and autofocus
 	this.restart = selector => { const el = self.getInput(selector); el.value = EMPTY; el.focus(); return self; } // remove value + focus
 

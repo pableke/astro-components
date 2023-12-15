@@ -97,4 +97,8 @@ Number.prototype.bitor = function(flags) { return ((this & flags) > 0); } // som
 Number.prototype.bitand = function(flags) { return ((this & flags) == flags); } // all flags up?
 Number.prototype.round = function(digits) { return round(this, digits ?? 2); } // default round 2 decimals
 
+globalThis.isnum = isnum; // Check if Number type
+globalThis.dec = (num, min) => ((num > (min ?? 0)) ? num-- : num); // Decrement number until min
+globalThis.inc = (num, max) => ((num < max) ? num++ : num); // Increment number until max
+
 export default i18n;

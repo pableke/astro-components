@@ -73,6 +73,8 @@ function Collection() {
     // Extends Array prototype
     function fnEachPrev(fn) { self.eachPrev(this, fn); }
     Array.prototype.eachPrev = fnEachPrev;
+    Array.prototype.item = function(i) { return this[i % this.length]; }
+    Array.prototype.last = function() { return this.at(-1); }
 
     // Extends HTMLCollection prototype
     HTMLCollection.prototype.eachPrev = fnEachPrev;

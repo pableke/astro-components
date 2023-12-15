@@ -20,7 +20,7 @@ function Rutas() {
     this.size = () => JSON.size(data);
     this.isEmpty = () => !self.size();
     this.getFirst = () => data[0];
-    this.getLast = () => data[data.length - 1];
+    this.getLast = () => data.at(-1);
     this.getStart = () => self.getFirst().dt1;
     this.getStartDate = () => new Date(self.getStart());
     this.getEnd = () => self.getLast().dt2;
