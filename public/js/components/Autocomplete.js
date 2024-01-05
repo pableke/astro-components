@@ -32,7 +32,7 @@ function wrap(str1, str2) {
     return (i < 0) ? str1 : insertAt(insertAt(str1, open, i), "</b></u>", i + str2.length + open.length);
 }
 
-export default function(block, opts) {
+export default function(autocomplete, opts) {
     opts = opts || {};
 	opts.delay = opts.delay || 400; //milliseconds between keystroke occurs and when a search is performed
 	opts.minLength = opts.minLength || 3; //length to start
@@ -40,8 +40,9 @@ export default function(block, opts) {
 	opts.maxResults = opts.maxResults || 10; //max showed rows (default = 10)
     opts.optionClass = opts.optionClass || "option"; // child name class
     opts.activeClass = opts.activeClass || "active"; // active option class
-    opts.resultsClass = opts.resultsClass || "results"; // results list
-	opts.autocompleteClass = opts.autocompleteClass || "ui-autocomplete"; // Autocomplete type
+	opts.blockSelector = opts.blockSelector || ".autocomplete"; // Parent node selector
+    opts.resultsSelector = opts.resultsSelector || ".results"; // results list selector
+
     opts.source = opts.source || fnEmpty; //empty source by default
     opts.render = opts.render || fnParam; //render label on autocomplete
     opts.select = opts.select || fnParam; //set value in id input
@@ -49,8 +50,8 @@ export default function(block, opts) {
     opts.onReset = opts.onReset || fnVoid; //fired when no value selected
 
 	const self = this; //self instance
-    const resultsHTML = block.querySelector("ul." + opts.resultsClass);
-    const autocomplete = block.querySelector("input." + opts.autocompleteClass);
+    const block = autocomplete.closest(opts.blockSelector);
+    const resultsHTML = block.querySelector(opts.resultsSelector);
     const inputValue = autocomplete.nextElementSibling;
     autocomplete.type = "search"; // Force type
 
@@ -68,8 +69,12 @@ export default function(block, opts) {
     this.getInputValue = () => inputValue;
     this.getAutocomplete = () => autocomplete;
     this.setValue = (value, label) => {
-        inputValue.value = value;
-        autocomplete.value = label;
+        if (value) {
+            inputValue.value = value;
+            autocomplete.value = label;
+        }
+        else
+            inputValue.value = autocomplete.value = "";
         return self;
     }
 

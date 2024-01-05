@@ -25,7 +25,7 @@ function Rutas() {
     this.getStartDate = () => new Date(self.getStart());
     this.getEnd = () => self.getLast().dt2;
     this.getEndDate = () => new Date(self.getEnd());
-    this.is1Dia = () => self.getStart().startsWith(self.getEnd().substring(0, 10));
+    this.is1Dia = () => self.getStart().inDay(self.getEnd());
 
     const fnDiffDays = () => self.getStartDate().diffDays(self.getEndDate());
     this.getNumNoches = () => (self.isEmpty() || self.is1Dia()) ? 0 : fnDiffDays();

@@ -27,6 +27,7 @@ function Ruta() {
         return self;
     }
 
+	this.isPrincipal = data => (data.mask & 1);
 	this.unlink = () => { delete data.g; return self; }
 	this.isUnlinked = () => !data.g;
 	this.isLinked = () => data.g;
@@ -74,8 +75,7 @@ function Ruta() {
     this.setDestinoCT = () => self.setPlace2(CT_LAT, CT_LNG, CT_PAIS);
     this.nextPlace = () => {
         data.origen = data.destino;
-        if (destino)
-            self.setOrigen(destino, data.pais2);
+        self.setPlace1(data.lat2, data.lng2, data.pais2);
         destino = null;
         data.f1 = i18n.enDate(data.dt2);
         data.h1 = i18n.isoTimeShort(data.dt2);
@@ -86,10 +86,11 @@ function Ruta() {
     this.format = (data, output) => {
         output.origen = data.origen;
         output.destino = data.destino;
-        output.f1 = i18n.isoDate(data.f1 || data.dt1.substring(0, 10));
+        output.f1 = i18n.isoDate(data.f1 || data.dt1);
         output.h1 = data.h1 || i18n.isoTimeShort(data.dt1);
-        output.f2 = i18n.isoDate(data.f2 || data.dt2.substring(0, 10));
+        output.f2 = i18n.isoDate(data.f2 || data.dt2);
         output.h2 = data.h2 || i18n.isoTimeShort(data.dt2);
+        output.principal = self.isPrincipal(data) ? " (principal)" : ""; // mostrar en la vista
         output.desp = i18n.getItem("despMaps", data.desp - 1);
         output.km2 = i18n.isoFloat(data.km2);
         return output;
@@ -122,10 +123,11 @@ function Ruta() {
         return self.validate(data);
     }
     this.validateRuta = function(ruta) {
-        data.desp = ruta.desp;
-        data.dt1 = ruta.f1 + "T" + ruta.h1 + MS0;
-        data.dt2 = ruta.f2 + "T" + ruta.h2 + MS0;
-        let ok = self.validate(data);
+        ruta.dt1 = ruta.f1 + "T" + ruta.h1 + MS0;
+        ruta.dt2 = ruta.f2 + "T" + ruta.h2 + MS0;
+        Object.copy(ruta, data, [ "lat1", "lng1", "pais1" ]);
+
+        let ok = self.validate(ruta);
         ok = i18n.isTime("h1", ruta.h1 + TSS) && ok;
         return i18n.isTime("h2", ruta.h2 + TSS) && ok;
     }

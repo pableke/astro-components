@@ -43,11 +43,6 @@ tfoot { font-weight: bold; border-top: 1px dashed black; }
 .sort-asc:after { content: "\25B4"; }
 /* TABLES */
 
-/* Tabs classes */
-.tab-content { display: none; width: 100%; /*min-height: 70vh; max-height: 90vh;*/ padding: 2px; }
-.tab-content.active { display: inherit; animation: fadeIn 1s forwards; }
-/* Tabs classes */
-
 /* Actions */
 .action { display: inline-block; width: 26px; margin-left: 4px; font-size: x-large; }
 .action:hover { animation: resize .5s forwards; }

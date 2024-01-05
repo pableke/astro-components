@@ -8,14 +8,35 @@ HTMLElement.prototype.eachPrev = function(fn) {
         fn(el, i++);
     return this;
 }
+HTMLElement.prototype.prev = function(selector) {
+    var el = this.previousElementSibling;
+    while (el) {
+        if (el.matches(selector))
+            return el;
+        el = el.previousElementSibling;
+    }
+    return null;
+}
 HTMLElement.prototype.eachNext = function(fn) {
     var el = this.nextElementSibling;
     for (let i = 0; el; el = el.nextElementSibling)
         fn(el, i++);
     return this;
 }
+HTMLElement.prototype.next = function(selector) {
+    var el = this.nextElementSibling;
+    while (el) {
+        if (el.matches(selector))
+            return el;
+        el = el.nextElementSibling;
+    }
+    return null;
+}
 HTMLElement.prototype.eachSibling = function(fn) {
     return this.eachPrev(fn).eachNext(fn);
+}
+HTMLElement.prototype.sibling = function(selector) {
+    return this.prev(selector) || this.next(selector);
 }
 
 const opts = { // Configuration

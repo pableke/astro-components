@@ -1,0 +1,639 @@
+<ui:composition
+		template="/templates/layout/private-embed-layout.xhtml"
+		xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:c="http://java.sun.com/jsp/jstl/core"
+		xmlns:ui="http://java.sun.com/jsf/facelets"
+		xmlns:o="http://omnifaces.org/ui"
+		xmlns:p="http://primefaces.org/ui"
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core">
+
+	<ui:define name="metadata">
+		<f:metadata>
+            <f:viewParam name="lang" value="#{uae.lang}" />
+            <f:viewAction action="#{uae.initLang()}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="header">
+		<link rel="stylesheet" type="text/css" href="/uae/resources/css/main.css" />
+	</ui:define>
+	<ui:define name="outputScript">
+		<script type="module" src="/uae/resources/js/xeco/xeco.js"></script>
+		<script type="module" src="/uae/resources/js/xeco/presto.js"></script>
+	</ui:define>
+
+	<ui:define name="title">PRESTO</ui:define>
+	<ui:define name="description">Modificaciones Presupuestarias - ONLINE</ui:define>
+	<ui:define name="semilla"><li class="active">PRESTO</li></ui:define>
+
+	<ui:define name="body">
+		<ui:include src="parts/msgs.xhtml"></ui:include>
+
+		<div id="tab-0" class="tab-content">
+		<h:form id="xeco-init" prependId="false" onsubmit="loading();">
+			<c:choose>
+			<c:when test="#{presto.open}">
+				<h3><h:outputText value="#{msg['uae.irse.index.msg.titulo']}" escape="false" /></h3>
+				<ul>
+					<li>Nueva Solicitud:<ul>
+						<li><p:commandLink action="#{presto.createTcr()}" update="@(.update-presto)" oncomplete="viewPresto(xhr, status, args);" title="Código TCR">Transferencia de Crédito</p:commandLink></li>
+						<li><p:commandLink action="#{presto.createFce()}" update="@(.update-presto)" oncomplete="viewPresto(xhr, status, args);" title="Código FCE">Fondo de Cobertura</p:commandLink></li>
+						<c:if test="#{presto.uae or presto.otri}">
+							<li><p:commandLink action="#{presto.createL83()}" update="@(.update-presto)" oncomplete="viewPresto(xhr, status, args);" title="Código L83">Liquidación de Contrato de Art. 83</p:commandLink></li>
+						</c:if>
+						<c:if test="#{presto.hasGcr()}">
+							<li><p:commandLink action="#{presto.createGcr()}" update="@(.update-presto)" oncomplete="viewPresto(xhr, status, args);" title="Código GCR">Generación de Crédito (A83, Cátedras, Subvenciones y otras FA)</p:commandLink></li>
+						</c:if>
+						<c:if test="#{presto.hasAnt()}">
+							<li><p:commandLink action="#{presto.createAnt()}" update="@(.update-presto)" oncomplete="viewPresto(xhr, status, args);" title="Código ANT">Anticipos sobre Recaudación A83, TTPP y Cátedras</p:commandLink></li>
+						</c:if>
+						<c:if test="#{presto.hasAfc()}">
+							<li><p:commandLink action="#{presto.createAfc()}" update="@(.update-presto)" oncomplete="viewPresto(xhr, status, args);" title="Código AFC">Traspaso al FC</p:commandLink></li>
+						</c:if>
+					</ul></li>
+				</ul>
+			</c:when>
+			<c:otherwise>
+				<div class="notice notice-warn"><h:outputText value="#{msg['uae.msg.trabajando']}" escape="false" /></div>
+				<h3><h:outputText value="#{msg['uae.irse.index.msg.titulo']}" escape="false" /></h3>
+				<ul>
+					<li>Nueva Solicitud:<ul>
+						<li>Transferencia de Crédito</li>
+						<c:if test="#{presto.uae or presto.otri}">
+							<li>Fondo de Cobertura</li>
+						</c:if>
+						<c:if test="#{presto.hasGcr()}">
+							<li>Generación de Crédito (A83, Cátedras, Subvenciones y otras FA)</li>
+						</c:if>
+						<c:if test="#{presto.hasAnt()}">
+							<li>Anticipos sobre Recaudación A83, TTPP y Cátedras</li>
+						</c:if>
+						<c:if test="#{presto.hasAfc()}">
+							<li>Traspaso al FC</li>
+						</c:if>
+					</ul></li>
+				</ul>
+			</c:otherwise>
+			</c:choose>
+			<ul>
+			<li>
+				<a href="#tab-2" class="tab-action" title="Solicitudes pendientes de firma">Consulta de Solicitudes</a>
+			</li>
+			<c:if test="#{presto.uae}">
+				<li>
+					<p:commandLink action="#{presto.vinc()}" update="xeco-list" onclick="onVinc();" oncomplete="loadFiltro(xhr, status, args);" 
+						title="Asociación entre las solicitudes PRESTO y operaciones de UXXI-EC">
+						Consulta de Formación de Expediente
+					</p:commandLink>
+				</li>
+			</c:if>
+			</ul>
+		</h:form>
+		</div>
+
+		<div id="tab-1" class="tab-content">
+		<h:form id="xeco-presto" prependId="false" method="post" enctype="multipart/form-data" onsubmit="loading();">
+			<p:inputText id="id" value="#{presto.solicitud.id}" styleClass="ui-input ui-number hide" />
+
+			<h2 class="load-data">@titulo; @codigo;</h2>
+			<div class="card-xeco show-partida-dec">
+				<h2>Partida que Disminuye</h2>
+
+				<div class="ui-blocks">
+				<label class="ui-block">
+					<div class="label">Ejercicio:</div>
+					<h:selectOneMenu id="ejDec" value="#{presto.solicitud.ejOrgDec}" styleClass="ui-input ui-select" tabindex="5">
+						<f:selectItems value="#{presto.ejercicios}" />
+					</h:selectOneMenu>
+				</label>
+				<label class="ui-block-xl autocomplete">
+					<div class="label required">Orgánica:</div>
+					<p:inputText id="acOrgDec" value="#{presto.acOrganicaDec}" tabindex="6" styleClass="ui-input ui-autocomplete" autocomplete="off" />
+					<h:inputText id="idOrgDec" value="#{presto.solicitud.idOrganicaDec}" styleClass="ui-input ui-number hide" />
+					<ul role="list" class="results"></ul>
+					<p:commandButton id="find-organica-dec" action="#{presto.findOrganicaDec()}" oncomplete="loadItems(xhr, status, args)" styleClass="hide" />
+					<div class="ui-errtip"></div> 
+				</label>
+				<label class="ui-block">
+					<div class="label" title="Orgánica afectada">FA:</div>
+					<p:inputText id="faDec" value="#{presto.solicitud.faDec}" class="ui-input ui-bool disabled" tabindex="-1" title="Orgánica afectada" />
+				</label>
+				<label class="ui-block">
+					<div class="label required">Económica:</div>
+					<select id="idEcoDec" name="idEcoDec" class="ui-input ui-select ui-number" tabindex="7"></select>
+					<h:inputText id="idEcoDecPF" value="#{presto.solicitud.idEconomicaDec}" styleClass="ui-input ui-number hide" />
+					<p:commandButton id="find-economicas-dec" action="#{presto.findEconomicasDec()}" oncomplete="loadEconomicasDec(xhr, status, args)" styleClass="hide" />
+					<p:commandButton id="autoload-l83" action="#{presto.autoloadL83()}" oncomplete="autoloadL83(xhr, status, args)" styleClass="hide" />
+					<p:commandButton id="autoload-ant" action="#{presto.autoloadAnt()}" oncomplete="autoloadAnt(xhr, status, args)" styleClass="hide" />
+					<div class="ui-errtip"></div>
+				</label>
+				<label class="ui-block">
+					<div class="label required">Importe:</div>
+					<input type="text" id="impDec" name="impDec" value="#{presto.solicitud.importe}" maxlength="12" tabindex="8" class="ui-input ui-float"/> €
+					<div class="ui-errtip"></div>
+				</label>
+				<label class="ui-block show-imp-cd">
+					<div class="label required">Importe Disponible:</div>
+					<input type="text" id="cd" name="cd" tabindex="-1" class="ui-input ui-float disabled"/> €
+					<div class="ui-errtip"></div>
+				</label>
+				</div>
+			</div>
+
+			<div class="card-xeco">
+				<h2>Partidas a incrementar</h2>
+
+				<div class="ui-blocks show-partida-inc">
+				<label class="ui-block">
+					<div class="label">Ejercicio:</div>
+					<h:selectOneMenu id="ejInc" value="#{presto.solicitud.ejOrgDec}" styleClass="ui-input ui-select" tabindex="10">
+						<f:selectItems value="#{presto.ejercicios}" />
+					</h:selectOneMenu>
+				</label>
+				<label class="ui-block-xl autocomplete">
+					<div class="label required">Orgánica:</div>
+					<p:inputText id="acOrgInc" value="#{presto.acOrganicaInc}" tabindex="11" styleClass="ui-input ui-autocomplete" autocomplete="off" />
+					<h:inputText id="idOrgInc" value="#{presto.solicitud.idOrgInc}" styleClass="ui-input ui-number hide" />
+					<ul role="list" class="results"></ul>
+					<p:commandButton id="find-organica-inc" action="#{presto.findOrganicaInc()}" oncomplete="loadItems(xhr, status, args)" styleClass="hide" />
+					<div class="ui-errtip"></div> 
+				</label>
+				<label class="ui-block">
+					<div class="label" title="Orgánica afectada">FA:</div>
+					<input type="text" id="faInc" name="faInc" class="ui-input ui-bool disabled" tabindex="-1" title="Orgánica afectada" />
+				</label>
+				<label class="ui-block">
+					<div class="label required">Económica:</div>
+					<select id="idEcoInc" name="idEcoInc" class="ui-input ui-select ui-number" tabindex="12"></select>
+					<h:inputText id="idEcoIncPF" value="#{presto.solicitud.idEcoInc}" styleClass="ui-input ui-number hide" />
+					<p:commandButton id="find-economicas-inc" action="#{presto.findEconomicasInc()}" oncomplete="loadEconomicasInc(xhr, status, args)" styleClass="hide" />
+					<div class="ui-errtip"></div>
+				</label>
+				<label class="ui-block">
+					<div class="label required">Importe:</div>
+					<input type="text" id="impInc" name="impInc" maxlength="12" tabindex="13" class="ui-input ui-float"/> €
+					<div class="ui-errtip"></div>
+				</label>
+				<div class="ui-block-btn">
+					<p:commandLink action="#{presto.findPartidaInc()}" styleClass="btn btn-green" tabindex="14"
+						onclick="if (!fnAddPartidaInc()) return false;" oncomplete="loadPartidaInc(xhr, status, args)">
+						<i class="fas fa-plus btn-icon-left"></i> #{msg['lbl.add.tabla']}</p:commandLink>
+				</div>
+				</div>
+
+				<h:inputText id="partidas-json" value="#{presto.partidas}" styleClass="hide" />
+				<table id="partidas-inc" class="tb-xeco">
+					<thead>
+						<tr>
+							<th></th>
+							<th>Ej.</th>
+							<th>Orgánica</th>
+							<th class="hide-sm">Descripción Orgánica</th>
+							<th class="hide-sm">FA</th>
+							<th>Eco.</th>
+							<th class="hide-sm partida-min">Descripción Económica</th>
+							<th class="partida-ext">Prev. Ingresos (A)</th>
+							<th class="partida-ext">GG &#37; (B)</th>
+							<th class="partida-ext">Max. Habilitar (C=A-B)</th>
+							<th class="partida-ext">Crédito Habilitado (D)</th>
+							<th class="partida-ext">Margen (E=C-D)</th>
+							<th>Importe</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody class="hide">
+						<tr id="@id;" class="tb-data">
+							<td class="text-center">@info;</td>
+							<td class="text-center">@ej;</td>
+							<td>@o;</td>
+							<td class="hide-sm">@dOrg;</td>
+							<td class="text-center hide-sm">@fa;</td>
+							<td class="text-center">@e;</td>
+							<td class="hide-sm partida-min">@dEco;</td>
+							<td class="text-right partida-ext">@ing; €</td>
+							<td class="text-right partida-ext">@gg; €</td>
+							<td class="text-right partida-ext">@mh; €</td>
+							<td class="text-right partida-ext">@ch; €</td>
+							<td class="text-right partida-ext">@ih; €</td>
+							<td class="text-right">@imp; €</td>
+							<td class="text-center">
+								<c:if test="#{uae.gestor}">@doc030;</c:if>
+								@remove;
+							</td>
+						</tr>
+					</tbody>
+					<tfoot>
+						<tr>
+							<td colspan="3">Partidas: @size;</td>
+							<td class="hide-sm"></td><td class="hide-sm"></td><td></td><td class="hide-sm partida-min"></td>
+							<td class="partida-ext"></td><td class="partida-ext"></td><td class="partida-ext"></td><td class="partida-ext"></td><td class="partida-ext"></td>
+							<td class="text-right">@imp; €</td><td></td>
+						</tr>
+					</tfoot>
+				</table>
+			</div>
+
+			<div class="card-xeco">
+				<h2 class="load-data">Otros Datos de la Solicitud @codigo;</h2>
+
+				<div class="ui-blocks">
+				<label class="ui-block-row show-memoria">
+					<div class="label required">Memoria Justificativa:</div>
+					<h:inputTextarea id="memo" value="#{presto.solicitud.memoriaView}" tabindex="14" styleClass="ui-input ui-ta" />
+					<div class="ui-errtip"></div>
+				</label>
+				<label class="ui-block">
+					<div class="label">#{inicio.getMsg('lblUrg')}:</div>
+					<h:selectOneMenu id="urgente" value="#{presto.urgente}" styleClass="ui-input ui-select" tabindex="15">
+						<f:selectItem itemValue="1" itemLabel="#{inicio.getMsg('lblNormal')}" />
+						<f:selectItem itemValue="2" itemLabel="#{inicio.getMsg('lblUrgente')}" />
+					</h:selectOneMenu>
+				</label>
+				<label class="ui-block grp-urgente">
+					<div class="label required">#{inicio.getMsg('lblFechaUrg')}:</div>
+					<h:inputText id="fMax" value="#{presto.solicitud.isoDateMax}" size="10" maxlength="10" tabindex="16" styleClass="ui-input ui-date"/>
+				</label>
+				<label class="ui-block-row grp-urgente">
+					<div class="label required">#{inicio.getMsg('lblMotivoUrg')}:</div>
+					<h:inputTextarea id="extra" value="#{presto.solicitud.extraView}" styleClass="ui-input ui-ta" tabindex="17"/>
+					<div class="ui-errtip"></div>
+				</label>
+				</div>
+
+				<div class="ui-blocks">
+				<label class="ui-block show-subtipo">
+					<div class="label required">Clasificación de la operación:</div>
+					<h:selectOneMenu id="subtipo" value="#{presto.solicitud.subtipoView}" tabindex="18" styleClass="ui-input ui-select editable-uae">
+						<f:selectItem itemValue="1" itemLabel="Por ingreso"/>
+						<f:selectItem itemValue="2" itemLabel="Por compromiso de ingreso"/>
+					</h:selectOneMenu>
+				</label>
+				<p:outputPanel styleClass="ui-block-row link-adjunto update-presto">
+					<a href="#{presto.linkAdjunto}" class="btn btn-primary" target="_blank" title="Descargar / visualizar la documentación asociada">Documentación Adjunta<i class="far fa-paperclip btn-icon-right"></i></a>
+				</p:outputPanel>
+				<div class="ui-block-row insert-only">
+					<p:fileUpload id="fileGasto" label="Adjuntar Documentación" value="#{presto.adjunto}" mode="simple" skinSimple="true" />
+					<div class="notice notice-info">Formato preferente: PDF; Tamaño máximo 6 MB; Nombre de archivo breve; Evitar símbolos y caracteres especiales.</div>
+					<div class="notice notice-warn is-fce"><b>Advertencia:</b> es especialmente importante en caso que se requiera la utilización de fondos propios de la universidad adjuntar la documentación explicativa.</div>
+				</div>
+				</div>
+			</div>
+
+			<div class="navbar">
+				<a href="#back-tab" class="btn btn-primary tab-action" title="#{msg['tit.btn.volver.ini']}" tabindex="20">
+					<i class="fas fa-caret-left btn-icon-left"></i>#{msg['lbl.btn.volver']}</a>
+				<p:commandLink action="#{presto.save()}" ajax="false" styleClass="btn btn-green insert-only" tabindex="21"
+					onclick="if (!fnSend()) return false;" title="Pone la solicitud a la firma">
+					#{msg['lbl.btn.enviar']}<i class="fas fa-caret-right btn-icon-right"></i></p:commandLink>
+				<p:commandLink action="#{presto.firmar()}" styleClass="btn btn-green firmable-only" tabindex="22" title="#{msg['tit.btn.firmar']}"
+					onclick="if (!fnFirmar()) return false;" oncomplete="updateList(xhr, status, args);">
+					<i class="far fa-file-signature btn-icon-left"></i>#{msg['lbl.btn.firmar']}</p:commandLink>
+				<a href="#tab-11" class="btn btn-error tab-action rechazable-only" tabindex="23" title="#{msg['tit.btn.rechazar']}">
+					<i class="fas fa-times-circle btn-icon-left"></i>#{msg['lbl.btn.rechazar']}</a>
+			</div>
+			<ui:include src="parts/firmas_presto.xhtml"></ui:include>
+		</h:form>
+		</div>
+
+		<div id="tab-3" class="tab-content">
+		<h:form id="xeco-030" prependId="false" method="post" onsubmit="loading();">
+			<h2 class="load-data">@titulo; @codigo;</h2>
+			<div class="card-xeco">
+				<h2>Datos del Documento 080</h2>
+				<ul>
+					<li class="info-080"><b>Ejercicio:</b> @ej;</li>
+					<li class="info-080"><b>Organica:</b> @o; - @dOrg;</li>
+					<li class="info-080"><b>Económica:</b> @e; - @dEco;</li>
+					<li class="info-080"><b>Importe:</b> @imp; €</li>
+				</ul>
+				<h2>Datos del Documento 030</h2>
+				<div class="ui-blocks">
+					<div class="ui-block">
+						<div class="label">Ejercicio:</div>
+						<h:selectOneMenu id="ej030" value="#{presto.solicitud.ejOrgDec}" readonly="readonly" styleClass="ui-input ui-select">
+							<f:selectItems value="#{presto.ejercicios}" />
+						</h:selectOneMenu>
+					</div>
+					<label class="ui-block-xl autocomplete">
+						<div class="label required">Orgánica 030:</div>
+						<p:inputText id="acOrg030" value="#{presto.acOrg030}" tabindex="1" styleClass="ui-input ui-autocomplete" autocomplete="off" />
+						<input type="text" id="idOrg030" name="idOrg030" class="hide ui-number" />
+						<ul role="list" class="results"></ul>
+						<p:commandButton id="find-org-030" action="#{presto.findOrg030()}" oncomplete="loadItems(xhr, status, args)" styleClass="hide" />
+						<div class="ui-errtip"></div>
+					</label>
+					<label class="ui-block">
+						<div class="label required">Económica 030:</div>
+						<h:selectOneMenu id="idEco030" styleClass="ui-input ui-select ui-number" tabindex="2">
+							<f:selectItems value="#{presto.economicasIng}" var="ut" itemValue="#{ut.value}" itemLabel="#{ut.label}" />
+						</h:selectOneMenu>
+						<div class="ui-errtip"></div>
+					</label>
+					<label class="ui-block">
+						<div class="label required">Importe 030:</div>
+						<input type="text" id="imp030" name="imp030" maxlength="12" tabindex="3" class="ui-input ui-float"/> €
+						<div class="ui-errtip"></div>
+					</label>
+				</div>
+				<p id="memo-030" class="notice notice-info">#{presto.solicitud.memoria}</p>
+			</div>
+
+			<div class="navbar">
+				<a href="#back-tab" class="btn btn-primary tab-action" tabindex="13" title="Volver al formulario de la solicitud">
+					<i class="fas fa-caret-left btn-icon-left"></i>#{msg['lbl.btn.volver']}</a>
+				<a id="save-030" href="#tab-1" class="btn btn-success save-030" tabindex="14" title="Guarda los cambios del 030">
+					<i class="fas fa-save btn-icon-left"></i>Guardar</a>
+			</div>
+		</h:form>
+		</div>
+
+		<div id="tab-2" class="tab-content">
+			<h:form id="xeco-filter" prependId="false" onsubmit="loading();">
+			<h2>Solicitudes realizadas<hr/></h2>
+
+			<div class="ui-blocks">
+				<label class="ui-block">
+					<div class="label"><h:outputText value="#{msg['lbl.ejercicio']}" escape="false" />:</div>
+					<h:selectOneMenu value="#{presto.filtro.ej}" styleClass="ui-input ui-select" tabindex="1" title="#{msg['tit.ejercicio']}">
+						<f:selectItems value="#{uae.ejercicios}" />
+					</h:selectOneMenu>
+				</label>
+				<label class="ui-block">
+					<div class="label">Tipo:</div>
+					<h:selectOneMenu value="#{presto.filtro.tipoView}" styleClass="ui-input ui-select" tabindex="2">
+						<f:selectItem itemValue="0" itemLabel=""/>
+						<f:selectItem itemValue="1" itemLabel="TCR" itemEscaped="false"/>
+						<f:selectItem itemValue="6" itemLabel="FCE" itemEscaped="false"/>
+						<f:selectItem itemValue="4" itemLabel="GCR" itemEscaped="false"/>
+						<f:selectItem itemValue="3" itemLabel="L83" itemEscaped="false"/>
+						<f:selectItem itemValue="5" itemLabel="ANT" itemEscaped="false"/>
+						<f:selectItem itemValue="7" itemLabel="GCO" itemEscaped="false"/>
+						<f:selectItem itemValue="8" itemLabel="AFC" itemEscaped="false"/>
+					</h:selectOneMenu>
+				</label>
+				<label class="ui-block">
+					<div class="label"><h:outputText value="#{msg['lbl.estado']}" escape="false" />:</div>
+					<h:selectOneMenu id="fEstado" value="#{presto.filtro.estadoView}" styleClass="ui-input ui-select ui-number" tabindex="2" title="#{msg['tit.estado']}">
+						<f:selectItem itemValue="0" itemLabel="" />
+						<f:selectItem itemValue="5" itemLabel="En Proceso" itemEscaped="false"/>
+						<f:selectItem itemValue="1" itemLabel="Aceptada" itemEscaped="false"/>
+						<f:selectItem itemValue="2" itemLabel="Rechazada" itemEscaped="false"/>
+						<f:selectItem itemValue="3" itemLabel="Ejecutando" itemEscaped="false"/>
+						<f:selectItem itemValue="4" itemLabel="Integrada" itemEscaped="false"/>
+						<f:selectItem itemValue="7" itemLabel="Cancelada" itemEscaped="false"/>
+						<f:selectItem itemValue="8" itemLabel="Caducada" itemEscaped="false"/>
+						<c:if test="#{presto.uae}">
+							<f:selectItem itemValue="" itemLabel="-------------------" itemDisabled="true"/>
+							<f:selectItem itemValue="9" itemLabel="Error Capa SOA" itemEscaped="false"/>
+							<f:selectItem itemValue="10" itemLabel="Error Crédito Vinculante" itemEscaped="false"/>
+						</c:if>
+					</h:selectOneMenu>
+				</label>
+				<label class="ui-block">
+					<div class="label"><h:outputText value="#{msg['lbl.mi.firma']}" escape="false" />:</div>
+					<h:selectOneMenu id="fMiFirma" value="#{presto.filtro.miFirma}" styleClass="ui-input ui-select ui-number" tabindex="3" title="#{msg['lbl.mi.firma']}">
+						<f:selectItem itemValue="0" itemLabel="" />
+						<f:selectItem itemValue="5" itemLabel="Pendiente" itemEscaped="false" />
+						<f:selectItem itemValue="1" itemLabel="Aceptada" itemEscaped="false" />
+						<f:selectItem itemValue="2" itemLabel="Rechazada" itemEscaped="false" />
+					</h:selectOneMenu>
+				</label>
+				<label class="ui-block">
+					<div class="label"><h:outputText value="#{msg['lbl.codigo']}" escape="false" />:</div>
+					<p:inputText value="#{presto.filtro.codigoView}" styleClass="ui-input ui-code" tabindex="4" />
+				</label>
+				<label class="ui-block">
+					<div class="label"><h:outputText value="#{msg['lbl.organica']}" escape="false" />:</div>
+					<p:inputText value="#{presto.filtro.orgInc}" styleClass="ui-input ui-code" tabindex="5" />
+				</label>
+				<label class="ui-block">
+					<div class="label"><h:outputText value="#{msg['lbl.fecha.creacion']}" escape="false" />:</div>
+					<p:inputText value="#{presto.filtro.f1}" tabindex="6" styleClass="ui-input ui-date"/> ...
+					<p:inputText value="#{presto.filtro.f2}" tabindex="7" styleClass="ui-input ui-date"/>
+				</label>
+				<label class="ui-block-lg">
+					<div class="label">Solicitante:</div>
+					<p:inputText value="#{presto.filtro.solicitante}" styleClass="ui-input ui-text" tabindex="8" />
+				</label>
+			</div>
+			<div class="navbar">
+				<c:if test="#{presto.uxxiec}">
+					<a href="#tab-0" class="btn btn-primary tab-action" title="#{msg['tit.btn.volver.ini']}" tabindex="13">
+						<i class="fas fa-caret-left btn-icon-left"></i>#{msg['lbl.btn.volver']}</a>
+				</c:if>
+				<p:commandLink action="#{presto.list()}" update="xeco-list" onclick="loading();" oncomplete="loadFiltro(xhr, status, args);" styleClass="btn btn-primary" tabindex="13">
+					<i class="far fa-search btn-icon-left"></i>Buscar</p:commandLink>
+				<p:commandLink action="#{presto.relist()}" update="xeco-list" onclick="onRelist();" oncomplete="loadFiltro(xhr, status, args);" styleClass="btn btn-warn" tabindex="14">
+					<i class="far fa-times-circle btn-icon-left"></i>Limpiar</p:commandLink>
+			</div>
+
+			<p:outputPanel id="xeco-list">
+			<table id="solicitudes" class="tb-xeco">
+				<thead>
+					<tr>
+						<th></th>
+						<th>Código</th>
+						<th class="hide-sm">Tipo</th>
+						<th>Estado</th>
+						<th>Mi Firma</th>
+						<th class="hide-sm">Pendiente de</th>
+						<th>Orgánica que Aumenta</th>
+						<th>Eco.</th>
+						<th>Total €</th>
+						<th class="hide-xs">F. Solicitud</th>
+						<th class="hide-sm">Solicitante</th>
+						<th class="hide-md">Memoria</th>
+						<th>Acciones</th>
+					</tr>
+				</thead>
+				<tbody>
+					<c:forEach id="prestos" items="#{presto.solicitudes}" var="sol">
+					<tr id="#{sol.id}" class="tb-data">
+						<c:choose>
+							<c:when test="#{sol.urgente}">
+								<td class="text-center text-red text-xl" title="#{sol.fullName}: #{sol.extra}">&#33;</td>
+							</c:when>
+							<c:when test="#{(presto.otri or presto.uae) and sol.anticipada}">
+								<td class="text-center text-xl" title="Este contrato ha gozado de anticipo en algún momento">&#65;</td>
+							</c:when>
+							<c:when test="#{(presto.otri or presto.uae) and sol.excedida}">
+								<td class="text-center text-warn text-xl" title="La cantidad solicitada excede el margen registrado por el Buzón de Ingresos">&#9888;</td>
+							</c:when>
+							<c:otherwise><td></td></c:otherwise>
+						</c:choose>
+						<td class="text-center">
+							<p:commandLink action="#{presto.view(sol)}" update="@(.update-presto)" oncomplete="viewPresto(xhr, status, args);">#{sol.codigo}</p:commandLink>
+						</td>
+						<td class="hide-sm">#{sol.descTipo}</td>
+						<c:choose>
+							<c:when test="#{sol.editable}"><td class="text-warn estado-#{sol.id}">Editable</td></c:when>
+							<c:when test="#{sol.aceptada}"><td class="text-green estado-#{sol.id}">Aceptada</td></c:when>
+							<c:when test="#{sol.rechazada}"><td class="text-error estado-#{sol.id}">Rechazada</td></c:when>
+							<c:when test="#{sol.ejecutada}"><td class="text-green estado-#{sol.id}">Ejecutando</td></c:when>
+							<c:when test="#{sol.notificada}"><td class="text-green estado-#{sol.id}">Integrada</td></c:when>
+							<c:when test="#{sol.cancelada}"><td class="text-error estado-#{sol.id}">Cancelada</td></c:when>
+							<c:when test="#{sol.caducada}"><td class="text-error estado-#{sol.id}">Caducada</td></c:when>
+							<c:when test="#{sol.errorCapaSOA}"><td class="text-error estado-#{sol.id}">Error Capa SOA</td></c:when>
+							<c:when test="#{sol.errorUxxiCV}"><td class="text-error estado-#{sol.id}">Error de Crédito Vinculante</td></c:when>
+							<c:when test="#{sol.erronea}"><td class="text-error estado-#{sol.id}">Error de Integración</td></c:when>
+							<c:otherwise><td class="text-warn estado-#{sol.id}">Pendiente</td></c:otherwise>
+						</c:choose>
+						<td class="text-center">
+							<c:choose>
+								<c:when test="#{sol.firmaAceptada}">
+									<i class="fas fa-flag fa-lg icon icon-green" title="Solicitud firmada"></i>
+								</c:when>
+								<c:when test="#{sol.firmaRechazada or sol.cancelada}">
+									<i class="fas fa-flag fa-lg icon icon-red" title="Solicitud rechazada"></i>
+								</c:when>
+								<c:otherwise>
+									<i class="fas fa-flag fa-lg icon icon-warn" title="Solicitud pendiente de firma"></i>
+								</c:otherwise>
+							</c:choose>
+						</td>
+						<td class="hide-sm">#{sol.sigCargo}</td>
+						<td title="#{sol.descOrganicaInc}">#{sol.organicaInc}<c:if test="#{sol.multipartida}"><span> (y otras)</span></c:if></td>
+						<td class="text-center" title="#{sol.descEconomicaInc}">#{sol.economicaInc}</td>
+						<td class="text-right">#{presto.getImporte(sol)} €</td>
+						<td class="text-center hide-xs">#{presto.getFCreacion(sol)}</td>
+						<td class="hide-sm">#{sol.fullName}</td>
+						<td class="hide-md">#{sol.memoria}</td>
+						<td class="text-right">
+							<p:commandLink action="#{presto.view(sol)}" update="@(.update-presto)" oncomplete="viewPresto(xhr, status, args);">
+								<i class="fas fa-search action action-blue" title="Consultar rolicitud"></i></p:commandLink>
+							<c:if test="#{sol.firmable}">
+								<p:commandLink action="#{presto.firmar(sol)}" styleClass="firma-#{sol.id}" title="#{msg['tit.btn.firmar']}"
+									onclick="if (!fnFirmar()) return false;" oncomplete="updateList(xhr, status, args);">
+									<i class="fas fa-check action action-green"></i></p:commandLink>
+								<p:commandLink action="#{presto.select(sol)}" oncomplete="showRechazo(xhr, status, args)"
+									title="Ir al motivo de rechazo" styleClass="firma-#{sol.id}">
+									<i class="fas fa-times action action-red"></i></p:commandLink>
+							</c:if>
+							<c:if test="#{not sol.editable}">
+								<p:commandLink action="#{presto.report(sol)}" oncomplete="handleReport(xhr, status, args)" title="#{msg['tit.btn.informe']}"> <i class="fal fa-file-pdf action action-red"></i></p:commandLink>
+							</c:if>
+							<c:if test="#{uae.isIntegrable(sol)}">
+								<p:commandLink action="#{presto.ws(sol)}" onclick="if (!fnIntegrar(this)) return false;" oncomplete="showAlerts(xhr, status, args)" 
+									title="Solicita la integración a través de la capa SOA"><i class="far fa-save action action-blue"></i></p:commandLink>
+							</c:if>
+							<c:if test="#{presto.isEjecutable(sol)}">
+								<p:commandLink action="#{presto.uxxi(sol)}" onclick="loading();" oncomplete="loadUxxiec(xhr, status, args);" 
+									title="Expediente asociado a la solicitud"><i class="fal fa-cog action action-green"></i></p:commandLink>
+							</c:if>
+							<c:if test="#{uae.admin}">
+								<p:commandLink action="#{presto.emails(sol)}" oncomplete="showAlerts(xhr, status, args)" title="Envia una prueba de cada tipo de correo al administrador">
+									<i class="fal fa-mail-bulk action action-blue"></i></p:commandLink>
+								<p:commandLink action="#{presto.remove(sol)}" onclick="if (!fnRemove()) return false;" oncomplete="showAlerts(xhr, status, args)" title="Borra la comunicación del sistema">
+									<i class="fal fa-trash-alt action action-red"></i></p:commandLink>
+							</c:if>
+						</td>
+					</tr>
+					</c:forEach>
+				</tbody>
+				<tfoot>
+					<tr><td colspan="99">Solicitudes: #{presto.numSolicitudes}</td></tr>
+				</tfoot>
+			</table>
+			</p:outputPanel>
+			</h:form>
+
+			<c:if test="#{presto.uxxiec}">
+				<a href="#tab-0" class="btn btn-primary tab-action" title="Volver a la consulta de solicitudes" tabindex="13">
+					<i class="fas fa-caret-left btn-icon-left"></i>#{msg['lbl.btn.volver']}</a>
+			</c:if>
+			<ui:include src="parts/leyenda_firmas.xhtml"></ui:include>
+		</div>
+
+		<!-- formulario de rechazo/cancelacion -->
+		<div id="tab-11" class="tab-content">
+		<h:form id="xeco-reject" prependId="false" onsubmit="loading();">
+			<div class="card-xeco">
+				<h2>Motivo / Causa del rechazo de la solicitud<hr/></h2>
+				<p class="notice notice-info load-data">@codigo;: @memo;</p>
+
+				<label class="ui-block">
+					<div class="label required">Información asociada al rechazo:</div>
+					<h:inputTextarea id="rechazo" value="#{presto.filtro.firmaInfo}" rows="8" styleClass="ui-input ui-ta" title="Motivo / causa del rechazo" tabindex="1" />
+					<div class="ui-errtip"></div>
+				</label>
+			</div>
+
+			<a href="#back-tab" class="btn btn-primary tab-action" title="#{msg['tit.btn.volver']}" tabindex="2">
+				<i class="fas fa-caret-left btn-icon-left"></i>#{msg['lbl.btn.volver']}</a>
+			<p:commandLink action="#{presto.rechazar()}" styleClass="btn btn-error" tabindex="3" 
+				onclick="if (!fnRechazar()) return false;" oncomplete="updateList(xhr, status, args);">
+				<i class="far fa-times-circle btn-icon-left"></i>#{msg['lbl.btn.rechazar']}</p:commandLink>
+			<ui:include src="parts/firmas_presto.xhtml"></ui:include>
+		</h:form>
+		</div>
+
+		<!-- vinculación con uxxiec -->
+		<div id="tab-15" class="tab-content" data-nif="#{uae.nif}" data-usuec="#{uae.uxxiec}" data-grupo="#{uae.idGrupo}">
+		<h:form id="xeco-uxxi" prependId="false" onsubmit="loading();">
+			<h2>Consulta de Formación de Expediente<hr/></h2>
+			<p class="notice notice-info load-data">@codigo;: @memo;</p>
+			<div class="ui-blocks">
+				<label class="ui-block">
+					<div class="label">Ejercicio:</div>
+					<h:selectOneMenu id="ej-uxxi" value="#{presto.ejUxxi}" styleClass="ui-input ui-select" tabindex="1">
+						<f:selectItems value="#{uae.ejercicios}" />
+					</h:selectOneMenu>
+				</label>
+				<label class="ui-block-xl autocomplete">
+					<div class="label required">Operación UXXI-EC:</div>
+					<p:inputText id="uxxi" value="#{presto.acUxxi}" tabindex="2" styleClass="ui-input ui-autocomplete" title="Introduzca código ó descripción" autocomplete="off" />
+					<h:inputText id="id-uxxi" styleClass="ui-input ui-number hide" />
+					<ul role="list" class="results"></ul>
+					<p:commandButton id="find-uxxi" action="#{presto.findUxxi()}" oncomplete="loadItems(xhr, status, args)" styleClass="hide" />
+					<div class="errtip"></div>
+				</label>
+				<div class="ui-block-btn">
+					<a id="add-uxxi" href="#" class="btn btn-green" tabindex="5" title="Asocia la operación a la solicitud"><i class="far fa-plus btn-icon-left"></i> Añadir</a>
+				</div>
+			</div>
+
+			<h:inputText id="docs-json" value="#{presto.operaciones}" styleClass="hide" />
+			<table id="docs-uxxi">
+				<thead>
+					<tr>
+						<th>Operación</th>
+						<th>Doc.</th>
+						<th>Importe</th>
+						<th>F. Creación</th>
+						<th>Descripción</th>
+						<th>Acciones</th>
+					</tr>
+				</thead>
+				<tbody class="hide">
+					<tr class="tb-data">
+						<td>@num;</td>
+						<td>@uxxi;</td>
+						<td class="text-right">@imp; €</td>
+						<td class="text-center">@fUxxi;</td>
+						<td>@desc;</td>
+						<td class="text-center">
+							<a href="#remove" class="row-action"><i class="fas fa-times action action-red"></i></a>
+						</td>
+					</tr>
+				</tbody>
+				<tfoot>
+					<tr><td colspan="99">Operaciones: @size;</td></tr>
+				</tfoot>
+			</table>
+
+			<div class="navbar">
+				<a href="#tab-2" class="btn btn-primary tab-action" title="#{msg['tit.btn.volver.ini']}" tabindex="13">
+					<i class="fas fa-caret-left btn-icon-left"></i>#{msg['lbl.btn.volver']}</a>
+				<p:commandLink action="#{presto.ejecutar()}" styleClass="btn btn-green" onclick="saveUxxiec();" oncomplete="showAlerts(xhr, status, args)" 
+					tabindex="14" title="Guarda los cambios realizados, sin notificar a los responsables de la solicitud">
+					<i class="far fa-save btn-icon-left"></i>Guardar</p:commandLink>
+				<p:commandLink action="#{presto.notificar()}" styleClass="btn btn-green show-ejecutable" onclick="saveUxxiec();" oncomplete="showAlerts(xhr, status, args)" 
+					tabindex="15" title="Notifica a los responsables vía e-mail, que la solicitud ya esta mecanizada en UXXI-EC">
+					<i class="fal fa-paper-plane btn-icon-left"></i>Notificar</p:commandLink>
+				<a href="#tab-11" class="btn btn-error tab-action" tabindex="16" title="#{msg['tit.btn.rechazar']}">
+					<i class="fas fa-times-circle btn-icon-left"></i>#{msg['lbl.btn.rechazar']}</a>
+			</div>
+		</h:form>
+		</div>
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,788 @@
+<ui:composition
+		template="/templates/layout/private-embed-layout.xhtml"
+		xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:c="http://java.sun.com/jsp/jstl/core"
+		xmlns:ui="http://java.sun.com/jsf/facelets"
+		xmlns:o="http://omnifaces.org/ui"
+		xmlns:p="http://primefaces.org/ui"
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core">
+
+	<ui:define name="metadata">
+		<f:metadata>
+            <f:viewParam name="lang" value="#{uae.lang}" />
+            <f:viewAction action="#{uae.initLang()}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="header">
+		<link rel="stylesheet" type="text/css" href="/uae/resources/css/main.css" />
+	</ui:define>
+	<ui:define name="outputScript">
+		<script type="module" src="/uae/resources/js/xeco/xeco.js"></script>
+		<script type="module" src="/uae/resources/js/xeco/iris/iris.js"></script>
+		<script type="module" src="/uae/resources/js/xeco/iris/maps.js"></script>
+		<script type="module" src="/uae/resources/js/xeco/iris/gastos.js"></script>
+	</ui:define>
+
+	<ui:define name="title">IRIS</ui:define>
+	<ui:define name="description"><h:outputText value="#{msg['uae.irse.index.tit.desc']}" escape="false" /></ui:define>
+	<ui:define name="semilla"><li class="active">IRIS</li></ui:define>
+
+	<ui:define name="body">
+		<ui:include src="parts/msgs.xhtml"></ui:include>
+
+		<div id="tab-0" class="tab-content active">
+		<h:form id="xeco-init" prependId="false" onsubmit="loading();">
+			<p:outputPanel rendered="#{not iris.open}" styleClass="notice notice-warn"><h:outputText value="#{msg['uae.msg.trabajando']}" escape="false" /></p:outputPanel>
+			<h3><h:outputText value="#{msg['uae.irse.index.msg.titulo']}" escape="false" /></h3>
+			<ul>
+				<c:choose>
+				<c:when test="#{iris.open}">
+						<li><p:commandLink action="#{iris.create()}" update="@(.update-iris)" oncomplete="createIris(xhr, status, args);"><h:outputText value="#{msg['uae.irse.index.msg.new.comunicacion']}" escape="false" /></p:commandLink></li>
+				</c:when>
+				<c:otherwise>
+						<li><h:outputText value="#{msg['uae.irse.index.msg.new.comunicacion']}" escape="false" /></li>
+				</c:otherwise>
+				</c:choose>
+
+				<li><p:commandLink action="#{iris.relist()}" update="@(#xeco-filter .ui-input,#xeco-list)" onclick="loading();" oncomplete="loadFiltro(xhr, status, args);"><h:outputText value="#{msg['uae.irse.index.msg.list']}" escape="false" /></p:commandLink></li>
+				<c:if test="#{iris.uae}">
+					<li>
+						<p:commandLink action="#{iris.vinc()}" update="@(#xeco-filter .ui-input,#xeco-list)" onclick="loading();" 
+							oncomplete="loadFiltro(xhr, status, args);" title="Asociación entre las solicitudes de factura y operaciones de UXXI-EC">
+							<h:outputText value="#{msg['uae.irse.index.msg.vinc']}" escape="false" />
+						</p:commandLink>
+					</li>
+				</c:if>
+			</ul>
+		</h:form>
+
+		<br/><br/>
+		<p class="notice notice-info"><h:outputText value="#{msg['uae.irse.index.msg.info']}" escape="false" /></p>
+		</div>
+
+		<h:form id="xeco-iris" prependId="false" method="post" enctype="multipart/form-data" onsubmit="loading();">
+			<p:inputText id="id" value="#{iris.solicitud.id}" styleClass="ui-input ui-number hide update-iris" />
+			<p:inputText id="tipo" value="#{iris.solicitud.tipoView}" styleClass="ui-input ui-number hide update-iris" />
+			<p:inputText id="estado" value="#{iris.solicitud.estadoView}" styleClass="ui-input ui-number hide update-iris" />
+			<p:inputText id="perfil" value="#{iris.solicitud.perfilView}" styleClass="ui-input hide update-iris" />
+			<p:inputText id="fmask" value="#{iris.solicitud.miFirma}" styleClass="ui-input ui-number hide update-iris" />
+			<p:inputText id="matricula-pf" value="#{gasto.matricula}" styleClass="ui-input hide update-iris" />
+
+			<div id="tab-1" class="tab-content">
+			<div class="card-xeco">
+				<p:outputPanel styleClass="update-iris">
+					<h2><span class="titulo"></span><i>#{iris.codigo}</i></h2>
+				</p:outputPanel>
+
+				<p:outputPanel styleClass="ui-blocks update-iris #{iris.cssShowUxxiec}">
+				<div id="ac-interesado" class="ui-block-xl autocomplete">
+					<label for="acInteresado" class="required"><h:outputText value="#{msg['uae.irse.tab0.lbl.int']}" escape="false" />:</label>
+					<p:inputText id="acInteresado" value="#{iris.acInteresado}" tabindex="1" styleClass="ui-input ui-autocomplete update-readonly" autocomplete="off" />
+					<h:inputText id="nifInteresado" value="#{iris.nifInteresado}" styleClass="hide" />
+					<ul role="list" class="results"></ul>
+					<p:commandButton id="find-interesado" action="#{iris.findUsuarios()}" oncomplete="loadItems(xhr, status, args)" styleClass="hide" />
+					<div id="tip-acInteresado" class="ui-errtip"></div>
+				</div>
+				<div class="ui-block-main hide info-colectivo">
+					<span id="colectivo">#{iris.colectivo}</span>
+					<a id="email" href="mailto:#{iris.usuEmail}" title="#{msg['tit.enviar.correo']}"><i class="fa fa-regular fa-envelope fa-lg icon"></i></a>
+				</div>
+				</p:outputPanel>
+
+				<div class="ui-blocks">
+				<div id="ac-organica" class="ui-block-xl autocomplete">
+					<label for="acOrganica" class="required"><h:outputText value="#{msg['uae.irse.tab0.lbl.ppto']}" escape="false" />:</label>
+					<p:inputText id="acOrganica" value="#{iris.acOrganica}" tabindex="4" styleClass="ui-input ui-autocomplete update-readonly update-iris" autocomplete="off" />
+					<h:inputText id="idOrganica" value="#{iris.idOrganica}" styleClass="ui-number hide update-iris" />
+					<ul role="list" class="results"></ul>
+					<p:commandButton id="find-organica" action="#{iris.findOrganicas()}" oncomplete="loadItems(xhr, status, args)" styleClass="hide" />
+					<div id="tip-acOrganica" class="ui-errtip"></div>
+				</div>
+				<div class="ui-block-btn insert-only #{iris.cssShowUxxiec}">
+					<a href="#add-organica" class="btn btn-green" tabindex="5"><i class="fas fa-plus btn-icon-left"></i><h:outputText value="#{msg['lbl.add.tabla']}" escape="false" /></a>
+				</div>
+				</div>
+
+				<h:inputHidden id="organicas-json" value="#{iris.presupuesto}" />
+				<table id="organicas" class="tb-xeco #{iris.cssShowUxxiec}">
+					<thead>
+						<tr>
+							<th><h:outputText value="#{msg['lbl.organica']}" escape="false" /></th>
+							<th class="insert-only"><h:outputText value="#{msg['lbl.imp.cd']}" escape="false" /></th>
+							<th><h:outputText value="#{msg['lbl.descripcion']}" escape="false" /></th><th>#{msg['lbl.responsable.gasto']}</th>
+							<th>#{msg['lbl.nombre.apellidos']}</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody class="hide">
+						<tr class="tb-data">
+							<td>@o;</td>
+							<td class="insert-only text-right">@imp; €</td>
+							<td>@dOrg;</td>
+							<td class="text-center">@resp;</td><td>@r;</td>
+							<td>
+								<a href="#remove" class="row-action insert-only"><i class="fas fa-times action action-red"></i></a>
+							</td>
+						</tr>
+					</tbody>
+					<tfoot class="hide">
+						<tr>
+							<td><h:outputText value="#{msg['lbl.organicas']}" escape="false" />: @size;</td>
+							<td class="insert-only"></td>
+							<td colspan="99"></td>
+						</tr>
+					</tfoot>
+				</table>
+
+				<div class="ui-blocks">
+					<div class="fin-info fin-xSU notice notice-info hide"><h:outputText value="#{msg['uae.irse.tab0.fin.xsu.info']}" escape="false" /></div>
+					<div class="fin-info fin-ISU notice notice-info hide"><h:outputText value="#{msg['uae.irse.tab0.fin.isu.info']}" escape="false" /></div>
+					<div class="fin-info fin-x83 notice notice-info hide"><h:outputText value="#{msg['uae.irse.tab0.fin.x83.info']}" escape="false" /></div>
+					<div class="fin-info fin-A83 notice notice-info hide"><h:outputText value="#{msg['uae.irse.tab0.fin.a83.info']}" escape="false" /></div>
+					<div class="insert-only notice notice-info"><h:outputText value="#{msg['uae.irse.tab0.org.info']}" escape="false" /></div>
+
+					<div class="ui-block-row">
+						<label for="actividad" class="required">#{iris.msgActividad}:</label>
+						<select id="actividad" class="ui-input ui-select update-readonly" tabindex="7">
+							<option value="COM">#{iris.msgCOM}</option>
+							<option value="MUN">#{iris.msgMUN}</option>
+							<option value="MES" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.mes']}" escape="false" /></option>
+							<option value="IAE" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.iae']}" escape="false" /></option>
+							<option value="ATR" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.atr']}" escape="false" /></option>
+							<option value="IAE+ATR" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.iae.atr']}" escape="false" /></option>
+							<option value="AFO" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.afo']}" escape="false" /></option>
+							<option value="IAE+AFO" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.iae.afo']}" escape="false" /></option>
+							<option value="ACS" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.acs']}" escape="false" /></option>
+							<option value="OCE" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.col']}" escape="false" /></option>
+							<option value="IAE+OCE" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.iae.col']}" escape="false" /></option>
+							<option value="A7J" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.a7j']}" escape="false" /></option>
+							<option value="MOV" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.mov']}" escape="false" /></option>
+						</select>
+					</div>
+	
+					<div class="ui-block">
+						<label for="tramite" class="required"><h:outputText value="#{msg['uae.irse.tab0.lbl.tramite']}" escape="false" />:</label>
+						<select id="tramite" class="ui-input ui-select update-readonly" tabindex="8">
+							<option value="AyL"><h:outputText value="#{msg['uae.irse.tab0.tramit.ayl']}" escape="false" /></option>
+							<option value="AUT"><h:outputText value="#{msg['uae.irse.tab0.tramit.aut']}" escape="false" /></option>
+							<option value="LIQ"><h:outputText value="#{msg['uae.irse.tab0.tramit.liq']}" escape="false" /></option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<div class="navbar">
+				<a href="#back-tab" class="btn btn-primary tab-action" tabindex="41"><i class="fas fa-angle-double-left btn-icon-left"></i>#{msg['lbl.btn.volver']}</a>
+				<a href="#next-tab" class="btn btn-primary tab-action update-only" tabindex="42">#{msg['lbl.btn.siguiente']}<i class="fas fa-angle-double-right btn-icon-right"></i></a>
+				<p:commandLink action="#{iris.savePerfil()}" update="@(.update-iris)" styleClass="btn btn-green insert-only" tabindex="43" title="Pone la solicitud a la firma"
+					onclick="if (!fnSavePerfil()) return false;" oncomplete="viewIris(xhr, status, args);">
+					#{msg['lbl.btn.enviar']}<i class="fas fa-caret-right btn-icon-right"></i>
+				</p:commandLink>
+				<p:commandLink action="#{iris.firmar()}" styleClass="btn btn-green firmable-only" tabindex="44" title="#{msg['tit.btn.firmar']}"
+					onclick="if (!fnFirmar()) return false;" oncomplete="updateList(xhr, status, args);">
+					<i class="far fa-file-signature btn-icon-left"></i> Firmar</p:commandLink>
+				<a href="#tab-11" class="btn btn-error tab-action rechazable-only" tabindex="45" title="#{msg['tit.btn.rechazar']}">
+					<i class="fas fa-times-circle btn-icon-left"></i><h:outputText value="#{msg['lbl.btn.rechazar']}" escape="false" /></a>
+			</div>
+			<ui:include src="parts/firmas_iris.xhtml"></ui:include>
+			</div>
+
+			<div id="tab-3" class="tab-content">
+			<!-- Cabecera del paso 2 -->
+			<div class="card-xeco">
+				<h2>
+					<img src="/uae/resources/images/speaker.png" width="30px"/>
+					<span class="text-warn pasos-h2">Paso 1 de 3</span> - <h:outputText value="#{msg['uae.irse.tab2.msg.act']}" escape="false" />
+				</h2>
+
+				<p:outputPanel styleClass="ui-blocks update-iris">
+					<div class="ui-block-row">
+						<label for="objeto" class="required"><h:outputText value="#{msg['lbl.objeto.act']}" escape="false" />:</label>
+						<h:inputTextarea id="objeto" value="#{iris.solicitud.objetoView}" styleClass="ui-input ui-ta #{iris.cssDisabled}" tabindex="41" maxlength="600" title="Objeto de la actividad" />
+						<div id="tip-objeto" class="ui-errtip"></div>
+					</div>
+					<div class="ui-block #{iris.cssShowEquipoGob}">
+						<label for="dieta" class="required inline"><h:outputText value="#{msg['uae.irse.tab2.lbl.dieta']}" escape="false" />:</label>
+						<h:selectOneMenu id="dieta" value="#{gasto.dieta}" class="ui-input ui-select ui-number #{iris.cssDisabledRutas}" tabindex="42">
+							<f:selectItem itemValue="2" itemLabel="#{msg['uae.irse.tab2.grupo2']}" itemEscaped="false" />
+							<f:selectItem itemValue="1" itemLabel="#{msg['uae.irse.tab2.grupo1']}" itemEscaped="false" />
+						</h:selectOneMenu>
+					</div>
+					<div class="ui-block-row notice notice-info">
+						<h:outputText value="#{msg['uae.irse.tab2.msg.resp1']}" escape="false" />, <span id="responsables"></span><h:outputText value="#{msg['uae.irse.tab2.msg.resp2']}" escape="false" />
+					</div>
+					<div id="ac-promotor" class="ui-block-xl autocomplete">
+						<label for="acPromotor"><h:outputText value="#{msg['uae.irse.tab2.lbl.resp']}" escape="false" />:</label>
+						<p:inputText id="acPromotor" value="#{iris.acPromotor}" tabindex="43" styleClass="ui-input ui-autocomplete #{iris.cssDisabled}" autocomplete="off" />
+						<h:inputText id="nifPromotor" value="#{iris.nifPromotor}" styleClass="hide" />
+						<ul role="list" class="results"></ul>
+						<p:commandButton id="find-promotor" action="#{iris.findPromotor()}" oncomplete="loadItems(xhr, status, args)" styleClass="hide" />
+						<div id="tip-acPromotor" class="ui-errtip"></div>
+					</div>
+					<div class="ui-block-break"></div>
+					<c:if test="#{iris.tribunal}">
+						<div id="ac-tribunal" class="ui-block-xl autocomplete">
+							<label for="acTribunal"><h:outputText value="#{msg['uae.irse.tab2.lbl.tribunal']}" escape="false" />:</label>
+							<p:inputText id="acTribunal" value="#{iris.acTribunal}" tabindex="43" styleClass="ui-input ui-autocomplete #{iris.cssDisabled}" autocomplete="off" />
+							<h:inputText id="nifTribunal" value="#{iris.nifTribunal}" styleClass="hide" />
+							<ul role="list" class="results"></ul>
+							<p:commandButton id="find-tribunal" action="#{iris.findTribunal()}" oncomplete="loadItems(xhr, status, args)" styleClass="hide" />
+							<div id="tip-acTribunal" class="ui-errtip"></div>
+						</div>
+						<div class="ui-block-break"></div>
+					</c:if>
+					<p:outputPanel rendered="#{iris.mesa}" id="ac-mesa" class="ui-block-xl autocomplete">
+						<label for="acMesa"><h:outputText value="#{msg['uae.irse.tab2.lbl.mesa']}" escape="false" />:</label>
+						<p:inputText id="acMesa" value="#{iris.acMesa}" tabindex="43" styleClass="ui-input ui-autocomplete #{iris.cssDisabled}" autocomplete="off" />
+						<h:inputText id="nifMesa" value="#{iris.nifMesa}" styleClass="hide" />
+						<ul role="list" class="results"></ul>
+						<p:commandButton id="find-mesa" action="#{iris.findMesa()}" oncomplete="loadItems(xhr, status, args)" styleClass="hide" />
+						<div id="tip-acMesa" class="ui-errtip"></div>
+					</p:outputPanel>
+				</p:outputPanel>
+			</div>
+
+			<!-- Perfil de la actividad = MUN -->
+			<div class="card-xeco mun-only">
+			<div class="ui-blocks">
+				<div class="ui-block-xl">
+					<label for="destino-mun" class="required"><h:outputText value="#{msg['lbl.fui']}" escape="false" />:</label>
+					<input type="text" id="destino-mun" name="destino" class="ui-input ui-mun" tabindex="46" placeholder="#{inicio.getMsg('ph.ubicacion')}" />
+					<div id="tip-destino-mun" class="ui-errtip"></div>
+				</div>
+				<div class="ui-block">
+					<label for="desp-mun" class="required"><h:outputText value="#{msg['lbl.util']}" escape="false" />:</label>
+					<select id="desp-mun" name="desp" class="ui-input ui-select ui-number ui-mun" tabindex="47"></select>
+					<div id="tip-desp-mun" class="ui-errtip"></div>
+				</div>
+				<div class="ui-block grupo-matricula-mun">
+					<label for="matricula-mun" class="required"><h:outputText value="#{msg['lbl.matricula']}" escape="false" />:</label>
+					<input type="text" id="matricula-mun" name="matricula" class="ui-input ui-code ui-mun" tabindex="48" />
+					<div id="tip-matricula-mun" class="ui-errtip"></div>
+				</div>
+				<div class="ui-block grupo-matricula-mun">
+					<label for="dist-mun" class="required">km:</label>
+					<input type="text" id="dist-mun" name="km1" maxlength="10" tabindex="49" class="ui-input ui-float ui-mun"/>
+					<div id="tip-dist-mun" class="ui-errtip"></div>
+				</div>
+				<div class="ui-block">
+					<label for="f1-mun" class="required"><h:outputText value="#{msg['lbl.el.dia']}" escape="false" />:</label>
+					<input type="date" id="f1-mun" name="f1" class="ui-input ui-date ui-mun" tabindex="50" />
+					<div id="tip-f1-mun" class="ui-errtip"></div>
+				</div>
+			</div>
+			</div>
+
+			<!-- Perfil de la actividad = OCE -->
+			<div class="card-xeco oce-only">
+			<div class="notice notice-info">Importe a pagar al interesado por ponencias en conferencias, cursos, etc., o por colaboraciones ocasionales de acuerdo con AEAT/SS.</div>
+			<div class="ui-blocks">
+				<div class="ui-block">
+					<label for="f1-oce" class="required"><h:outputText value="#{msg['lbl.fecha.act']}" escape="false" />:</label>
+					<input type="date" id="f1-oce" name="f1" class="ui-input ui-date ui-mun" tabindex="46" />
+					<div id="tip-f1-oce" class="ui-errtip"></div>
+				</div>
+				<div class="ui-block">
+					<label for="imp-oce" class="required"><h:outputText value="#{msg['lbl.imp.tot']}" escape="false" /></label>
+					<input type="text" id="imp-oce" name="imp" maxlength="10" tabindex="47" class="ui-input ui-float ui-oce"/>
+					<div id="tip-imp-oce" class="ui-errtip"></div>
+				</div>
+			</div>
+			</div>
+
+			<!-- Perfil tramite = AUT/A7J -->
+			<div class="card-xeco aut-only">
+			Aut
+			</div>
+
+			<!-- Perfil ruta de 1 solo DIA -->
+			<div class="card-xeco act1dia-only">
+			Actividad de 1 día
+			</div>
+
+			<ui:include src="parts/botones_iris.xhtml"></ui:include>
+			<ui:include src="parts/firmas_iris.xhtml"></ui:include>
+			</div>
+
+			<!-- Google Maps tab -->
+			<div id="tab-4" class="tab-content">
+				<div class="card-xeco">
+					<h2>
+						<img src="/uae/resources/images/speaker.png" width="30px"/>
+						<span class="text-warn pasos-h2">Paso 2 de 3</span> - <h:outputText value="#{msg['uae.irse.tab2.msg.tit.maps']}" escape="false" />
+					</h2>
+	
+					<div class="ui-blocks editable-only">
+					<div class="ui-block-xl">
+						<label for="origen" class="required"><h:outputText value="#{msg['lbl.sali']}" escape="false" />:</label>
+						<input type="search" id="origen" name="origen" class="ui-input ui-text ui-ruta" tabindex="30" title="#{msg['tit.ubicacion']}" placeholder="#{inicio.getMsg('ph.ubicacion')}" />
+						<div id="tip-origen" class="ui-errtip"></div>
+					</div>
+					<div class="ui-block">
+						<label for="f1" class="required"><h:outputText value="#{msg['lbl.el.dia']}" escape="false" />:</label>
+						<input type="date" id="f1" name="f1" class="ui-input ui-date ui-ruta" tabindex="31" />
+						<div id="tip-f1" class="ui-errtip"></div>
+					</div>
+					<div class="ui-block">
+						<label for="h1" class="required"><h:outputText value="#{msg['lbl.a.las']}" escape="false" />:</label>
+						<input type="time" id="h1" name="h1" class="ui-input ui-time ui-ruta" tabindex="32" placeholder="hh:mm" />
+						<div id="tip-h1" class="ui-errtip"></div>
+					</div>
+	
+					<div class="ui-block-xl">
+						<label for="destino" class="required"><h:outputText value="#{msg['lbl.llegue']}" escape="false" />:</label>
+						<input type="search" id="destino" name="destino" class="ui-input ui-text ui-ruta" tabindex="33" title="#{msg['tit.ubicacion']}" placeholder="#{inicio.getMsg('ph.ubicacion')}"/>
+						<div id="tip-destino" class="ui-errtip"></div>
+					</div>
+					<div class="ui-block">
+						<label for="f2" class="required"><h:outputText value="#{msg['lbl.el.dia']}" escape="false" />:</label>
+						<input type="date" id="f2" name="f2" class="ui-input ui-date ui-ruta" tabindex="34" />
+						<div id="tip-f2" class="ui-errtip"></div>
+					</div>
+					<div class="ui-block">
+						<label for="h2" class="required"><h:outputText value="#{msg['lbl.a.las']}" escape="false" />:</label>
+						<input type="time" id="h2" name="h2" class="ui-input ui-time ui-ruta" tabindex="35" placeholder="hh:mm"/>
+						<div id="tip-h2" class="ui-errtip"></div>
+					</div>
+	
+					<div class="ui-block">
+						<label for="desp-maps" class="required"><h:outputText value="#{msg['lbl.util']}" escape="false" />:</label>
+						<select id="desp-maps" name="desp" class="ui-input ui-select ui-number ui-ruta" tabindex="37" title="#{msg['tit.medio.trans']}"></select>
+						<div id="tip-desp-maps" class="ui-errtip"></div>
+					</div>
+					<div class="ui-block hide grupo-matricula-maps">
+						<label for="matricula-maps" class="required"><h:outputText value="#{msg['lbl.matricula']}" escape="false" />:</label>
+						<input type="text" id="matricula-maps" name="matricula" class="ui-input ui-code ui-ruta" tabindex="48" />
+						<div id="tip-matricula-maps" class="ui-errtip"></div>
+					</div>
+					<div class="ui-block-btn">
+						<a href="#add-ruta" class="btn btn-green" tabindex="39"><i class="fas fa-arrow-alt-down btn-icon-left"></i><h:outputText value="#{msg['lbl.add.tabla']}" escape="false" /></a>
+					</div>
+					</div>
+	
+					<h:inputHidden id="rutas-json" value="#{iris.rutas}" />
+					<table id="rutas-maps" class="tb-xeco">
+						<thead>
+							<tr>
+								<th>Nº</th>
+								<th><h:outputText value="#{msg['lbl.origen.etapa']}" escape="false" /></th>
+								<th><h:outputText value="#{msg['lbl.fecha.salida']}" escape="false" /></th><th><h:outputText value="#{msg['lbl.hora.salida']}" escape="false" /></th>
+								<th><h:outputText value="#{msg['lbl.destino.etapa']}" escape="false" /> <span class="text-warn">(<h:outputText value="#{msg['lbl.principal']}" escape="false" /> <i class="fal fa-flag-checkered"></i>)</span> *</th>
+								<th><h:outputText value="#{msg['lbl.fecha.llegada']}" escape="false" /></th><th><h:outputText value="#{msg['lbl.hora.llegada']}" escape="false" /></th>
+								<th><h:outputText value="#{msg['lbl.medio.trans']}" escape="false" /></th><th>Km.</th><th></th>
+							</tr>
+						</thead>
+						<tbody class="hide">
+							<tr class="tb-data">
+								<td class="text-center">@count;</td>
+								<td>@origen;</td><td class="text-center">@f1;</td><td class="text-center">@h1;</td>
+								<td>
+								<c:choose>
+									<c:when test="#{iris.editable}"><a href="#find">@destino; @principal;</a></c:when>
+									<c:otherwise>@destino; @principal;</c:otherwise>
+								</c:choose>
+								</td>
+								<td class="text-center">@f2;</td><td class="text-center">@h2;</td>
+								<td class="text-center">@desp;</td><td class="text-right">@km2;</td>
+								<td class="text-center">
+									<a href="#remove" class="row-action insert-only"><i class="fas fa-times action action-red"></i></a>
+								</td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr><td colspan="8"><h:outputText value="#{msg['lbl.etapas']}" escape="false" />: @size;</td><td class="tb-data-tc">@totKmCalc;</td><td></td></tr>
+						</tfoot>
+					</table>
+					<div class="notice notice-info"><h:outputText value="#{msg['uae.irse.tab2.info.principal']}" escape="false" /></div>
+				</div>
+	
+				<ui:include src="parts/botones_iris.xhtml"></ui:include>
+				<ui:include src="parts/firmas_iris.xhtml"></ui:include>
+			</div>
+
+			<!-- Asistencias / Colaboraciones -->
+			<div id="tab-5" class="tab-content">
+			<div class="card-xeco">
+				<h2>
+					<img src="/uae/resources/images/speaker.png" width="30px"/>
+					<span class="text-warn pasos-h2">Paso 3 de 3</span> - <h:outputText value="#{msg['uae.irse.tab4.msg.ac.tit']}" escape="false" />
+				</h2>
+				<p:outputPanel class="notice notice-info update-iris">#{iris.titTab4}</p:outputPanel>
+			</div>
+
+			<ui:include src="parts/botones_iris.xhtml"></ui:include>
+			<ui:include src="parts/firmas_iris.xhtml"></ui:include>
+			</div>
+
+			<!-- Añadir gastos y asociarlos a rutas -->
+			<div id="tab-6" class="tab-content">
+			<div class="card-xeco">
+				<h2>
+					<img src="/uae/resources/images/speaker.png" width="30px"/>
+					<span class="text-warn pasos-h2">Paso 4 de 4</span> - <h:outputText value="#{msg['uae.irse.tab5.msg.tit']}" escape="false" />
+				</h2>
+
+				<div class="ui-blocks">
+				<div class="ui-block">
+					<label for="tipo-gasto" class="required"><h:outputText value="#{msg['lbl.tipo.fac.doc']}" escape="false" />:</label>
+					<h:inputHidden id="tipo-gasto-pf" value="#{iris.gasto.tipoView}" />
+					<select id="tipo-gasto" class="ui-input ui-select ui-number" tabindex="100">
+						<option value=""></option>
+						<optgroup label="Factura a nombre del comisionado" class="rutas-pendientes">
+							<option value="9" class="noches-pendientes"><h:outputText value="#{msg['lbl.por.alojamiento']}" escape="false" /></option>
+							<option value="8" class="i18n rutas-out">@lblTransporte;</option>
+						</optgroup>
+						<optgroup id="grupo-factura-upct" label="Tickets por transporte" class="factura-upct">
+						</optgroup>
+						<optgroup label="Otra Documentación">
+							<option value="201" class="i18n factura-upct">@docObligatoria;</option>
+							<option value="206" class="i18n doc-movilidad">@docMovilidad;</option>
+							<option value="202" class="i18n">@docOpcional;</option>
+						</optgroup>
+						<c:if test="#{irse.extAlu and irse.iaeExt}">
+							<optgroup label="Justificaciones">
+								<option value="203"><h:outputText value="#{msg['lbl.justifi.dietas']}" escape="false" /></option>
+							</optgroup>
+						</c:if>
+						<c:if test="#{irse.tab8}">
+							<optgroup label="Gasto Extraordinario">
+								<option value="301"><h:outputText value="#{msg['lbl.transporte']}" escape="false" /></option>
+								<c:if test="#{not irse.mun}">
+									<option value="302"><h:outputText value="#{msg['lbl.alojamiento']}" escape="false" /></option>
+								</c:if>
+								<c:if test="#{ruta.llegadaCena and gasto.extraCena}">
+									<option value="303"><h:outputText value="#{msg['lbl.cena.final']}" escape="false" /></option>
+								</c:if>
+								<c:if test="#{irse.alu or irse.ext}">
+									<option value="304"><h:outputText value="#{msg['lbl.otras.dietas']}" escape="false" /></option>
+								</c:if>
+							</optgroup>
+						</c:if>
+					</select>
+					<div id="tip-tipo-gasto" class="ui-errtip"></div>
+				</div>
+			</div>
+			</div>
+
+			<ui:include src="parts/botones_iris.xhtml"></ui:include>
+			<ui:include src="parts/firmas_iris.xhtml"></ui:include>
+			</div>
+
+			<!-- Tablas resumenes de rutas y gastos -->
+			<div id="tab-7" class="tab-content">
+			<div class="card-xeco">
+				<h2>
+					<img src="/uae/resources/images/speaker.png" width="30px"/>
+					<h:outputText value="#{msg['uae.irse.tab6.msg.tit']}" escape="false" />
+				</h2>
+			</div>
+
+			<ui:include src="parts/botones_iris.xhtml"></ui:include>
+			<ui:include src="parts/firmas_iris.xhtml"></ui:include>
+			</div>
+
+			<!-- Finalización y pago -->
+			<div id="tab-8" class="tab-content">
+			<div class="card-xeco">
+				<h2>
+					<img src="/uae/resources/images/speaker.png" width="30px"/>
+					<h:outputText value="#{msg['uae.irse.tab9.msg.tit']}" escape="false" />
+				</h2>
+			</div>
+
+			<div class="navbar">
+				<a href="#back-tab" class="btn btn-primary tab-action" tabindex="41"><i class="fas fa-angle-double-left btn-icon-left"></i>#{msg['lbl.btn.volver']}</a>
+				<p:commandLink action="#{iris.save()}" styleClass="btn btn-green editable-only" tabindex="43" title="Pone la solicitud a la firma"
+					onclick="if (!fnSave()) return false;loading();" oncomplete="showTab(xhr, status, args, 0);">
+					#{msg['lbl.btn.enviar']}<i class="fas fa-paper-plane btn-icon-right"></i>
+				</p:commandLink>
+				<p:commandLink action="#{iris.firmar()}" styleClass="btn btn-green firmable-only" tabindex="44" title="#{msg['tit.btn.firmar']}"
+					onclick="if (!fnFirmar()) return false;" oncomplete="updateIris(xhr, status, args);">
+					<i class="far fa-file-signature btn-icon-left"></i> Firmar</p:commandLink>
+				<a href="#tab-11" class="btn btn-error tab-action rechazable-only" tabindex="44" title="#{msg['tit.btn.rechazar']}">
+					<i class="fas fa-times-circle btn-icon-left"></i><h:outputText value="#{msg['lbl.btn.rechazar']}" escape="false" /></a>
+			</div>
+			<ui:include src="parts/firmas_iris.xhtml"></ui:include>
+			</div>
+
+			<!-- Asociar gasto a rutas -->
+			<div id="tab-9" class="tab-content">
+				<div class="card-xeco">
+					<h2><h:outputText value="#{msg['uae.irse.tab12.info']}" escape="false" /></h2>
+				</div>
+				<div class="navbar">
+					<a href="#back-tab" class="btn btn-primary tab-action" tabindex="41"><i class="fas fa-angle-double-left btn-icon-left"></i>#{msg['lbl.btn.volver']}</a>
+				</div>
+			</div>
+		</h:form>
+
+		<div id="map" class="hide"></div>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBIlqxZkVg9GyjzyNzC0rrZiuY6iPLzTZI&amp;callback=initMap&amp;libraries=places&amp;v=weekly" defer="defer"></script>
+
+		<div id="tab-2" class="tab-content">
+		<h:form id="xeco-filter" prependId="false" onsubmit="loading();">
+			<h2>Solicitudes realizadas<hr/></h2>
+
+			<div class="ui-blocks">
+				<div class="ui-block">
+					<label for="filtro-ej"><h:outputText value="#{msg['lbl.ejercicio']}" escape="false" />:</label>
+					<h:selectOneMenu id="filtro-ej" value="#{iris.filtro.ej}" styleClass="ui-input ui-select" tabindex="1" title="#{msg['tit.ejercicio']}">
+						<f:selectItems value="#{uae.ejercicios}" />
+					</h:selectOneMenu>
+				</div>
+				<div class="ui-block">
+					<label for="filtro-estado"><h:outputText value="#{msg['lbl.estado']}" escape="false" />:</label>
+					<h:selectOneMenu id="filtro-estado" value="#{iris.filtro.estadoView}" styleClass="ui-input ui-select ui-number" tabindex="2" title="#{msg['tit.estado']}">
+						<f:selectItem itemValue="0" itemLabel="" />
+						<f:selectItem itemValue="6" itemLabel="#{msg['uae.irse.filter.estado.6']}" itemEscaped="false"/>
+						<f:selectItem itemValue="5" itemLabel="#{msg['uae.irse.filter.estado.5']}" itemEscaped="false"/>
+						<f:selectItem itemValue="1" itemLabel="#{msg['uae.irse.filter.estado.1']}" itemEscaped="false"/>
+						<f:selectItem itemValue="2" itemLabel="#{msg['uae.irse.filter.estado.2']}" itemEscaped="false"/>
+						<f:selectItem itemValue="4" itemLabel="#{msg['uae.irse.filter.estado.4']}" itemEscaped="false"/>
+						<f:selectItem itemValue="7" itemLabel="#{msg['uae.irse.filter.estado.7']}" itemEscaped="false"/>
+						<f:selectItem itemValue="8" itemLabel="#{msg['uae.irse.filter.estado.8']}" itemEscaped="false"/>
+					</h:selectOneMenu>
+				</div>
+				<div class="ui-block">
+					<label for="filtro-firma"><h:outputText value="#{msg['lbl.mi.firma']}" escape="false" />:</label>
+					<h:selectOneMenu id="filtro-firma" value="#{iris.filtro.miFirma}" styleClass="ui-input ui-select ui-number" tabindex="3" title="#{msg['lbl.mi.firma']}">
+						<f:selectItem itemValue="0" itemLabel="" />
+						<f:selectItem itemValue="5" itemLabel="#{inicio.getMsg('lblPendiente')}" />
+						<f:selectItem itemValue="1" itemLabel="#{inicio.getMsg('lblAceptada')}" />
+						<f:selectItem itemValue="2" itemLabel="#{inicio.getMsg('lblRechazada')}" />
+					</h:selectOneMenu>
+				</div>
+				<div class="ui-block">
+					<label for="filtro-codigo"><h:outputText value="#{msg['lbl.codigo']}" escape="false" />:</label>
+					<p:inputText id="filtro-codigo" value="#{iris.filtro.codigoView}" styleClass="ui-input ui-code" tabindex="4" />
+				</div>
+				<div class="ui-block">
+					<label for="filtro-org"><h:outputText value="#{msg['lbl.presupuesto']}" escape="false" />:</label>
+					<p:inputText id="filtro-org" value="#{iris.filtro.organicaView}" tabindex="5"  styleClass="ui-input ui-code"/>
+				</div>
+				<div class="ui-block">
+					<label for="fInicio"><h:outputText value="#{msg['lbl.fecha.creacion']}" escape="false" />:</label>
+					<p:inputText id="fInicio" value="#{iris.filtro.f1}" tabindex="6" styleClass="ui-input ui-date"/> ...
+					<p:inputText id="fFin" value="#{iris.filtro.f2}" tabindex="7" styleClass="ui-input ui-date"/>
+					<div class="errtip"></div>
+				</div>
+				<div class="ui-block-lg">
+					<label for="filtro-solicitante"><h:outputText value="#{msg['uae.irse.tab0.lbl.sol']}" escape="false" />:</label>
+					<p:inputText id="filtro-solicitante" value="#{iris.filtro.solicitante}" styleClass="ui-input" tabindex="8" />
+				</div>
+			</div>
+
+			<div class="navbar">
+				<a href="#tab-0" class="btn btn-primary tab-action" title="#{msg['tit.btn.volver.ini']}" tabindex="13">
+					<i class="fas fa-caret-left btn-icon-left"></i><h:outputText value="#{msg['lbl.btn.volver']}" escape="false" /></a>
+				<p:commandLink action="#{iris.list()}" update="xeco-list" onclick="loading();" oncomplete="loadFiltro(xhr, status, args)" styleClass="btn btn-primary" tabindex="13">
+					<i class="far fa-search btn-icon-left"></i>Buscar</p:commandLink>
+				<p:commandLink action="#{iris.relist()}" update="@(#xeco-filter .ui-input,#xeco-list)" onclick="loading();" oncomplete="loadFiltro(xhr, status, args)" styleClass="btn btn-warn" tabindex="14">
+					<i class="far fa-times-circle btn-icon-left"></i>Limpiar</p:commandLink>
+			</div>
+
+			<p:outputPanel id="xeco-list">
+			<table id="solicitudes" class="tb-xeco">
+				<thead>
+						<tr>
+							<th></th>
+							<th><h:outputText value="#{msg['lbl.codigo']}" escape="false" /></th>
+							<th><h:outputText value="#{msg['lbl.estado']}" escape="false" /></th>
+							<th><h:outputText value="#{msg['lbl.mi.firma']}" escape="false" /></th>
+							<th class="hide-sm"><h:outputText value="#{msg['lbl.sig.firma']}" escape="false" /></th>
+							<th><h:outputText value="#{msg['lbl.fecha.creacion']}" escape="false" /></th>
+							<th><h:outputText value="#{msg['lbl.presupuesto']}" escape="false" /></th>
+							<th class="hide-sm"><h:outputText value="#{msg['uae.irse.tab0.lbl.int']}" escape="false" /></th>
+							<th class="hide-sm"><h:outputText value="#{msg['lbl.objeto.act']}" escape="false" /></th>
+							<th><h:outputText value="#{msg['lbl.imp.liq']}" escape="false" /></th>
+							<th><h:outputText value="#{msg['lbl.acciones']}" escape="false" /></th>
+						</tr>
+				</thead>
+				<tbody>
+					<c:forEach items="#{iris.solicitudes}" var="sol">
+					<tr id="#{sol.id}" class="tb-data">
+						<c:choose>
+							<c:when test="#{sol.urgente}">
+								<td class="text-center text-red text-xl" title="#{sol.fullName}: #{sol.extra}">&#33;</td>
+							</c:when>
+							<c:otherwise><td></td></c:otherwise>
+						</c:choose>
+						<td class="text-center">
+							<p:commandLink action="#{iris.view(sol)}" update="@(.update-iris)" onclick="loading();" oncomplete="viewIris(xhr, status, args);" title="#{sol.codigo}: #{sol.fullName}">#{sol.codigoNum}</p:commandLink>
+						</td>
+						<c:choose>
+							<c:when test="#{sol.editable}"><td class="text-warn estado-#{sol.id}"><h:outputText value="#{msg['uae.irse.list.estado.6']}" escape="false" /></td></c:when>
+							<c:when test="#{sol.aceptada}"><td class="text-green estado-#{sol.id}"><h:outputText value="#{msg['uae.irse.list.estado.1']}" escape="false" /></td></c:when>
+							<c:when test="#{sol.rechazada}"><td class="text-error estado-#{sol.id}"><h:outputText value="#{msg['uae.irse.list.estado.2']}" escape="false" /></td></c:when>
+							<c:when test="#{sol.ejecutada}"><td class="text-green estado-#{sol.id}"><h:outputText value="#{msg['uae.irse.list.estado.3']}" escape="false" /></td></c:when>
+							<c:when test="#{sol.notificada}"><td class="text-green estado-#{sol.id}"><h:outputText value="#{msg['uae.irse.list.estado.4']}" escape="false" /></td></c:when>
+							<c:when test="#{sol.cancelada}"><td class="text-error estado-#{sol.id}"><h:outputText value="#{msg['uae.irse.list.estado.7']}" escape="false" /></td></c:when>
+							<c:when test="#{sol.caducada}"><td class="text-error estado-#{sol.id}"><h:outputText value="#{msg['uae.irse.list.estado.8']}" escape="false" /></td></c:when>
+							<c:when test="#{sol.errorCapaSOA}"><td class="text-error estado-#{sol.id}">Error Capa SOA</td></c:when>
+							<c:when test="#{sol.errorUxxiCV}"><td class="text-error estado-#{sol.id}">Error de Crédito Vinculante</td></c:when>
+							<c:when test="#{sol.erronea}"><td class="text-error estado-#{sol.id}">Error de Integración</td></c:when>
+							<c:otherwise><td class="text-warn estado-#{sol.id}"><h:outputText value="#{msg['uae.irse.list.estado.5']}" escape="false" /></td></c:otherwise>
+						</c:choose>
+						<td class="text-center">
+							<c:choose>
+								<c:when test="#{sol.firmaAceptada}">
+									<i class="fas fa-flag fa-lg icon icon-green" title="Solicitud firmada"></i>
+								</c:when>
+								<c:when test="#{sol.firmaRechazada or sol.cancelada}">
+									<i class="fas fa-flag fa-lg icon icon-erd" title="Solicitud rechazada"></i>
+								</c:when>
+								<c:otherwise>
+									<i class="fas fa-flag fa-lg icon icon-warn" title="Solicitud pendiente de firma"></i>
+								</c:otherwise>
+							</c:choose>
+						</td>
+						<td class="hide-sm">#{sol.sigCargo}</td>
+						<td class="text-center">#{iris.getFCreacion(sol)}</td>
+						<td>#{sol.organica}<span class="hide-sm">: #{sol.descOrganica}</span></td>
+						<td class="hide-sm">#{sol.fullNameInteresado}</td>
+						<td class="hide-sm">#{sol.memoria}</td>
+						<td class="text-right">#{iris.getImporte(sol)} €</td>
+						<td class="text-right">
+							<p:commandLink action="#{iris.view(sol)}" update="@(.update-iris)" onclick="loading();" oncomplete="viewIris(xhr, status, args);">
+								<i class="fas fa-search action action-blue" title="Consultar rolicitud"></i></p:commandLink>
+							<c:if test="#{sol.firmable}">
+								<p:commandLink action="#{iris.firmar(sol)}" title="Firmar rolicitud" styleClass="firma-#{sol.id}"
+									onclick="if (!fnFirmar()) return false;" oncomplete="updateList(xhr, status, args);">
+									<i class="fas fa-check action action-green"></i></p:commandLink>
+								<p:commandLink action="#{iris.select(sol)}" update="@(.update-iris)" oncomplete="showTab(xhr, status, args, 11);"
+									title="Ir al motivo de rechazo" styleClass="firma-#{sol.id}">
+									<i class="fas fa-times action action-red"></i></p:commandLink>
+							</c:if>
+							<c:if test="#{sol.reactivable}">
+								<p:commandLink action="#{iris.clone(sol)}" update="@(.update-iris)" onclick="if (!fnClone(this)) return false;" oncomplete="showTab(xhr, status, args, 1);" 
+									title="Subsanar la comunicación salvo cambio de presupuesto">
+									<i class="far fa-edit action action-green"></i></p:commandLink>
+							</c:if>
+							<c:if test="#{uae.isIntegrable(sol)}">
+								<p:commandLink action="#{iris.ws(sol)}" onclick="if (!fnIntegrar(this)) return false;" oncomplete="showAlerts(xhr, status, args);"
+									title="Solicita la integración a través de la capa SOA"><i class="far fa-save action action-blue"></i></p:commandLink>
+							</c:if>
+							<c:if test="#{uae.isEjecutable(sol)}">
+								<p:commandLink action="#{iris.uxxi(sol)}" update="@(.update-iris)" onclick="loading();" oncomplete="loadUxxiec(xhr, status, args);" 
+									title="Expediente asociado a la solicitud"><i class="fal fa-cog action action-blue"></i></p:commandLink>
+							</c:if>
+							<c:if test="#{uae.admin}">
+								<p:commandLink action="#{iris.emails(sol)}" oncomplete="showAlerts(xhr, status, args)" title="Envia una prueba de cada tipo de correo al administrador">
+									<i class="fal fa-mail-bulk action action-blue"></i></p:commandLink>
+								<p:commandLink action="#{iris.remove(sol)}" onclick="if (!fnRemove()) return false;" oncomplete="showAlerts(xhr, status, args)" title="Borra la comunicación del sistema">
+									<i class="fal fa-trash-alt action action-red"></i></p:commandLink>
+							</c:if>
+						</td>
+					</tr>
+					</c:forEach>
+				</tbody>
+				<tfoot>
+					<tr><td colspan="99">Solicitudes: #{iris.numSolicitudes}</td></tr>
+				</tfoot>
+			</table>
+			</p:outputPanel>
+		</h:form>
+
+		<a href="#tab-0" class="btn btn-primary tab-action" title="#{msg['tit.btn.volver.ini']}" tabindex="13">
+			<i class="fas fa-caret-left btn-icon-left"></i><h:outputText value="#{msg['lbl.btn.volver']}" escape="false" /></a>
+		<ui:include src="parts/leyenda_firmas.xhtml"></ui:include>
+		</div>
+
+		<!-- formulario de rechazo/cancelacion -->
+		<div id="tab-11" class="tab-content">
+		<h:form id="xeco-reject" prependId="false" onsubmit="loading();">
+			<p:outputPanel styleClass="update-iris">
+				<h2>Motivo / Causa del rechazo de la solicitud #{iris.codigo}<hr/></h2>
+				<p class="notice notice-info">#{iris.solicitud.codigoDesc}</p>
+			</p:outputPanel>
+			<div class="card-xeco">
+				<div class="ui-block">
+					<label for="rechazo" class="required">Información asociada al rechazo:</label>
+					<h:inputTextarea id="rechazo" value="#{iris.filtro.firmaInfo}" rows="8" styleClass="ui-input ui-ta update-iris" title="Motivo / causa del rechazo" tabindex="1" />
+					<div id="tip-rechazo" class="ui-errtip"></div> 
+				</div>
+			</div>
+
+			<a href="#back-tab" class="btn btn-primary tab-action" title="#{msg['tit.btn.volver']}" tabindex="2">
+				<i class="fas fa-caret-left btn-icon-left"></i><h:outputText value="#{msg['lbl.btn.volver']}" escape="false" /></a>
+			<p:commandLink action="#{iris.rechazar()}" styleClass="btn btn-error" tabindex="3" 
+				onclick="if (!fnRechazar()) return false;" oncomplete="updateList(xhr, status, args);">
+				<i class="far fa-times-circle btn-icon-left"></i>#{msg['lbl.btn.rechazar']}</p:commandLink>
+			<ui:include src="parts/firmas_iris.xhtml"></ui:include>
+		</h:form>
+		</div>
+
+		<!-- vinculación con uxxiec -->
+		<div id="tab-15" class="tab-content" data-nif="#{uae.nif}" data-usuec="#{uae.uxxiec}" data-uae="#{uae.uae}">
+		<p:outputPanel styleClass="update-iris">
+			<h2>Consulta de Formación de Expediente #{iris.codigo}<hr/></h2>
+			<p class="notice notice-info">#{iris.solicitud.codigoDesc}</p>
+		</p:outputPanel>
+
+		<h:form id="xeco-uxxi" prependId="false" onsubmit="loading();">
+			<div class="ui-blocks">
+				<div class="ui-block">
+					<label for="ej-uxxi">Ejercicio:</label>
+					<h:selectOneMenu id="ej-uxxi" value="#{iris.ejUxxi}" styleClass="ui-input ui-select" tabindex="1">
+						<f:selectItems value="#{uae.ejercicios}" />
+					</h:selectOneMenu>
+				</div>
+				<div id="ac-uxxi" class="ui-block-xl autocomplete">
+					<label for="uxxi" class="required">Operación UXXI-EC:</label>
+					<p:inputText id="uxxi" value="#{iris.acUxxi}" tabindex="2" styleClass="ui-input ui-autocomplete" title="Introduzca código ó descripción" autocomplete="off" />
+					<h:inputText id="id-uxxi" styleClass="ui-input ui-number hide" />
+					<ul role="list" class="results"></ul>
+					<p:commandButton id="find-uxxi" action="#{iris.findUxxi()}" oncomplete="loadItems(xhr, status, args)" tabindex="-1" styleClass="hide" />
+					<div id="tip-uxxi" class="errtip"></div>
+				</div>
+				<div class="ui-block-btn">
+					<a id="add-uxxi" href="#" class="btn btn-green" tabindex="5" title="Asocia la operación a la solicitud"><i class="far fa-plus btn-icon-left"></i> Añadir</a>
+				</div>
+			</div>
+
+			<h:inputText id="docs-json" value="#{iris.operaciones}" styleClass="hide" />
+			<table id="docs-uxxi">
+				<thead>
+					<tr>
+						<th>Operación</th>
+						<th>Doc.</th>
+						<th>Importe</th>
+						<th>F. Creación</th>
+						<th>Descripción</th>
+						<th>Acciones</th>
+					</tr>
+				</thead>
+				<tbody class="hide">
+					<tr class="tb-data">
+						<td>@num;</td>
+						<td>@uxxi;</td>
+						<td class="text-right">@imp; €</td>
+						<td class="text-center">@fUxxi;</td>
+						<td>@desc;</td>
+						<td class="text-center">
+							<a href="#remove" class="row-action"><i class="fas fa-times action action-red"></i></a>
+						</td>
+					</tr>
+				</tbody>
+				<tfoot>
+					<tr><td colspan="99">Operaciones: @size;</td></tr>
+				</tfoot>
+			</table>
+
+			<div class="navbar">
+				<a href="#tab-2" class="btn btn-primary tab-action" title="#{msg['tit.btn.volver.ini']}" tabindex="13">
+					<i class="fas fa-caret-left btn-icon-left"></i><h:outputText value="#{msg['lbl.btn.volver']}" escape="false" /></a>
+				<p:commandLink action="#{iris.ejecutar()}" styleClass="btn btn-green" onclick="saveUxxiec();" oncomplete="showAlerts(xhr, status, args)" 
+					tabindex="14" title="Guarda los cambios realizados, sin notificar a los responsables de la solicitud">
+					<i class="far fa-save btn-icon-left"></i>Guardar</p:commandLink>
+				<p:commandLink action="#{iris.notificar()}" styleClass="btn btn-green" onclick="saveUxxiec();" oncomplete="showAlerts(xhr, status, args)" 
+					tabindex="15" title="Notifica a los responsables vía e-mail, que la solicitud ya esta mecanizada en UXXI-EC">
+					<i class="fal fa-paper-plane btn-icon-left"></i>Notificar</p:commandLink>
+				<a href="#tab-11" class="btn btn-error tab-action" tabindex="16" title="#{msg['tit.btn.rechazar']}">
+					<i class="fas fa-times-circle btn-icon-left"></i><h:outputText value="#{msg['lbl.btn.rechazar']}" escape="false" /></a>
+			</div>
+		</h:form>
+		</div>
+	</ui:define>
+</ui:composition>

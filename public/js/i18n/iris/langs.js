@@ -1,11 +1,13 @@
 
-import en from "./en.js";
-import es from "./es.js";
-import i18n from "../langs.js";
+import i18n from "./i18n.js";
+import langs from "../langs.js";
 
-// Lenguaje especifico del proyecto actual
-const main = i18n.getLangs();
-Object.assign(main.en, en);
-Object.assign(main.es, es);
+// Client language configuration
+// Spcifics functions for current language proyect
+String.prototype.getHours = function() {
+    return +this.substring(11, 13); //hh int format
+}
 
-export default i18n;
+i18n.getHours = str => str && str.getHours(); // Get HH int format
+
+export default langs;

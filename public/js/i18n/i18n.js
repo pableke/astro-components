@@ -1,13 +1,14 @@
 
 import i18n from "./validators.js";
 
+// Server config language
 const langs = i18n.getLangs();
 const isnum = val => ((typeof(val) === "number") || (val instanceof Number));
 const round = (num, scale) => +(Math.round(num + "e+" + scale)  + "e-" + scale);
 
 // String formats
-String.prototype.getHours = function() {
-    return +this.substring(11, 13); //hh int format
+String.prototype.inDay = function(dt) {
+    return this.startsWith(dt.substring(0, 10)); //yyyy-mm-dd
 }
 String.prototype.isoTime = function() {
     return this.substring(11, 19); //hh:MM:ss
@@ -25,7 +26,6 @@ i18n.isoTime = str => str && str.isoTime(); //Iso hh:MM:ss
 i18n.isoTimeShort = str => str && str.isoTimeShort(); //Iso hh:MM
 i18n.isoDate = str => i18n.getLang().isoDate(str); // String locale date
 i18n.isoDateTime = str => i18n.isoDate(str) + " " + i18n.isoTime(str); //ISO date + hh:MM:ss
-i18n.getHours = str => str && str.getHours(); // Get HH int format
 
 // Extends Date prototype
 Date.prototype.addHours = function(hours) {

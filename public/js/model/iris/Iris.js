@@ -28,6 +28,10 @@ function Iris() {
     this.isRechazable = () => (data.id && !self.isEditable() && (uxxiec.isUae() || self.isFirmable()));
 	this.isEditableUae = () => self.isEditable() || (uxxiec.isUae() && self.isFirmable());
 
+	this.getNumRutasOut = () => rutas.getRutasOut().length;
+	this.getNochesPendientes = () => rutas.getNumNoches() - gastos.getNumNoches() - 1;
+	this.isRutasPendientes = () => (perfil.isRutas() && (self.getNochesPendientes() || self.getNumRutasOut()));
+
     this.validate = function(data) {
         let ok = i18n.reset().size("objeto", data.objeto, "Debe seleccionar el objeto de la comisión"); // required string
         return ok || i18n.reject("errForm");

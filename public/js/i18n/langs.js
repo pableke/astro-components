@@ -1,7 +1,9 @@
 
 import i18n from "./i18n.js";
 
-// Extra common functions ...
-// ......
+// Client language configuration
+const initLang = () => i18n.setLang(i18n.getIsoLang());
+document.addEventListener("DOMContentLoaded", initLang); // on load view
+//document.addEventListener("astro:after-swap", initLang); // after view transition event
 
 export default i18n;

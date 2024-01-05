@@ -19,6 +19,11 @@ function Langs() {
         return self;
     }
 
+    this.addLang = function(name, lang) {
+        Object.assign(_langs[name], lang);
+        return self;
+    }
+
     this.getIsoLangs = () => Object.keys(_langs);
 	this.getNavLang = () => navigator.language || navigator.userLanguage; // default browser language
     this.getIsoLang = () => document.documentElement.getAttribute("lang") || self.getNavLang() || DEFAULT;
@@ -62,11 +67,6 @@ function Langs() {
 
     const BOOLEAN_TRUE = ["1", "true", "yes", "on"];
     this.boolval = str => globalThis.isset(str) ? _lang.msgBool[+BOOLEAN_TRUE.includes("" + str)] : null;
-
-    // Initialize langs
-    const initLang = () => self.setLang(self.getIsoLang());
-    document.addEventListener("DOMContentLoaded", initLang); // on load view
-    //document.addEventListener("astro:after-swap", initLang); // after view transition event
 }
 
 export default new Langs();

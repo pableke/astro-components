@@ -42,6 +42,10 @@ function Tabs() {
     this.setMask = mask => { _tabMask = mask; return self; } // set mask for tabs
     this.setActive = id => fnSetTab(self.getTab(id)); // Force active class whithot events and alerts
     this.isActive = id => fnActive(self.getTab(id)); // is current tab active
+	this.render = (selector, data) => { // HTMLElement.prototype.render is implemented in Collection
+        tabs.forEach(tab => tab.querySelectorAll(selector).forEach(el => el.render(data)));
+		return self;
+	}
 
     // Set events on tabs actions
     const fnCallEvent = (name, tab) => {
@@ -107,7 +111,7 @@ function Tabs() {
                     return self.showTab(+href.match(/\d+$/).pop());
                 if (href == "#last-tab")
                     return self.lastTab();
-                if (href == "#toggle-tab") {
+                /*if (href == "#toggle-tab") { // replaced by details / summary
                     const hide = link.dataset.hide || "hide"; // Hide class
                     const targets = document.querySelectorAll(link.dataset.target || (".info-" + link.id));
                     targets.forEach(el => el.classList.toggle(hide));
@@ -116,7 +120,7 @@ function Tabs() {
                     if (icon && link.dataset.toggle) // change link icon class?
                         link.dataset.toggle.split(/\s+/).forEach(name => icon.classList.toggle(name));
                     autofocus(targets[0]); // set focus on input
-                }
+                }*/
             });
         });
         return self;
@@ -127,7 +131,7 @@ function Tabs() {
     window.showTab = (xhr, status, args, tab) => {
         if (!xhr || (status != "success"))
             return !alerts.showError("Error 500: Internal server error.");
-        if (!args) // Has server response
+        if (!args) // Has server response?
             return self.showTab(tab); // Show tab and return true
         const msgs = collection.parse(args.msgs); // Parse server messages
         const ok = !msgs?.msgError; // is ok?

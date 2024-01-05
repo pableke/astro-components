@@ -12,13 +12,9 @@
 /* Inputs Block */
 
 /* Labels */
-label {
-	display: block; padding: 0 2px;
-	font-weight: 700; font-size: 0.875rem/* 14px */; line-height: 1.25rem/* 20px */;
-	color: rgb(17 24 39)/* text-gray-900 */;
-}
-label.required:after { color: #e32; content: " *"; }
-:is(.dark label) { color: white; }
+.label { font-weight: 700; font-size: 0.875rem/* 14px */; line-height: 1.25rem/* 20px */; color: rgb(17 24 39)/* text-gray-900 */; }
+.label.required:after { color: #e32; content: " *"; }
+:is(.dark .label) { color: white; }
 /* Labels */
 
 /* Inputs */
@@ -36,10 +32,41 @@ label.required:after { color: #e32; content: " *"; }
 :is(.dark .ui-input):focus { border-color: rgb(147 197 253)/* blue-300 */; }
 
 .ui-check { margin: 0 1px; }
-.ui-bool, .ui-short { width: 50px; }
-.ui-date, .ui-code { width: 140px; }
-.ui-ta { min-height: 36px; max-height: 100px; resize: vertical; form-sizing: content; }
+.ui-toggle {
+    appearance: none;
+    position: relative;
+    display: inline-block;
+    background: lightgrey;
+    height: 1.65rem;
+    width: 2.75rem;
+    vertical-align: middle;
+    border-radius: 2rem;
+    box-shadow: 0px 1px 3px #0003 inset;
+    transition: 0.25s linear background;
+    cursor: pointer;
+}
+.ui-toggle::before {
+    content: "";
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
+    background: #fff;
+    border-radius: 1.2rem;
+    position: absolute;
+    top: 0.2rem;
+    left: 0.2rem;
+    box-shadow: 0px 1px 3px #0003;
+    transition: 0.25s linear transform;
+    transform: translateX(0rem);
+}
+.ui-toggle:checked { background: green; }
+.ui-toggle:checked::before { transform: translateX(1rem); }
+  
+.ui-bool, .ui-xs { width: 50px; }
+.ui-time, .ui-sm { width: 90px; }
+.ui-date, .ui-md { width: 140px; }
 .ui-integer, .ui-float { width: 130px; text-align: right; }
+.ui-ta { min-height: 36px; max-height: 100px; resize: vertical; form-sizing: content; }
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left: .5em; }
 .disabled, .readonly { opacity: 0.5; pointer-events: none; text-decoration: none; }
 

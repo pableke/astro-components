@@ -18,6 +18,7 @@ export default function(table, opts) {
     opts.tableActionClass = opts.tableActionClass || "table-action";
     opts.msgConfirmRemove = opts.msgConfirmRemove || "remove";
     opts.msgConfirmReset = opts.msgConfirmReset || "removeAll";
+
     opts.beforeRender = opts.beforeRender || fnVoid;
     opts.onRender = opts.onRender || fnVoid;
     opts.onFooter = opts.onFooter || fnVoid;
@@ -53,13 +54,17 @@ export default function(table, opts) {
     this.clear = () => { _index = -1; return self; }
     this.set = (name, fn) => { opts[name] = fn; return self; }
 
+	const fnHide = el => el.classList.add(opts.hideClass);
+	const fnShow = el => el.classList.remove(opts.hideClass);
 	const fnFor = (list, fn) => { list.forEach(fn); return self; }
 	const fnEach = (selector, fn) => fnFor(table.querySelectorAll(selector), fn);
+
+	this.show = selector => fnEach(selector, fnShow);
+	this.hide = selector => fnEach(selector, fnHide);
+	this.toggle = (selector, force) => force ? self.show(selector) : self.hide(selector);
+
     this.html = selector => table.querySelector(selector).innerHTML;
 	this.text = (selector, text) => fnEach(selector, el => { el.innerHTML = text; }); // Update all texts info in form
-	this.show = selector => fnEach(selector, el => el.classList.remove(opts.hideClass));
-	this.hide = selector => fnEach(selector, el => el.classList.add(opts.hideClass));
-	this.toggle = (selector, force) => force ? self.show(selector) : self.hide(selector);
 
     function fnRender(data) {
         _index = -1; // clear previous selects
@@ -71,9 +76,9 @@ export default function(table, opts) {
         table.tFoot.innerHTML = collection.format(tplFoot, opts.onFooter(RESUME, FOOTER) || FOOTER); // render formatted footer
         opts.afterRender(RESUME); // After body and footer is rendered
 
-        tBody.classList.remove(opts.hideClass);
+        fnShow(tBody);
+        fnShow(table.tFoot);
         tBody.classList.add(opts.showClass);
-        table.tFoot.classList.remove(opts.hideClass);
         table.tFoot.classList.add(opts.showClass);
 
         // Row listeners for change, find and remove items

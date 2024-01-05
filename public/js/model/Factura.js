@@ -56,19 +56,25 @@ function Factura() {
 
     let data; // Current factura data type
     this.getData = name => (name ? data[name] : data);
-    this.setData = input => { data = input; return self; }
+    this.setFactura = factura => { data = factura; return self; }
+    this.setData = input => {
+        input.titulo = (input.tipo == 1) ? "Solicitud de emisión de factura" : "Solicitud de emisión de carta de pago";
+        return self.setFactura(input);
+    }
+
     this.getLineas = () => lineas;
     this.setLineas = table => { lineas.setData(table); return self; }
     this.getLinea = lineas.getLinea;
 
-    this.isEditable = () => !data.id;
     this.isFactura = () => (data.tipo == 1);
     this.isCartaPago = () => (data.tipo == 3);
-    this.isRechazada = () => (data.estado == 2);
-    this.isFirmable = () => ((data.estado == 5) && ((data.fmask & 64) == 64));
-    this.isRechazable = () => (data.id && (uxxiec.isUae() || self.isFirmable()));
+
+    this.isDisabled = () => data.id;
+    this.isEditable = () => !data.id;
+    this.isFirmable = () => uxxiec.isFirmable(data);
+    this.isRechazable = () => uxxiec.isRechazable(data);
+	this.isEditableUae = () => uxxiec.isEditableUae(data);
     this.isFirmaGaca = () => uxxiec.isUae() && self.isTtpp();
-	this.isEditableUae = () => self.isEditable() || (uxxiec.isUae() && self.isFirmable());
 
     this.getSubtipo = () => data.subtipo;
     this.setSubtipo = val => { data.subtipo = val; return self; }
@@ -77,6 +83,8 @@ function Factura() {
     this.isExtension = () => (data.subtipo == 9);
     this.isDeportes = () => (data.subtipo == 10);
     this.isRecibo = () => (self.isTtpp() || self.isTituloOficial() || self.isExtension());
+    this.setSujeto = val => { data.sujeto = val; return self; }
+    this.isExento = () => !data.sujeto;
 
     this.getIva = () => data.iva;
     this.setIva = imp => { data.iva = imp; return self; }
@@ -92,7 +100,7 @@ function Factura() {
     this.validate = function(data) {
         let ok = i18n.reset().isKey("acTercero", data.idTercero, "Debe seleccionar un tercero válido"); // autocomplete required key
         ok = i18n.isKey("acOrganica", data.idOrganica, "No ha seleccionado correctamente la orgánica") && ok; // autocomplete required key
-		ok = (self.isRecibo()) ? i18n.size("acRecibo", data.refreb, "Debe indicar un número de recibo válido") : ok; //subtipo = ttpp o extension
+		ok = (self.isRecibo()) ? i18n.size("acRecibo", data.acRecibo, "Debe indicar un número de recibo válido") : ok; //subtipo = ttpp o extension
 		/*if (self.isDeportes()) {
             ok = i18n.size("extra", data.extra, "errRequired") ? ok : i18n.reject("Debe indicar un número de recibo válido"); // Required string
             ok = i18n.leToday("fMax", data.fMax) ? ok : i18n.reject("Debe indicar la fecha del recibo asociado"); // Required date

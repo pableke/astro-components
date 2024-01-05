@@ -48,13 +48,15 @@ function Collection() {
         return results;
     }
 
-    this.clone = function(data, keys) {
-        const results = {}; // output container
+    this.copy = function(output, data, keys) {
         if (keys)
-            keys.forEach(key => { results[key] = data[key]; });
+            keys.forEach(key => { output[key] = data[key]; });
         else
-            Object.assign(results, data);
-        return results;
+            Object.assign(output, data);
+        return output;
+    }
+    this.clone = function(data, keys) {
+        return self.copy({}, data, keys);
     }
     this.clear = function(data, keys) {
         if (keys)
@@ -67,6 +69,7 @@ function Collection() {
     }
 
     // Extends Object
+    Object.copy = self.copy;
     Object.clone = self.clone;
     Object.clear = self.clear;
 
@@ -98,6 +101,9 @@ JSON.read = fnParse;
 
 // Extends HTMLElement prototype
 HTMLElement.prototype.isVisible = function() { return fnVisible(this); }
+HTMLElement.prototype.isSet = function(selector) {
+    return fnVisible(this) && this.matches(selector);
+}
 HTMLElement.prototype.render = function(data) {
     this.dataset.template = this.dataset.template || this.innerHTML; // save current template
     this.innerHTML = format(this.dataset.template, data);

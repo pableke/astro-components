@@ -106,7 +106,11 @@ function Presto() {
 
     let data; // Current presto data type
     this.getData = name => (name ? data[name] : data);
-    this.setData = input => { data = input; return self; }
+    this.setPresto = presto => { data = presto; return self; }
+    this.setData = input => {
+        input.titulo = i18n.getItem("descTipos", input.tipo - 1);
+        return self.setPresto(input);
+    }
 
     this.getUxxiec = () => uxxiec;
     this.getPartidas = () => partidas;
@@ -119,14 +123,16 @@ function Presto() {
     this.isAnt = () => (data.tipo == 5);
     this.isAfc = () => (data.tipo == 8);
 
+    this.isDisabled = () => data.id;
     this.isEditable = () => !data.id;
-    this.isRechazada = () => (data.estado == 2);
-    this.isFirmable = () => ((data.estado == 5) && ((data.fmask & 64) == 64));
-    this.isRechazable = () => (data.id && (uxxiec.isUae() || self.isFirmable()));
-    //this.isEjecutable = () => (uxxiec.isUae() && [1, 3, 4].includes(data.estado));
-	//this.isEditableUae = () => self.isEditable() || (uxxiec.isUae() && self.isFirmable());
+    this.isFirmable = () => uxxiec.isFirmable(data);
+    this.isRechazable = () => uxxiec.isRechazable(data);
+	this.isEditableUae = () => uxxiec.isEditableUae(data);
+	this.isUrgente = () => uxxiec.isUrgente(data);
+	this.isImpCd = () => (self.isEditable() && !self.isAnt());
 
     this.isPartidaDec = () => (self.isTcr() || self.isL83() || self.isAnt() || self.isAfc());
+	this.isMultipartida = () => (self.isTcr() || self.isFce() || self.isGcr());
     this.isPartidaExt = () => (self.isGcr() || self.isAnt());
     this.isDisableEjInc = () => (data.id || self.isTcr() || self.isFce());
     this.isAutoLoadImp = () => (self.isL83() || self.isAnt() || self.isAfc());

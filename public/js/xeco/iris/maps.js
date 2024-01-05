@@ -1,7 +1,6 @@
 
 import tabs from "../../components/Tabs.js";
 import iris from "../../model/iris/Iris.js";
-import itinerario from "../../model/iris/Rutas.js";
 //import MUNICIPIO from "../../data/iris/cartagena.js";
 //import i18n from "../../i18n/iris/langs.js";
 
@@ -14,6 +13,7 @@ const OPTIONS = {
 
 const tabRuta = tabs.getTab(4);
 const perfil = iris.getPerfil();
+const itinerario = iris.getRutas();
 const ruta = itinerario.getRuta();
 const inputOrigen = document.getElementById("origen");
 const inputDestino = document.getElementById("destino");
