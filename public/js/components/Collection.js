@@ -1,9 +1,14 @@
 
 const RE_VAR = /@(\w+);/g;
+const HIDE_CLASS = "hide";
+
 const fnSize = data => data ? data.length : 0; //string o array
 const fnParse = data => data && JSON.parse(data); //JSON parse
 const isset = val => ((typeof(val) !== "undefined") && (val !== null));
 const format = (tpl, data) => tpl.replace(RE_VAR, (m, k) => data[k] ?? "");
+
+const fnHide = el => el.classList.add(HIDE_CLASS);
+const fnShow = el => el.classList.remove(HIDE_CLASS);
 const fnVisible = el => (el.offsetWidth || el.offsetHeight || el.getClientRects().length);
 
 function Collection() {
@@ -24,7 +29,7 @@ function Collection() {
         const status = {};
         resume = resume || {};
         fnRender = fnRender || fnVoid;
-    
+
         let output = ""; // Initialize result
         status.size = resume.size = data.length;
         data.forEach((item, i) => { // render each item
@@ -34,18 +39,6 @@ function Collection() {
             output += format(tpl, status);
         });
         return output;
-    }
-    this.entries = function(tpl, data) {
-        let output = ""; //result buffer
-        for (const k in data)
-            output += tpl.replace("@value;", k).replace("@label;", data[k]);
-        return output;
-    }
-    this.params = function(data) {
-        const results = [];
-        for (const name in data)
-            results.push({ name, value: data[name] });
-        return results;
     }
 
     this.copy = function(output, data, keys) {
@@ -80,16 +73,25 @@ function Collection() {
     Array.prototype.last = function() { return this.at(-1); }
 
     // Extends HTMLCollection prototype
+    function fnSetText(el, text) { el.innerHTML = text; }
     HTMLCollection.prototype.eachPrev = fnEachPrev;
     HTMLCollection.prototype.find = Array.prototype.find;
     HTMLCollection.prototype.filter = Array.prototype.filter;
     HTMLCollection.prototype.forEach = Array.prototype.forEach;
     HTMLCollection.prototype.findIndex = Array.prototype.findIndex;
+    HTMLCollection.prototype.hide = function() { this.forEach(fnHide); }
+    HTMLCollection.prototype.show = function() { this.forEach(fnShow); }
+    HTMLCollection.prototype.toggle = function(force) { this.forEach(force ? fnShow : fnHide); }
+    HTMLCollection.prototype.text = function(text) { this.forEach(el => fnSetText(el, text)); }
 
     // Extends NodeList prototype
     NodeList.prototype.eachPrev = fnEachPrev;
     NodeList.prototype.find = Array.prototype.find;
     NodeList.prototype.filter = Array.prototype.filter;
+    NodeList.prototype.hide = function() { this.forEach(fnHide); }
+    NodeList.prototype.show = function() { this.forEach(fnShow); }
+    NodeList.prototype.toggle = function(force) { this.forEach(force ? fnShow : fnHide); }
+    NodeList.prototype.text = function(text) { this.forEach(el => fnSetText(el, text)); }
 }
 
 // Client / Server global functions
@@ -100,13 +102,16 @@ JSON.size = fnSize;
 JSON.read = fnParse;
 
 // Extends HTMLElement prototype
-HTMLElement.prototype.isVisible = function() { return fnVisible(this); }
-HTMLElement.prototype.isSet = function(selector) {
-    return fnVisible(this) && this.matches(selector);
+HTMLElement.prototype.show = function() { fnShow(this); return this }
+HTMLElement.prototype.hide = function() { fnHide(this); return this }
+//HTMLElement.prototype.toggle = function(force) { return force ? this.show() : this.hide(); }
+HTMLElement.prototype.setVisible = function(force) { force ? fnShow(this) : fnHide(this); }
+HTMLElement.prototype.isVisible = function(selector) {
+    return fnVisible(this) && (selector ? this.matches(selector) : true);
 }
 HTMLElement.prototype.render = function(data) {
     this.dataset.template = this.dataset.template || this.innerHTML; // save current template
-    this.innerHTML = format(this.dataset.template, data);
+    this.innerHTML = format(this.dataset.template, data); // display new data
     return this;
 }
 

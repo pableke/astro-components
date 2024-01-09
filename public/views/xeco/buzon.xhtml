@@ -1,0 +1,177 @@
+<ui:composition
+		template="/templates/layout/private-embed-layout.xhtml"
+		xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:c="http://java.sun.com/jsp/jstl/core"
+		xmlns:ui="http://java.sun.com/jsf/facelets"
+		xmlns:o="http://omnifaces.org/ui"
+		xmlns:p="http://primefaces.org/ui"
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core">
+
+	<ui:define name="metadata">
+		<f:metadata>
+            <f:viewParam name="lang" value="#{uae.lang}" />
+            <f:viewAction action="#{uae.initLang()}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="header">
+		<link rel="stylesheet" type="text/css" href="/uae/resources/css/main.css" />
+	</ui:define>
+	<ui:define name="outputScript">
+		<script type="module" src="/uae/resources/js/xeco/buzon.js"></script>
+	</ui:define>
+
+	<ui:define name="title">UAE</ui:define>
+	<ui:define name="description">Tablero Económico</ui:define>
+	<ui:define name="semilla"><li class="active">UAE</li></ui:define>
+
+	<ui:define name="body">
+		<ui:include src="parts/msgs.xhtml"></ui:include>
+
+		<div class="ui-blocks">
+		<div class="ui-block">
+			<div class="card-xeco">
+			<h2>Aplicaciones Económicas</h2>
+			<ul>
+				<li><a href="/uae/modules/irse/inicio.xhtml"><i class="fab fa-telegram-plane"></i> IRIS</a></li>
+				<li><a href="https://campusvirtual.upct.es/uportal/ifPage.xhtml?module=MIS_GASTOS#"><i class="fal fa-file-invoice-dollar"></i> Mis Orgánicas</a></li>
+			</ul>
+			</div>
+		</div>
+		<div class="ui-block-main">
+		<div id="tab-0" class="tab-content active">
+			<h:form id="xeco-organicas" prependId="false" method="post">
+			<div class="card-xeco">
+				<h2>Orgánicas Recientes</h2>
+				<div id="organcias-json" class="hide">#{buzon.serializeOrganicas()}</div>
+				<table id="organcias">
+					<thead>
+						<tr>
+							<th>Nº</th>
+							<th>Orgánica</th><th>Descripción</th>
+							<th>Código UT</th><th>Unidad Tramitadora</th>
+							<th>Crédito Disponible</th><th>Acciones</th>
+						</tr>
+					</thead>
+					<tbody class="hide">
+						<tr class="tb-data">
+							<td class="text-center">@count;</td>
+							<td>@oCod;</td><td>@oDesc;</td>
+							<td class="text-center">@utCod;</td><td>@utDesc;</td>
+							<td class="text-right">@cd; €</td>
+							<td class="text-right">
+								<a href="#report" class="action action-blue row-action" title="Informe al Proveedor"><i class="fal fa-file-pdf"></i></a>
+								<a href="#buzon" class="action action-green row-action" title="Bandeja de facturas"><i class="far fa-file-upload"></i></a>
+								@remove;
+							</td>
+						</tr>
+					</tbody>
+					<tbody>
+						<tr class="tb-data">
+							<td class="text-center">#</td>
+							<td id="otras" colspan="5">OTRAS SITUACIONES (acciones provisionalmente sin orgánica u otras circunstancias)</td>
+							<td class="text-right">
+								<a href="#buzon-otros" class="action action-green table-action" title="Bandeja de facturas"><i class="far fa-file-upload"></i></a>
+							</td>
+						</tr>
+					</tbody>
+					<tfoot class="hide">
+						<tr><td colspan="99">Filas: @size;</td></tr>
+					</tfoot>
+				</table>
+			</div>
+
+			<div class="card-xeco">
+				<h2>Nueva Orgánica</h2>
+				<div class="ui-blocks">
+					<div class="ui-block-xl autocomplete">
+						<label for="organica">Orgánica:</label>
+						<p:inputText id="organica" value="#{buzon.acOrganica}" tabindex="1" styleClass="ui-input ui-autocomplete" autocomplete="off" />
+						<h:inputText id="idOrg" value="#{buzon.idOrganica}" styleClass="hide ui-number" />
+						<ul role="list" class="results"></ul>
+						<div class="ui-errtip"></div>
+					</div>
+					<div id="unidades-tramit" class="ui-block hide">
+						<label for="tramit"><h:outputText value="#{msg['lbl.gestor.factura']}" escape="false" />:</label>
+						<h:selectOneMenu id="tramit" value="#{buzon.idUnidadTramit}" styleClass="ui-input ui-select ui-number" tabindex="2">
+							<f:selectItems value="#{buzon.unidadesTramit}" var="ut" itemValue="#{ut.value}" itemLabel="#{ut.label}" />
+						</h:selectOneMenu>
+						<div id="tip-tramit" class="ui-errtip"></div>
+					</div>
+					<div class="ui-block-btn">
+						<p:commandLink action="#{buzon.addOrganica()}" update="tramit" styleClass="btn btn-green" tabindex="3" title="Añadir nueva Orgánica"
+							onclick="if (!window.isOrganica()) return false;" oncomplete="reloadOrganicas(xhr, status, args)">
+							<i class="fas fa-plus btn-icon-left"></i>Añadir
+						</p:commandLink>
+					</div>
+				</div>
+			</div>
+
+			<p:remoteCommand name="findOrganica" action="#{buzon.findOrganica()}" oncomplete="loadItems(xhr, status, args)" />
+			<p:remoteCommand name="setUnidadesTramit" action="#{buzon.setUnidadesTramit()}" update="tramit" oncomplete="loadUnidadesTramit(xhr, status, args)" />
+			<p:remoteCommand name="report" action="#{buzon.report()}" oncomplete="showAlerts(xhr, status, args);"/>
+			<p:remoteCommand name="remove" action="#{buzon.remove()}" oncomplete="showAlerts(xhr, status, args);"/>
+			</h:form>
+
+			<a href="/uae/modules/xeco/inicio.xhtml" class="btn btn-primary" title="#{msg['tit.btn.volver.ini']}">
+				<i class="fas fa-caret-left btn-icon-left"></i><h:outputText value="#{msg['lbl.btn.volver']}" escape="false" /></a>
+		</div>
+
+		<h:form id="xeco-buzon" prependId="false" method="post" enctype="multipart/form-data">
+		<div id="tab-1" class="tab-content">
+			<div class="card-xeco">
+				<h2>Buzón de Facturas</h2>
+				<div class="ui-blocks">
+				<div class="ui-block">
+					<label for="tipo" class="required"><h:outputText value="#{msg['lbl.gestor.factura']}" escape="false" />:</label>
+					<h:selectOneMenu id="tipo" value="#{buzon.tipo}" styleClass="ui-input ui-select" tabindex="1">
+						<f:selectItem itemValue="1" itemLabel="Pagar al Proveedor" />
+						<f:selectItem itemValue="2" itemLabel="Pagar a #{uae.nombre}" />
+					</h:selectOneMenu>
+				</div>
+				<div class="ui-block-row">
+					<p:fileUpload id="factura" label="Seleccionar 1 Factura" value="#{buzon.factura}" mode="simple" skinSimple="true" />
+					<p:fileUpload id="justPago" label="Seleccionar 1 Justificante de Pago" value="#{buzon.justPago}" mode="simple" skinSimple="true" />
+				</div>
+				<div id="check-jp" class="ui-block-row">
+					<input type="checkbox" checked="checked" disabled="disabled" />
+					<b>Declaro responsablemente que he pagado en nombre de la Universidad la factura remitida y que conservo a disposición de ésta el justificante del pago.</b>
+				</div>
+				<div class="ui-block">
+					<h:inputHidden id="buzon-id-org" value="#{buzon.idOrganica}" />
+					<h:inputHidden id="buzon-cod-org" value="#{buzon.acOrganica}" />
+					<label for="tramit-all" class="required"><h:outputText value="#{msg['lbl.gestor.factura']}" escape="false" />:</label>
+					<h:selectOneMenu id="tramit-all" value="#{buzon.idUnidadTramit}" styleClass="ui-input ui-select" tabindex="1">
+						<f:selectItems value="#{buzon.allUnidadesTramit}" var="ut" itemValue="#{ut.value}" itemLabel="#{ut.label}" />
+					</h:selectOneMenu>
+					<div class="ui-errtip"></div>
+				</div>
+				<div class="ui-block-row">
+					<label for="desc">Observaciones para el gestor (si son necesarias):</label>
+					<h:inputTextarea id="desc" value="#{buzon.desc}" styleClass="ui-input ui-ta" />
+				</div>
+				</div>
+			</div>
+			<div>
+				<a href="#tab-0" class="btn btn-primary tab-action"><i class="fas fa-caret-left"></i></a>
+				<a href="#next-tab" class="btn btn-primary tab-action">Siguiente<i class="fas fa-caret-right btn-icon-right"></i></a>
+			</div>
+		</div>
+
+		<div id="tab-2" class="tab-content">
+			<p:outputPanel id="resumen" styleClass="card-xeco">
+				<h2>Resumen de la Solicitud</h2>
+				<p><b>Archivos que se van a enviar:</b> <span id="file-name">NAME-XXX</span></p>
+				<p><b>Partida presupuestaria para la factura:</b> <span id="org-desc">ORG-XXX</span></p>
+				<p><b>Unidad que va a tramitar la factura:</b> <span id="ut-desc">UT-XXX</span></p>
+			</p:outputPanel>
+			<div>
+				<a href="#prev-tab" class="btn btn-primary tab-action" tabindex="20"><i class="fas fa-caret-left"></i></a>
+				<p:commandLink action="#{buzon.upload()}" ajax="false" styleClass="btn btn-green">Enviar <i class="fas fa-paper-plane btn-icon-right"></i></p:commandLink>
+			</div>
+		</div>
+		</h:form>
+		</div>
+		</div>
+	</ui:define>
+</ui:composition>

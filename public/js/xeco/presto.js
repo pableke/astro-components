@@ -2,7 +2,7 @@
 import alerts from "../components/Alerts.js";
 import Form from "../components/Form.js";
 import tabs from "../components/Tabs.js";
-import { Select } from "../components/Primefaces.js";
+import pf from "../components/Primefaces.js";
 
 import presto from "../model/Presto.js";
 import uxxiec from "../model/Uxxiec.js";
@@ -33,12 +33,12 @@ document.addEventListener("DOMContentLoaded", () => {
     /*** FORMULARIO PRINCIPAL ***/
     const formPresto = new Form("xeco-presto");
     const emptyOption = "Seleccione una económica";
-	const ecoDec = new Select(formPresto, "#idEcoDec", "#idEcoDecPF", {
+	const ecoDec = pf.datalist(formPresto, "#idEcoDec", "#idEcoDecPF", {
         emptyOption,
         onLoad: item => { formPresto.setval("#cd", item.imp); },
         onReset: () => { formPresto.setval("#impDec").setval("#cd"); }
     });
-	const ecoInc = new Select(formPresto, "#idEcoInc", "#idEcoIncPF", { emptyOption });
+	const ecoInc = pf.datalist(formPresto, "#idEcoInc", "#idEcoIncPF", { emptyOption });
     const lineas = formPresto.setTable("#partidas-inc", {
         msgEmptyTable: "No existen partidas asociadas a la solicitud",
         beforeRender: resume => { resume.imp = 0; },

@@ -1,22 +1,23 @@
 
-import collection from "../components/Collection.js";
+import pf from "../components/Primefaces.js";
 import Form from "../components/Form.js";
 import tabs from "../components/Tabs.js";
 import buzon from "../model/Buzon.js";
 
 document.addEventListener("DOMContentLoaded", () => { // on load view
-	let justPagoRequired = false;
+	var justPagoRequired = false;
 
 	const formBuzon = new Form("xeco-buzon");
 	const elTipo = formBuzon.getInput("#tipo");
 
 	function updateBuzonOrganica() {
-		const isIsu = buzon.isIsu(table.getCurrentItem());
-		justPagoRequired = ((+elTipo.value == 2) && isIsu);
-		formBuzon.toggle("#justPago", justPagoRequired).toggle("#check-jp", ((+elTipo.value == 2) && !isIsu));
+		const isIsu = buzon.setTipoPago(+elTipo.value).isIsu(table.getCurrentItem());
+		justPagoRequired = buzon.isPagoCesionario() && isIsu;
+		formBuzon.toggle("#justPago", justPagoRequired).toggle("#check-jp", buzon.isPagoCesionario() && !isIsu);
 	}
 	function updateBuzonOtros() {
-		justPagoRequired = +elTipo.value == 2;
+		buzon.setTipoPago(+elTipo.value);
+		justPagoRequired = buzon.isPagoCesionario();
 		formBuzon.toggle("#justPago", justPagoRequired).hide("#check-jp");
 	}
 
@@ -24,9 +25,8 @@ document.addEventListener("DOMContentLoaded", () => { // on load view
 	const table = formOrganicas.setTable("#organcias");
 
 	const fnSend = action => {
-		const fnCall = window[action]; // p:remoteCommand server call
 		const data = table.getCurrentItem(); // load data and send form to server
-		fnCall(collection.params({ org: data.org, cod: data.oCod, ut: data.grp }));
+		pf.send(action, { org: data.org, cod: data.oCod, ut: data.grp });
 		return formOrganicas.reset(); // autofocus
 	}
 
@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => { // on load view
 		tabs.showTab(1);
 	});
 
-	formOrganicas.setAutocomplete("#ac-organica", {
+	formOrganicas.setAutocomplete("#organica", {
 		minLength: 4,
 		source: term => window.findOrganica([{name: "cod", value: term}]),
 		render: item => item.label,

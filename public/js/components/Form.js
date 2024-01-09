@@ -1,7 +1,8 @@
 
-import Table from "./Table.js";
-import Autocomplete from "./Autocomplete.js";
 import alerts from "./Alerts.js";
+import Table from "./Table.js";
+import Datalist from "./Datalist.js";
+import Autocomplete from "./Autocomplete.js";
 import i18n from "../i18n/langs.js";
 
 const divNull = document.createElement("div");
@@ -48,33 +49,28 @@ export default function(form, opts) {
 	this.showAlerts = data => { alerts.showAlerts(data); return self; } // Encapsule showAlerts message
 
 	// Actions to update form view (inputs, texts, ...)
+	const fnContains = (el, name) => el.classList.contains(name);
 	const fnFor = (list, fn) => { list.forEach(fn); return self; }
 	const fnEach = (selector, fn) => fnFor(form.querySelectorAll(selector), fn);
-	const fnSetText = (el, text) => { el.innerHTML = text; return self; }
 	const fnUpdate = (selector, fn) => {
 		selector = selector || INPUTS; // Default = inputs type
 		return fnFor(form.elements, el => el.matches(selector) && fn(el));
 	}
 
 	this.html = selector => form.querySelector(selector).innerHTML;
-	this.text = (selector, text) => fnEach(selector, el => fnSetText(el, text)); // Update all texts info in form
+	this.text = (selector, text) => { form.querySelectorAll(selector).text(text); return self; } // Update all texts info in form
 	this.render = (selector, data) => { // HTMLElement.prototype.render is implemented in Collection component
 		data = data || i18n.getLang(); // Default data = current language
 		return fnEach(selector, el => el.render(data)); // Render each element
 	}
 
-	const fnHide = el => el.classList.add(opts.hideClass);
-	const fnShow = el => el.classList.remove(opts.hideClass);
-	const fnContains = (el, name) => el.classList.contains(name);
-
 	// Extends HTMLElement prototype
-	HTMLElement.prototype.setVisible = function(force) { force ? fnShow(this) : fnHide(this); }
 	//HTMLElement.prototype.findClass = function(names) { return names.find(name => fnContains(this, name)); }
 	HTMLElement.prototype.setDisabled = function(force) { this.classList.toggle("disabled", this.toggleAttribute("disabled", force)); } // Update attribute and style
 	HTMLElement.prototype.setReadonly = function(force) { this.classList.toggle("readonly", this.toggleAttribute("readonly", force)); } // Update attribute and style
 
-	this.show = selector => fnEach(selector, fnShow);
-	this.hide = selector => fnEach(selector, fnHide);
+	this.hide = selector => { form.querySelectorAll(selector).hide(); return self; }
+	this.show = selector => { form.querySelectorAll(selector).show(); return self; }
 	this.toggle = (selector, force) => force ? self.show(selector) : self.hide(selector);
 	this.disabled = (force, selector) => fnUpdate(selector, el => el.setDisabled(force));
 	this.readonly = (force, selector) => fnUpdate(selector, el => el.setReadonly(force));
@@ -145,8 +141,9 @@ export default function(form, opts) {
 	this.restart = selector => { const el = self.getInput(selector); el.focus(); return fnValue(el); } // remove value + focus
 
 	// Inputs helpers
-	this.setAutocomplete = (selector, opts) => new Autocomplete(self.getInput(selector), opts);
 	this.setTable = (selector, opts) => new Table(form.querySelector(selector), opts);
+	this.setDatalist = (selector, opts) => new Datalist(self.getInput(selector), opts);
+	this.setAutocomplete = (selector, opts) => new Autocomplete(self.getInput(selector), opts);
 	this.stringify = (selector, data) => self.setval(selector, JSON.stringify(data));
 	this.saveTable = (selector, table) => self.stringify(selector, table.getData());
 	this.setDateRange = (f1, f2) => {
@@ -156,24 +153,11 @@ export default function(form, opts) {
 		return fnEvent(f2, "blur", ev => f1.setAttribute("max", f2.value));
 	}
 
-	this.setSelect = function(el, items, emptyOption) {
-		el = isstr(el) ? self.getInput(el) : el; // Get select/optgroup element
-		emptyOption = emptyOption ? `<option>${emptyOption}</option>` : EMPTY; // Text for empty first option
-		const fnItem = item => `<option value="${item.value}">${item.label}</option>`; // Item list
-		return fnSetText(el, emptyOption + items.map(fnItem).join(EMPTY)); // Render items
-	}
-	this.setOptions = function(el, labels, values, emptyOption) {
-		el = isstr(el) ? self.getInput(el) : el; // Get select/optgroup element
-		emptyOption = emptyOption ? `<option>${emptyOption}</option>` : EMPTY; // Text for empty first option
-		const fnOptions = (label, i) => `<option value="${values[i]}">${label}</option>`; // Default options template
-		const fnDefault = (label, i) => `<option value="${i+1}">${label}</option>`; // 1, 2, 3... Number array
-		return fnSetText(el, emptyOption + labels.map(values ? fnOptions : fnDefault).join(EMPTY));
-	}
 	this.toggleOptions = function(selector, flags) {
-		const select = form.elements.find(el => (el.options && el.matches(selector)));
+		const select = self.getInput(selector); // Get select element
 		const option = select.options[select.selectedIndex]; //get current option
 		select.options.forEach((option, i) => option.classList.toggle(opts.hideClass, !flags.mask(i)));
-		if (option && option.classList.contains(opts.hideClass)) // is current option hidden?
+		if (option && fnContains(option, opts.hideClass)) // is current option hidden?
 			select.selectedIndex = select.options.findIndex(el => !fnContains(el, opts.hideClass));
 		return self;
 	}
@@ -217,7 +201,8 @@ export default function(form, opts) {
 	// Form Validator
 	const fnSetTip = (el, msg) => {
 		const block = el.closest("label") || divNull; // label tag container
-		return fnFor(block.getElementsByClassName(opts.tipErrorClass), el => fnSetText(el, msg));
+		block.getElementsByClassName(opts.tipErrorClass).text(msg);
+		return self;
 	}
 	const fnSetInputOk = el => {
 		el.classList.remove(opts.inputErrorClass);
@@ -248,7 +233,7 @@ export default function(form, opts) {
 		selector = selector || INPUTS; // Default = inputs type
 		messages = messages || i18n.getMsgs(); // default messages
 		const fnToggleError = (el, tip) => tip ? fnSetInputError(el, tip) : fnSetInputOk(el);
-		form.elements.eachPrev(el => (el.isSet(selector) && fnToggleError(el, messages[el.name])));
+		form.elements.eachPrev(el => (el.isVisible(selector) && fnToggleError(el, messages[el.name])));
 		return self.showError(messages.msgError || opts.defaultMsgError);
 	}
 	this.isValid = (fnValidate, selector) => {

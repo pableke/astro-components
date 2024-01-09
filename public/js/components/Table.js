@@ -8,7 +8,6 @@ const fnTrue = () => true;
 
 export default function(table, opts) {
     opts = opts || {}; // default options
-    opts.hideClass = opts.hideClass || "hide";
     opts.showClass = opts.showClass || "fadeIn";
     opts.sortClass = opts.sortClass || "sort";
     opts.sortAscClass = opts.sortAscClass || "sort-asc";
@@ -54,17 +53,12 @@ export default function(table, opts) {
     this.clear = () => { _index = -1; return self; }
     this.set = (name, fn) => { opts[name] = fn; return self; }
 
-	const fnHide = el => el.classList.add(opts.hideClass);
-	const fnShow = el => el.classList.remove(opts.hideClass);
-	const fnFor = (list, fn) => { list.forEach(fn); return self; }
-	const fnEach = (selector, fn) => fnFor(table.querySelectorAll(selector), fn);
-
-	this.show = selector => fnEach(selector, fnShow);
-	this.hide = selector => fnEach(selector, fnHide);
+	this.hide = selector => { table.querySelectorAll(selector).hide(); return self; }
+	this.show = selector => { table.querySelectorAll(selector).show(); return self; }
 	this.toggle = (selector, force) => force ? self.show(selector) : self.hide(selector);
 
     this.html = selector => table.querySelector(selector).innerHTML;
-	this.text = (selector, text) => fnEach(selector, el => { el.innerHTML = text; }); // Update all texts info in form
+	this.text = (selector, text) => { table.querySelectorAll(selector).text(text); return self; } // Update all texts info in form
 
     function fnRender(data) {
         _index = -1; // clear previous selects
@@ -76,13 +70,13 @@ export default function(table, opts) {
         table.tFoot.innerHTML = collection.format(tplFoot, opts.onFooter(RESUME, FOOTER) || FOOTER); // render formatted footer
         opts.afterRender(RESUME); // After body and footer is rendered
 
-        fnShow(tBody);
-        fnShow(table.tFoot);
+        tBody.show();
+        table.tFoot.show();
         tBody.classList.add(opts.showClass);
         table.tFoot.classList.add(opts.showClass);
 
         // Row listeners for change, find and remove items
-        return fnFor(tBody.rows, (tr, i) => {
+        tBody.rows.forEach((tr, i) => {
             tr.onchange = ev => {
                 _index = i; // current item
                 const fnChange = opts["change-" + ev.target.name] || fnVoid;
@@ -99,6 +93,7 @@ export default function(table, opts) {
                 };
             });
         });
+        return self;
     }
 
     this.remove = () => {

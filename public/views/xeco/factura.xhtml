@@ -421,17 +421,17 @@
 						</td>
 						<td class="hide-sm">#{sol.descTipo}</td>
 						<c:choose>
-							<c:when test="#{sol.editable}"><td class="text-warn estado-#{sol.id}">Editable</td></c:when>
-							<c:when test="#{sol.aceptada}"><td class="text-green estado-#{sol.id}">Aceptada</td></c:when>
-							<c:when test="#{sol.rechazada}"><td class="text-error estado-#{sol.id}">Rechazada</td></c:when>
-							<c:when test="#{sol.ejecutada}"><td class="text-green estado-#{sol.id}">Ejecutando</td></c:when>
-							<c:when test="#{sol.notificada}"><td class="text-green estado-#{sol.id}">Integrada</td></c:when>
-							<c:when test="#{sol.cancelada}"><td class="text-error estado-#{sol.id}">Cancelada</td></c:when>
-							<c:when test="#{sol.caducada}"><td class="text-error estado-#{sol.id}">Caducada</td></c:when>
-							<c:when test="#{sol.errorCapaSOA}"><td class="text-error estado-#{sol.id}">Error Capa SOA</td></c:when>
-							<c:when test="#{sol.errorUxxiCV}"><td class="text-error estado-#{sol.id}">Error de Crédito Vinculante</td></c:when>
-							<c:when test="#{sol.erronea}"><td class="text-error estado-#{sol.id}">Error de Integración</td></c:when>
-							<c:otherwise><td class="text-warn estado-#{sol.id}">Pendiente</td></c:otherwise>
+							<c:when test="#{sol.editable}"><td class="text-warn estado estado-#{sol.id}">Editable</td></c:when>
+							<c:when test="#{sol.aceptada}"><td class="text-green estado estado-#{sol.id}">Aceptada</td></c:when>
+							<c:when test="#{sol.rechazada}"><td class="text-error estado estado-#{sol.id}">Rechazada</td></c:when>
+							<c:when test="#{sol.ejecutada}"><td class="text-green estado estado-#{sol.id}">Ejecutando</td></c:when>
+							<c:when test="#{sol.notificada}"><td class="text-green estado estado-#{sol.id}">Integrada</td></c:when>
+							<c:when test="#{sol.cancelada}"><td class="text-error estado estado-#{sol.id}">Cancelada</td></c:when>
+							<c:when test="#{sol.caducada}"><td class="text-error estado estado-#{sol.id}">Caducada</td></c:when>
+							<c:when test="#{sol.errorCapaSOA}"><td class="text-error estado estado-#{sol.id}">Error Capa SOA</td></c:when>
+							<c:when test="#{sol.errorUxxiCV}"><td class="text-error estado estado-#{sol.id}">Error de Crédito Vinculante</td></c:when>
+							<c:when test="#{sol.erronea}"><td class="text-error estado estado-#{sol.id}">Error de Integración</td></c:when>
+							<c:otherwise><td class="text-warn estado estado-#{sol.id}">Pendiente</td></c:otherwise>
 						</c:choose>
 						<td class="text-center">
 							<c:choose>

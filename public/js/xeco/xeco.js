@@ -19,7 +19,13 @@ document.addEventListener("DOMContentLoaded", () => {
         window.showTab(xhr, status, args, 2) && solicitudes.hide(".firma-" + args.id).text(".estado-" + args.id, "Procesando...");
     }
 
-    window.fnIntegrar = link => confirm("¿Confirma que desea integrar esta solicitud en UXXI-EC?") && window.loading() && !link.classList.add("hide");
+    window.fnIntegrar = link => {
+        if (!confirm("¿Confirma que desea integrar esta solicitud en UXXI-EC?"))
+            return false; // Integration not confirmed
+        link.hide().closest("tr").querySelectorAll(".estado").text("Procesando...");
+        return window.loading(); // Allow integration....
+    }
+
     window.fnFirmar = () => confirm("¿Confirma que desea firmar esta solicitud?") && window.loading();
     window.fnRemove = () => confirm("¿Confirmas que desea eliminar esta solicitud?") && window.loading();
     window.handleReport = (xhr, status, args) => window.showAlerts(xhr, status, args).redir(args?.url);

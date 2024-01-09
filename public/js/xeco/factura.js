@@ -1,7 +1,7 @@
 
 import Form from "../components/Form.js";
 import tabs from "../components/Tabs.js";
-import { Select } from "../components/Primefaces.js";
+import pf from "../components/Primefaces.js";
 
 import factura from "../model/Factura.js";
 import uxxiec from "../model/Uxxiec.js";
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	/*** FORMULARIO PRINCIPAL ***/
     const formFact = new Form("xeco-fact");
-	const delegaciones = new Select(formFact, "#delegacion", "#idDelegacion", { emptyOption: "Seleccione una delegación" });
+	const delegaciones = pf.datalist(formFact, "#delegacion", "#idDelegacion", { emptyOption: "Seleccione una delegación" });
 	const acTercero = formFact.setAutocomplete("#acTercero", {
 		delay: 500, //milliseconds between keystroke occurs and when a search is performed
 		minLength: 5, //reduce matches
