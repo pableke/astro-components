@@ -7,19 +7,19 @@ function params(data) {
         results.push({ name, value: data[name] });
     return results;
 }
-function send(name, data) {
+function send(name, data) { // p:remoteCommand tag
     const fnCall = window[name]; // p:remoteCommand name
     fnCall(params(data)); // p:remoteCommand server call
 }
 
 function datalist(form, select, input, opts) {
     opts = opts || {}; // Init. options
-    opts.onLoad = opts.onLoad || fnVoid; // fired on load event
+    opts.onChange = opts.onChange || fnVoid; // fired on load event
     opts.onReset = opts.onReset || fnVoid; // fired on reset event
 
     const PF = {}; // Primefaces config
     PF.emptyOption = opts.emptyOption;
-    PF.onLoad = item => { input.value = item.value; opts.onLoad(item); } // fired on load event
+    PF.onChange = item => { input.value = item.value; opts.onChange(item); } // fired on load event
     PF.onReset = () => { input.value = ""; opts.onReset(); }; // fired on reset event
 
     input = form.getInput(input);
@@ -27,7 +27,16 @@ function datalist(form, select, input, opts) {
 }
 
 function multiNameInput(form, main, inputs) {
-	const self = this; //self instance
+    main = form.getInput(main);
+    inputs = form.getInputs(inputs);
+
+    inputs.forEach(el => {
+        el.addEventListener("change", () => {
+            main.value = el.value;
+        });
+        el.value = main.value;
+    });
+    return this;
 }
 
 export default {

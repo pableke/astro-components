@@ -7,7 +7,7 @@ const perfil = iris.getPerfil();
 const gasto = gastos.getGasto();
 var formIris, dietas; // Global IRIS form
 
-window.loadGastos = (form, data) => {
+export default function(form, data) {
     formIris = form;
     gastos.setData(data);
     /*dietas = dietas || formIris.setTable("#dietas", {
@@ -18,7 +18,7 @@ window.loadGastos = (form, data) => {
         afterRender: resume => formIris.stringify("#dietas-json", gastos)
     });
 	dietas.render(gastos.getDietas());*/
-    formIris.setOptions(formIris.querySelector("#grupo-factura-upct"), perfil.isIsu() ? i18n.get("gastosTiketIsu") : i18n.get("gastosTiket"))
-            .toggle(".rutas-pendientes", iris.isRutasPendientes()).toggle(".noches-pendientes", iris.getNochesPendientes()).toggle(".rutas-out", iris.getNumRutasOut())
+    formIris.toggle(".rutas-pendientes", iris.isRutasPendientes()).toggle(".noches-pendientes", iris.getNochesPendientes()).toggle(".rutas-out", iris.getNumRutasOut())
             .toggle(".factura.upct", perfil.isFacturaUpct()).toggle(".doc-movilidad", perfil.isDocMovilidad());
+    formIris.setDatalist("#grupo-factura-upct").setOptions(perfil.isIsu() ? i18n.get("gastosTiketIsu") : i18n.get("gastosTiket"));
 }

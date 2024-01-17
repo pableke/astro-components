@@ -10,10 +10,10 @@ function Iris() {
 
     let data; // Current factura data type
     this.getData = () => data;
-    this.setData = input => {
-        data = input; // Load form data
+    this.setIris = iris => { data = iris; return self; }
+    this.setData = data => {
 		perfil.setPerfil(data.perfil); // Load perfil from string
-        return self;
+        return self.setIris(data);
     }
 
     this.getUxxiec = () => uxxiec;
@@ -21,12 +21,12 @@ function Iris() {
     this.getRutas = () => rutas;
     this.getGastos = () => gastos;
 
-    this.isEditableP0 = () => !data.id;
-    this.isEditable = () => (data.estado == 6);
-    this.isRechazada = () => (data.estado == 2);
-    this.isFirmable = () => ((data.estado == 5) && ((data.fmask & 64) == 64));
-    this.isRechazable = () => (data.id && !self.isEditable() && (uxxiec.isUae() || self.isFirmable()));
-	this.isEditableUae = () => self.isEditable() || (uxxiec.isUae() && self.isFirmable());
+    this.isDisabled = () => data.id;
+    this.isEditable = () => !data.id;
+    this.isFirmable = () => uxxiec.isFirmable(data);
+    this.isRechazable = () => uxxiec.isRechazable(data);
+	this.isEditableUae = () => uxxiec.isEditableUae(data);
+	this.isUrgente = () => uxxiec.isUrgente(data);
 
 	this.getNumRutasOut = () => rutas.getRutasOut().length;
 	this.getNochesPendientes = () => rutas.getNumNoches() - gastos.getNumNoches() - 1;

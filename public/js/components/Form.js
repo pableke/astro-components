@@ -15,7 +15,6 @@ export default function(form, opts) {
 	opts = opts || {}; // default options
 
 	opts.pkName = opts.pkName || "id"; // primary key name
-	opts.hideClass = opts.hideClass || "hide"; // hidden class name
 	opts.defaultMsgOk = opts.defaultMsgOk || "saveOk"; // default key for message ok
 	opts.defaultMsgError = opts.defaultMsgError || "errForm"; // default key error
 
@@ -27,6 +26,7 @@ export default function(form, opts) {
 	opts.numberFormatClass = opts.numberFormatClass || "ui-number"; // Number type
 	opts.inputErrorClass = opts.inputErrorClass || "ui-error"; // Input error styles
 	opts.tipErrorClass = opts.tipErrorClass || "ui-errtip"; // Tip error style
+	opts.groupSelector = opts.groupSelector || "label"; // Parent container (ej: .ui-group)
 	opts.negativeNumClass = opts.negativeNumClass || "text-red"; // Negative numbers styles
 
 	const self = this; //self instance
@@ -36,7 +36,7 @@ export default function(form, opts) {
 
 	this.focus = el => { el && el.focus(); return self; }
 	this.setFocus = selector => self.focus(self.getInput(selector));
-	this.autofocus = () => self.focus(form.elements.find(el => (el.matches(FOCUSABLED) && el.isVisible())));
+	this.autofocus = () => self.focus(form.elements.find(el => el.isVisible(FOCUSABLED)));
 	this.getInput = selector => form.elements.find(el => el.matches(selector)); // find an element
 	this.getInputs = selector => form.elements.filter(el => el.matches(selector)); // filter elements
 	this.querySelector = selector => form.querySelector(selector);
@@ -63,11 +63,6 @@ export default function(form, opts) {
 		data = data || i18n.getLang(); // Default data = current language
 		return fnEach(selector, el => el.render(data)); // Render each element
 	}
-
-	// Extends HTMLElement prototype
-	//HTMLElement.prototype.findClass = function(names) { return names.find(name => fnContains(this, name)); }
-	HTMLElement.prototype.setDisabled = function(force) { this.classList.toggle("disabled", this.toggleAttribute("disabled", force)); } // Update attribute and style
-	HTMLElement.prototype.setReadonly = function(force) { this.classList.toggle("readonly", this.toggleAttribute("readonly", force)); } // Update attribute and style
 
 	this.hide = selector => { form.querySelectorAll(selector).hide(); return self; }
 	this.show = selector => { form.querySelectorAll(selector).show(); return self; }
@@ -141,9 +136,9 @@ export default function(form, opts) {
 	this.restart = selector => { const el = self.getInput(selector); el.focus(); return fnValue(el); } // remove value + focus
 
 	// Inputs helpers
-	this.setTable = (selector, opts) => new Table(form.querySelector(selector), opts);
-	this.setDatalist = (selector, opts) => new Datalist(self.getInput(selector), opts);
-	this.setAutocomplete = (selector, opts) => new Autocomplete(self.getInput(selector), opts);
+	this.setTable = (selector, opts) => new Table(form.querySelector(selector), opts); // table
+	this.setDatalist = (selector, opts) => new Datalist(form.querySelector(selector), opts); // select / optgroup
+	this.setAutocomplete = (selector, opts) => new Autocomplete(self.getInput(selector), opts); // Input type text / search
 	this.stringify = (selector, data) => self.setval(selector, JSON.stringify(data));
 	this.saveTable = (selector, table) => self.stringify(selector, table.getData());
 	this.setDateRange = (f1, f2) => {
@@ -156,9 +151,9 @@ export default function(form, opts) {
 	this.toggleOptions = function(selector, flags) {
 		const select = self.getInput(selector); // Get select element
 		const option = select.options[select.selectedIndex]; //get current option
-		select.options.forEach((option, i) => option.classList.toggle(opts.hideClass, !flags.mask(i)));
-		if (option && fnContains(option, opts.hideClass)) // is current option hidden?
-			select.selectedIndex = select.options.findIndex(el => !fnContains(el, opts.hideClass));
+		select.options.forEach((option, i) => option.toggle(flags.mask(i)));
+		if (option && option.isHidden()) // is current option hidden?
+			select.selectedIndex = select.options.findIndex(el => !el.isHidden());
 		return self;
 	}
 	this.getOptionText = function(selector) {
@@ -200,7 +195,7 @@ export default function(form, opts) {
 
 	// Form Validator
 	const fnSetTip = (el, msg) => {
-		const block = el.closest("label") || divNull; // label tag container
+		const block = el.closest(opts.groupSelector) || divNull; // label tag container
 		block.getElementsByClassName(opts.tipErrorClass).text(msg);
 		return self;
 	}

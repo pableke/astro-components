@@ -1,5 +1,5 @@
 
-import i18n from "./i18n.js";
+import i18n from "./main/i18n.js";
 
 // Client language configuration
 const initLang = () => i18n.setLang(i18n.getIsoLang());

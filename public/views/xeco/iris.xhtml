@@ -20,8 +20,6 @@
 	<ui:define name="outputScript">
 		<script type="module" src="/uae/resources/js/xeco/xeco.js"></script>
 		<script type="module" src="/uae/resources/js/xeco/iris/iris.js"></script>
-		<script type="module" src="/uae/resources/js/xeco/iris/maps.js"></script>
-		<script type="module" src="/uae/resources/js/xeco/iris/gastos.js"></script>
 	</ui:define>
 
 	<ui:define name="title">IRIS</ui:define>
@@ -38,17 +36,17 @@
 			<ul>
 				<c:choose>
 				<c:when test="#{iris.open}">
-						<li><p:commandLink action="#{iris.create()}" update="@(.update-iris)" oncomplete="createIris(xhr, status, args);"><h:outputText value="#{msg['uae.irse.index.msg.new.comunicacion']}" escape="false" /></p:commandLink></li>
+						<li><p:commandLink action="#{iris.create()}" update="@(.update-iris)" oncomplete="viewIris(xhr, status, args);"><h:outputText value="#{msg['uae.irse.index.msg.new.comunicacion']}" escape="false" /></p:commandLink></li>
 				</c:when>
 				<c:otherwise>
 						<li><h:outputText value="#{msg['uae.irse.index.msg.new.comunicacion']}" escape="false" /></li>
 				</c:otherwise>
 				</c:choose>
 
-				<li><p:commandLink action="#{iris.relist()}" update="@(#xeco-filter .ui-input,#xeco-list)" onclick="loading();" oncomplete="loadFiltro(xhr, status, args);"><h:outputText value="#{msg['uae.irse.index.msg.list']}" escape="false" /></p:commandLink></li>
+				<li><p:commandLink action="#{iris.relist()}" update="xeco-list" onclick="loading();" oncomplete="loadFiltro(xhr, status, args);"><h:outputText value="#{msg['uae.irse.index.msg.list']}" escape="false" /></p:commandLink></li>
 				<c:if test="#{iris.uae}">
 					<li>
-						<p:commandLink action="#{iris.vinc()}" update="@(#xeco-filter .ui-input,#xeco-list)" onclick="loading();" 
+						<p:commandLink action="#{iris.vinc()}" update="xeco-list" onclick="loading();" 
 							oncomplete="loadFiltro(xhr, status, args);" title="Asociación entre las solicitudes de factura y operaciones de UXXI-EC">
 							<h:outputText value="#{msg['uae.irse.index.msg.vinc']}" escape="false" />
 						</p:commandLink>
@@ -71,41 +69,39 @@
 
 			<div id="tab-1" class="tab-content">
 			<div class="card-xeco">
-				<p:outputPanel styleClass="update-iris">
-					<h2><span class="titulo"></span><i>#{iris.codigo}</i></h2>
-				</p:outputPanel>
+				<h2 class="load-data"><span class="titulo"></span> @codigo;</h2>
 
-				<p:outputPanel styleClass="ui-blocks update-iris #{iris.cssShowUxxiec}">
-				<div id="ac-interesado" class="ui-block-xl autocomplete">
-					<label for="acInteresado" class="required"><h:outputText value="#{msg['uae.irse.tab0.lbl.int']}" escape="false" />:</label>
-					<p:inputText id="acInteresado" value="#{iris.acInteresado}" tabindex="1" styleClass="ui-input ui-autocomplete update-readonly" autocomplete="off" />
+				<div class="ui-blocks show-uxxiec">
+				<label class="ui-block-xl autocomplete">
+					<div class="label required"><h:outputText value="#{msg['uae.irse.tab0.lbl.int']}" escape="false" />:</div>
+					<p:inputText id="acInteresado" value="#{iris.acInteresado}" tabindex="1" styleClass="ui-input ui-autocomplete" autocomplete="off" />
 					<h:inputText id="nifInteresado" value="#{iris.nifInteresado}" styleClass="hide" />
 					<ul role="list" class="results"></ul>
 					<p:commandButton id="find-interesado" action="#{iris.findUsuarios()}" oncomplete="loadItems(xhr, status, args)" styleClass="hide" />
-					<div id="tip-acInteresado" class="ui-errtip"></div>
-				</div>
+					<div class="ui-errtip"></div>
+				</label>
 				<div class="ui-block-main hide info-colectivo">
 					<span id="colectivo">#{iris.colectivo}</span>
 					<a id="email" href="mailto:#{iris.usuEmail}" title="#{msg['tit.enviar.correo']}"><i class="fa fa-regular fa-envelope fa-lg icon"></i></a>
 				</div>
-				</p:outputPanel>
+			</div>
 
 				<div class="ui-blocks">
-				<div id="ac-organica" class="ui-block-xl autocomplete">
-					<label for="acOrganica" class="required"><h:outputText value="#{msg['uae.irse.tab0.lbl.ppto']}" escape="false" />:</label>
-					<p:inputText id="acOrganica" value="#{iris.acOrganica}" tabindex="4" styleClass="ui-input ui-autocomplete update-readonly update-iris" autocomplete="off" />
+				<label id="ac-organica" class="ui-block-xl autocomplete">
+					<div class="label required"><h:outputText value="#{msg['uae.irse.tab0.lbl.ppto']}" escape="false" />:</div>
+					<p:inputText id="acOrganica" value="#{iris.acOrganica}" tabindex="4" styleClass="ui-input ui-autocomplete update-iris" autocomplete="off" />
 					<h:inputText id="idOrganica" value="#{iris.idOrganica}" styleClass="ui-number hide update-iris" />
 					<ul role="list" class="results"></ul>
 					<p:commandButton id="find-organica" action="#{iris.findOrganicas()}" oncomplete="loadItems(xhr, status, args)" styleClass="hide" />
-					<div id="tip-acOrganica" class="ui-errtip"></div>
-				</div>
-				<div class="ui-block-btn insert-only #{iris.cssShowUxxiec}">
+					<div class="ui-errtip"></div>
+				</label>
+				<div class="ui-block-btn insert-only show-uxxiec">
 					<a href="#add-organica" class="btn btn-green" tabindex="5"><i class="fas fa-plus btn-icon-left"></i><h:outputText value="#{msg['lbl.add.tabla']}" escape="false" /></a>
 				</div>
 				</div>
 
 				<h:inputHidden id="organicas-json" value="#{iris.presupuesto}" />
-				<table id="organicas" class="tb-xeco #{iris.cssShowUxxiec}">
+				<table id="organicas" class="tb-xeco show-uxxiec">
 					<thead>
 						<tr>
 							<th><h:outputText value="#{msg['lbl.organica']}" escape="false" /></th>
@@ -144,26 +140,26 @@
 
 					<div class="ui-block-row">
 						<label for="actividad" class="required">#{iris.msgActividad}:</label>
-						<select id="actividad" class="ui-input ui-select update-readonly" tabindex="7">
+						<select id="actividad" class="ui-input ui-select" tabindex="7">
 							<option value="COM">#{iris.msgCOM}</option>
 							<option value="MUN">#{iris.msgMUN}</option>
-							<option value="MES" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.mes']}" escape="false" /></option>
-							<option value="IAE" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.iae']}" escape="false" /></option>
-							<option value="ATR" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.atr']}" escape="false" /></option>
-							<option value="IAE+ATR" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.iae.atr']}" escape="false" /></option>
-							<option value="AFO" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.afo']}" escape="false" /></option>
-							<option value="IAE+AFO" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.iae.afo']}" escape="false" /></option>
-							<option value="ACS" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.acs']}" escape="false" /></option>
-							<option value="OCE" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.col']}" escape="false" /></option>
-							<option value="IAE+OCE" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.iae.col']}" escape="false" /></option>
-							<option value="A7J" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.a7j']}" escape="false" /></option>
-							<option value="MOV" class="#{iris.cssShowUxxiec}"><h:outputText value="#{msg['uae.irse.tab0.act.mov']}" escape="false" /></option>
+							<option value="MES" class="show-uxxiec"><h:outputText value="#{msg['uae.irse.tab0.act.mes']}" escape="false" /></option>
+							<option value="IAE" class="show-uxxiec"><h:outputText value="#{msg['uae.irse.tab0.act.iae']}" escape="false" /></option>
+							<option value="ATR" class="show-uxxiec"><h:outputText value="#{msg['uae.irse.tab0.act.atr']}" escape="false" /></option>
+							<option value="IAE+ATR" class="show-uxxiec"><h:outputText value="#{msg['uae.irse.tab0.act.iae.atr']}" escape="false" /></option>
+							<option value="AFO" class="show-uxxiec"><h:outputText value="#{msg['uae.irse.tab0.act.afo']}" escape="false" /></option>
+							<option value="IAE+AFO" class="show-uxxiec"><h:outputText value="#{msg['uae.irse.tab0.act.iae.afo']}" escape="false" /></option>
+							<option value="ACS" class="show-uxxiec"><h:outputText value="#{msg['uae.irse.tab0.act.acs']}" escape="false" /></option>
+							<option value="OCE" class="show-uxxiec"><h:outputText value="#{msg['uae.irse.tab0.act.col']}" escape="false" /></option>
+							<option value="IAE+OCE" class="show-uxxiec"><h:outputText value="#{msg['uae.irse.tab0.act.iae.col']}" escape="false" /></option>
+							<option value="A7J" class="show-uxxiec"><h:outputText value="#{msg['uae.irse.tab0.act.a7j']}" escape="false" /></option>
+							<option value="MOV" class="show-uxxiec"><h:outputText value="#{msg['uae.irse.tab0.act.mov']}" escape="false" /></option>
 						</select>
 					</div>
 	
 					<div class="ui-block">
 						<label for="tramite" class="required"><h:outputText value="#{msg['uae.irse.tab0.lbl.tramite']}" escape="false" />:</label>
-						<select id="tramite" class="ui-input ui-select update-readonly" tabindex="8">
+						<select id="tramite" class="ui-input ui-select" tabindex="8">
 							<option value="AyL"><h:outputText value="#{msg['uae.irse.tab0.tramit.ayl']}" escape="false" /></option>
 							<option value="AUT"><h:outputText value="#{msg['uae.irse.tab0.tramit.aut']}" escape="false" /></option>
 							<option value="LIQ"><h:outputText value="#{msg['uae.irse.tab0.tramit.liq']}" escape="false" /></option>
@@ -431,14 +427,14 @@
 						<option value=""></option>
 						<optgroup label="Factura a nombre del comisionado" class="rutas-pendientes">
 							<option value="9" class="noches-pendientes"><h:outputText value="#{msg['lbl.por.alojamiento']}" escape="false" /></option>
-							<option value="8" class="i18n rutas-out">@lblTransporte;</option>
+							<option value="8" class="rutas-out"><h:outputText value="#{msg['lbl.por.transporte']}" escape="false" /></option>
 						</optgroup>
 						<optgroup id="grupo-factura-upct" label="Tickets por transporte" class="factura-upct">
 						</optgroup>
 						<optgroup label="Otra Documentación">
-							<option value="201" class="i18n factura-upct">@docObligatoria;</option>
-							<option value="206" class="i18n doc-movilidad">@docMovilidad;</option>
-							<option value="202" class="i18n">@docOpcional;</option>
+							<option value="201" class="factura-upct"><h:outputText value="#{msg['lbl.doc.obligatoria']}" escape="false" /></option>
+							<option value="206" class="doc-movilidad"><h:outputText value="#{msg['lbl.doc.movilidad']}" escape="false" /></option>
+							<option value="202"><h:outputText value="#{msg['lbl.doc.otra']}" escape="false" /></option>
 						</optgroup>
 						<c:if test="#{irse.extAlu and irse.iaeExt}">
 							<optgroup label="Justificaciones">
@@ -517,9 +513,6 @@
 			</div>
 		</h:form>
 
-		<div id="map" class="hide"></div>
-		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBIlqxZkVg9GyjzyNzC0rrZiuY6iPLzTZI&amp;callback=initMap&amp;libraries=places&amp;v=weekly" defer="defer"></script>
-
 		<div id="tab-2" class="tab-content">
 		<h:form id="xeco-filter" prependId="false" onsubmit="loading();">
 			<h2>Solicitudes realizadas<hr/></h2>
@@ -531,9 +524,9 @@
 						<f:selectItems value="#{uae.ejercicios}" />
 					</h:selectOneMenu>
 				</div>
-				<div class="ui-block">
-					<label for="filtro-estado"><h:outputText value="#{msg['lbl.estado']}" escape="false" />:</label>
-					<h:selectOneMenu id="filtro-estado" value="#{iris.filtro.estadoView}" styleClass="ui-input ui-select ui-number" tabindex="2" title="#{msg['tit.estado']}">
+				<label class="ui-block">
+					<div class="label"><h:outputText value="#{msg['lbl.estado']}" escape="false" />:</div>
+					<h:selectOneMenu id="fEstado" value="#{iris.filtro.estadoView}" styleClass="ui-input ui-select ui-number" tabindex="2" title="#{msg['tit.estado']}">
 						<f:selectItem itemValue="0" itemLabel="" />
 						<f:selectItem itemValue="6" itemLabel="#{msg['uae.irse.filter.estado.6']}" itemEscaped="false"/>
 						<f:selectItem itemValue="5" itemLabel="#{msg['uae.irse.filter.estado.5']}" itemEscaped="false"/>
@@ -543,16 +536,16 @@
 						<f:selectItem itemValue="7" itemLabel="#{msg['uae.irse.filter.estado.7']}" itemEscaped="false"/>
 						<f:selectItem itemValue="8" itemLabel="#{msg['uae.irse.filter.estado.8']}" itemEscaped="false"/>
 					</h:selectOneMenu>
-				</div>
-				<div class="ui-block">
-					<label for="filtro-firma"><h:outputText value="#{msg['lbl.mi.firma']}" escape="false" />:</label>
-					<h:selectOneMenu id="filtro-firma" value="#{iris.filtro.miFirma}" styleClass="ui-input ui-select ui-number" tabindex="3" title="#{msg['lbl.mi.firma']}">
+				</label>
+				<label class="ui-block">
+					<div class="label"><h:outputText value="#{msg['lbl.mi.firma']}" escape="false" />:</div>
+					<h:selectOneMenu id="fMiFirma" value="#{iris.filtro.miFirma}" styleClass="ui-input ui-select ui-number" tabindex="3" title="#{msg['lbl.mi.firma']}">
 						<f:selectItem itemValue="0" itemLabel="" />
 						<f:selectItem itemValue="5" itemLabel="#{inicio.getMsg('lblPendiente')}" />
 						<f:selectItem itemValue="1" itemLabel="#{inicio.getMsg('lblAceptada')}" />
 						<f:selectItem itemValue="2" itemLabel="#{inicio.getMsg('lblRechazada')}" />
 					</h:selectOneMenu>
-				</div>
+				</label>
 				<div class="ui-block">
 					<label for="filtro-codigo"><h:outputText value="#{msg['lbl.codigo']}" escape="false" />:</label>
 					<p:inputText id="filtro-codigo" value="#{iris.filtro.codigoView}" styleClass="ui-input ui-code" tabindex="4" />
@@ -578,7 +571,7 @@
 					<i class="fas fa-caret-left btn-icon-left"></i><h:outputText value="#{msg['lbl.btn.volver']}" escape="false" /></a>
 				<p:commandLink action="#{iris.list()}" update="xeco-list" onclick="loading();" oncomplete="loadFiltro(xhr, status, args)" styleClass="btn btn-primary" tabindex="13">
 					<i class="far fa-search btn-icon-left"></i>Buscar</p:commandLink>
-				<p:commandLink action="#{iris.relist()}" update="@(#xeco-filter .ui-input,#xeco-list)" onclick="loading();" oncomplete="loadFiltro(xhr, status, args)" styleClass="btn btn-warn" tabindex="14">
+				<p:commandLink action="#{iris.relist()}" update="xeco-list" onclick="onRelist();" oncomplete="loadFiltro(xhr, status, args)" styleClass="btn btn-warn" tabindex="14">
 					<i class="far fa-times-circle btn-icon-left"></i>Limpiar</p:commandLink>
 			</div>
 

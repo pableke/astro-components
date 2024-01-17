@@ -15,9 +15,13 @@ function Uxxiec() {
     this.setUxxiec = val => self.setUsuEc(val == "true");
     this.setData = data => self.setNif(data.nif).setUxxiec(data.usuec).setGrupo(data.grupo);
 
-    this.isUae = () => (grupo == "2");
-    //this.isOtri = () => (grupo == "8");
-    //this.isGaca = () => (grupo == "xxx");
+    this.isUae = () => (grupo == "2"); // UAE
+    this.isOtri = () => ((grupo == "8") || (grupo == "286") || (grupo == "134") || (grupo == "284")); // OTRI / UITT / UCCT / Catedras
+    //this.isUtec = () => (grupo == "6");
+    //this.isGaca = () => (grupo == "54");
+    //this.isEut = () => (grupo == "253");
+    //this.isEstudiantes = () => (grupo == "9");
+    //this.isContratacion = () => (grupo == "68");
 
     this.isDisabled = data => data.id;
     this.isEditable = data => !data.id;

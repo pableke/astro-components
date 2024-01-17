@@ -1,5 +1,5 @@
 
-import i18n from "./validators.js";
+import i18n from "../validators.js";
 
 // Server config language
 const langs = i18n.getLangs();
@@ -61,7 +61,7 @@ langs.en.fmtFloat = (str, n) => fmtFloat(str, ".", n); // String to EN String fo
 
 langs.es.isoFloat = isoFloat; // Float to String formated
 langs.es.toFloat = str => toFloat(str, ",");  // String to Float
-langs.es.fmtFloat = (str, n) => fmtFloat(str, ",", n); // String to EN String formated
+langs.es.fmtFloat = (str, n) => fmtFloat(str, ",", n); // String to ES String formated
 
 i18n.toFloat = str => i18n.getLang().toFloat(str);
 i18n.isoFloat = num => i18n.getLang().isoFloat(num);

@@ -98,8 +98,8 @@ export default function(autocomplete, opts) {
     function fnSearch() {
         _searching = true; // Avoid new searchs
         alerts.loading(); // Show loading indicator
-        globalThis.loadItems = (xhr, status, args) => { // Only PF
-            globalThis.loadItems = fnVoid; // Avoid extra loads
+        window.loadItems = (xhr, status, args) => { // Only PF
+            window.loadItems = fnVoid; // Avoid extra loads
             self.render(collection.parse(args?.data)); // specific for PF
         }
         opts.source(autocomplete.value, self); // Fire source

@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.loadDelegaciones = (xhr, status, args) => {
         if (window.showTab(xhr, status, args))
-            delegaciones.load(JSON.read(args.delegaciones));
+            delegaciones.setItems(JSON.read(args.delegaciones));
     }
 
 	window.viewFactura = (xhr, status, args) => {
@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return false; // Server error
 		const data = JSON.read(args.fact);
         factura.setData(data); // Load data-model before view
-		delegaciones.load(JSON.read(args.delegaciones)); // cargo las delegaciones
+		delegaciones.setItems(JSON.read(args.delegaciones)); // cargo las delegaciones
 		formFact.setData(data).readonly(factura.isDisabled())
 				.toggle(".insert-only", factura.isEditable()).toggle(".update-only", factura.isDisabled())
 				.toggle(".firmable-only", factura.isFirmable()).toggle(".rechazable-only", factura.isRechazable())

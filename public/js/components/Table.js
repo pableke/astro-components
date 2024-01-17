@@ -70,10 +70,8 @@ export default function(table, opts) {
         table.tFoot.innerHTML = collection.format(tplFoot, opts.onFooter(RESUME, FOOTER) || FOOTER); // render formatted footer
         opts.afterRender(RESUME); // After body and footer is rendered
 
-        tBody.show();
-        table.tFoot.show();
-        tBody.classList.add(opts.showClass);
-        table.tFoot.classList.add(opts.showClass);
+        tBody.show().classList.add(opts.showClass);
+        table.tFoot.show().classList.add(opts.showClass);
 
         // Row listeners for change, find and remove items
         tBody.rows.forEach((tr, i) => {

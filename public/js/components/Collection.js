@@ -83,6 +83,7 @@ function Collection() {
     HTMLCollection.prototype.show = function() { this.forEach(fnShow); }
     HTMLCollection.prototype.toggle = function(force) { this.forEach(force ? fnShow : fnHide); }
     HTMLCollection.prototype.text = function(text) { this.forEach(el => fnSetText(el, text)); }
+    //HTMLCollection.prototype.mask = function(flags) { this.forEach((el, i) => el.toggle((flags >> i) & 1)); }
 
     // Extends NodeList prototype
     NodeList.prototype.eachPrev = fnEachPrev;
@@ -92,6 +93,7 @@ function Collection() {
     NodeList.prototype.show = function() { this.forEach(fnShow); }
     NodeList.prototype.toggle = function(force) { this.forEach(force ? fnShow : fnHide); }
     NodeList.prototype.text = function(text) { this.forEach(el => fnSetText(el, text)); }
+    //NodeList.prototype.mask = function(flags) { this.forEach((el, i) => el.toggle((flags >> i) & 1)); }
 }
 
 // Client / Server global functions
@@ -104,14 +106,26 @@ JSON.read = fnParse;
 // Extends HTMLElement prototype
 HTMLElement.prototype.show = function() { fnShow(this); return this }
 HTMLElement.prototype.hide = function() { fnHide(this); return this }
-//HTMLElement.prototype.toggle = function(force) { return force ? this.show() : this.hide(); }
-HTMLElement.prototype.setVisible = function(force) { force ? fnShow(this) : fnHide(this); }
+HTMLElement.prototype.toggle = function(force) { return force ? this.show() : this.hide(); }
+HTMLElement.prototype.isHidden = function() { return this.classList.contains(HIDE_CLASS); } // has class hide
 HTMLElement.prototype.isVisible = function(selector) {
     return fnVisible(this) && (selector ? this.matches(selector) : true);
 }
 HTMLElement.prototype.render = function(data) {
     this.dataset.template = this.dataset.template || this.innerHTML; // save current template
     this.innerHTML = format(this.dataset.template, data); // display new data
+    return this;
+}
+
+HTMLElement.prototype.setDisabled = function(force) { // Update attribute and style
+    this.classList.toggle("disabled", this.toggleAttribute("disabled", force));
+    return this;
+}
+HTMLElement.prototype.setReadonly = function(force) { // Update attribute and style
+    // The attribute readonly is not supported or relevant to <select> or input types file, checkbox, radio, range...
+    if ([ "file", "checkbox", "radio", "range" ].includes(this.type))
+        return this.setDisabled(force); // Force disabled attribute
+    this.classList.toggle("readonly", this.toggleAttribute("readonly", force));
     return this;
 }
 

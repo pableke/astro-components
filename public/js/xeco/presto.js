@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const emptyOption = "Seleccione una económica";
 	const ecoDec = pf.datalist(formPresto, "#idEcoDec", "#idEcoDecPF", {
         emptyOption,
-        onLoad: item => { formPresto.setval("#cd", item.imp); },
+        onChange: item => { formPresto.setval("#cd", item.imp); },
         onReset: () => { formPresto.setval("#impDec").setval("#cd"); }
     });
 	const ecoInc = pf.datalist(formPresto, "#idEcoInc", "#idEcoIncPF", { emptyOption });
@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const fnLoadEcoDec = args => {
-        ecoDec.load(JSON.read(args?.economicas));
+        ecoDec.setItems(JSON.read(args?.economicas));
     }
     window.loadEconomicasDec = (xhr, status, args) => {
         fnLoadEcoDec(args); // carga las econonomicas a decrementar
@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /****** partida a incrementar ******/
     window.loadEconomicasInc = (xhr, status, args) => {
-        ecoInc.load(JSON.read(args?.data)); // get items
+        ecoInc.setItems(JSON.read(args?.data)); // get items
         fnAvisoFa(acOrgInc.getCurrentItem()); //aviso para organicas afectadas en TCR o FCE
     }
     /****** partida a incrementar ******/
