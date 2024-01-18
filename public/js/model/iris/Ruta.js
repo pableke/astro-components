@@ -1,4 +1,5 @@
 
+import Place from "./Place.js";
 import i18n from "../../i18n/iris/langs.js";
 
 const TSS = ":00"; // Seg.
@@ -11,7 +12,9 @@ const CT_NAME = "Cartagena, España";
 
 function Ruta() {
 	const self = this; //self instance
-    let data, origen, destino;
+    const origen = new Place(); //source place
+    const destino = new Place(); //destination
+    let data;
 
     this.getData = () => data;
     this.setRuta = ruta => {
@@ -46,6 +49,7 @@ function Ruta() {
 	this.isOtros = () => (data.desp == 9);
 
     this.getCT = () => CT_NAME;
+    this.isCartagena = () => origen.isCartagena() && destino.isCartagena();
     this.getOrigen = () => origen;
     this.setPlace1 = (lat, lng, pais) => {
         data.lat1 = lat;
@@ -53,10 +57,10 @@ function Ruta() {
         data.pais1 = pais;
         return self;
     }
-    this.setOrigen = (place, pais) => {
-        origen = place;
+    this.setOrigen = place => {
+        origen.setPlace(place);
         const loc = place.geometry.location;
-        return self.setPlace1(loc.lat(), loc.lng(), pais);
+        return self.setPlace1(loc.lat(), loc.lng(), origen.getContry());
     }
     this.setOrigenCT = () => self.setPlace1(CT_LAT, CT_LNG, CT_PAIS);
 
@@ -67,16 +71,16 @@ function Ruta() {
         data.pais2 = pais;
         return self;
     }
-    this.setDestino = (place, pais) => {
-        destino = place;
+    this.setDestino = place => {
+        destino.setPlace(place);
         const loc = place.geometry.location;
-        return self.setPlace2(loc.lat(), loc.lng(), pais);
+        return self.setPlace2(loc.lat(), loc.lng(), destino.getContry());
     }
     this.setDestinoCT = () => self.setPlace2(CT_LAT, CT_LNG, CT_PAIS);
     this.nextPlace = () => {
         data.origen = data.destino;
         self.setPlace1(data.lat2, data.lng2, data.pais2);
-        destino = null;
+        destino.setPlace(null);
         data.f1 = i18n.enDate(data.dt2);
         data.h1 = i18n.isoTimeShort(data.dt2);
         Object.clear(data, [ "dt1", "f2", "h2", "dt2", "destino", "desp" ]);

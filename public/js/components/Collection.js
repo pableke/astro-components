@@ -19,6 +19,23 @@ function Collection() {
     this.parse = fnParse;
     this.format = format;
 
+	this.empty = arr => (fnSize(arr) < 1);
+	this.indexOf = (arr, value) => arr ? arr.indexOf(value) : -1;
+	this.shuffle = arr => arr.sort(() => (0.5 - Math.random()));
+	this.slice = arr => arr ? arr.slice() : [];
+	this.multisort = function(arr, fnSorts, dirs) {
+		dirs = dirs || []; // directions
+		arr.sort((a, b) => {
+            let result = 0; // compare result
+            for (let i = 0; (i < fnSorts.length) && (result == 0); i++) {
+                const fn = fnSorts[i]; // cmp function = [-1, 0, 1]
+                result = (dirs[i] == "desc") ? fn(b, a) : fn(a, b);
+            }
+            return result;
+        });
+		return self;
+	}
+
     this.eachPrev = function(data, fn) {
         for (let i = fnSize(data) - 1; i > -1; i--)
             fn(data[i], i);
@@ -58,13 +75,19 @@ function Collection() {
             for (let key in data)
                 delete data[key];
         }
-        return self;
+        return data;
     }
+	this.merge = function(keys, values, data) {
+		data = data || {}; // Output
+		keys.forEach((k, i) => { data[k] = values[i]; });
+		return data;
+	}
 
     // Extends Object
     Object.copy = self.copy;
     Object.clone = self.clone;
     Object.clear = self.clear;
+    Object.merge = self.merge;
 
     // Extends Array prototype
     function fnEachPrev(fn) { self.eachPrev(this, fn); }
@@ -83,6 +106,7 @@ function Collection() {
     HTMLCollection.prototype.show = function() { this.forEach(fnShow); }
     HTMLCollection.prototype.toggle = function(force) { this.forEach(force ? fnShow : fnHide); }
     HTMLCollection.prototype.text = function(text) { this.forEach(el => fnSetText(el, text)); }
+    //HTMLCollection.prototype.render = function(data) { this.forEach(el => el.render(data)); }
     //HTMLCollection.prototype.mask = function(flags) { this.forEach((el, i) => el.toggle((flags >> i) & 1)); }
 
     // Extends NodeList prototype
@@ -93,6 +117,7 @@ function Collection() {
     NodeList.prototype.show = function() { this.forEach(fnShow); }
     NodeList.prototype.toggle = function(force) { this.forEach(force ? fnShow : fnHide); }
     NodeList.prototype.text = function(text) { this.forEach(el => fnSetText(el, text)); }
+    //NodeList.prototype.render = function(data) { this.forEach(el => el.render(data)); }
     //NodeList.prototype.mask = function(flags) { this.forEach((el, i) => el.toggle((flags >> i) & 1)); }
 }
 

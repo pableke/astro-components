@@ -8,7 +8,7 @@ function Langs() {
     const KEY_ERR = "msgError"; // Error key
     const MSGS = {}; // Messages container
 
-    let _langs = { en, es }; // All langs
+    let _langs = { en, "en-GB": en, es, "es-ES": es }; // All langs
     let _lang = en; // Default language
 	let errors = 0; // Errors counter
 
@@ -61,12 +61,9 @@ function Langs() {
 		return self;
     }
 
-    en.strval = (data, name) => (data[name + "_en"] || data[name]);
-    es.strval = (data, name) => (data[name + "_es"] || data[name]);
-    this.strval = (data, name) => _lang.strval(data, name);
-
     const BOOLEAN_TRUE = ["1", "true", "yes", "on"];
     this.boolval = str => globalThis.isset(str) ? _lang.msgBool[+BOOLEAN_TRUE.includes("" + str)] : null;
+    this.strval = (data, name) => data[name + "_" + _lang.lang] || data[name];
 }
 
 export default new Langs();
