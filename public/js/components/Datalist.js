@@ -1,11 +1,11 @@
 
 const EMPTY = [];
-const fnVoid = () => {}
+const fnParam = param => param
 
 export default function(select, opts) {
     opts = opts || {}; // Init. options
-    opts.onChange = opts.onChange || fnVoid; // fired on load event
-    opts.onReset = opts.onReset || fnVoid; // fired on reset event
+    opts.onChange = opts.onChange || fnParam; // fired on load event
+    opts.onReset = opts.onReset || fnParam; // fired on reset event
 
     const self = this; //self instance
     let _data = EMPTY; // default = empty array
@@ -64,6 +64,16 @@ export default function(select, opts) {
         }
         return fnChange(_data[0]);
     }
+	this.setRange = function(min, max, step, fnLabel) {
+        step = step || 1; // default step = 1
+        fnLabel = fnLabel || fnParam; // defautl label
+        fnInit([]); // Init. datalist
+        for (let i = min; i <= max; i += step) {
+            select.innerHTML += `<option value="${i}">${fnLabel(i)}</option>`;
+            _data.push(i); // add value
+        }
+        return fnChange(_data[0]);
+	}
 
 	this.toggleOptions = function(flags) {
 		const option = self.getOption(); //get current option

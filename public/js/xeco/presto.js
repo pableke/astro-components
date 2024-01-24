@@ -164,7 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return false; // Server error
         const data = JSON.read(args.presto);
         presto.setData(data); // Load data-model before view
-        fnLoadEcoDec(args); // cargo las econonomicas a decrementar
         ecoInc.reset(); // cargo las econonomicas a incrementar
         formPresto.setData(data).readonly(presto.isDisabled()).readonly(!presto.isEditableUae(), ".editable-uae")
                     .toggle(".insert-only", presto.isEditable()).toggle(".update-only", presto.isDisabled())
@@ -172,6 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     .toggle(".show-partida-dec", presto.isPartidaDec()).toggle(".show-partida-inc", presto.isMultipartida() && presto.isEditable())
                     .toggle(".show-imp-cd", presto.isImpCd()).toggle(".show-memoria", !presto.isL83()).toggle(".grp-urgente", presto.isUrgente())
                     .toggle(".show-subtipo", uxxiec.isUae() && presto.isGcr()).toggle(".is-fce", presto.isFce()).toggle(".link-adjunto", data.file);
+        fnLoadEcoDec(args); // cargo las econonomicas a decrementar
         lineas.render(JSON.read(args.data)); // Load table partidas
         acOrgDec.setValue(data.idOrgDec, data.orgDec + " - " + data.dOrgDec);
         tabs.render(".load-data", data).showTab(1);

@@ -159,7 +159,7 @@ export default function(form, opts) {
 	this.getOptionText = function(selector) {
 		const select = self.getInput(selector); // Get select element
 		const option = select.options[select.selectedIndex]; //get current option
-		return option && option.innerHTML; //get current option text
+		return option?.innerHTML; //get current option text
 	}
 
 	// Events handlers
