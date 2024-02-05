@@ -1,6 +1,4 @@
 
-const fnVoid = () => {}
-
 function params(data) {
     const results = [];
     for (const name in data)
@@ -14,16 +12,13 @@ function send(name, data) { // p:remoteCommand tag
 
 function datalist(form, select, input, opts) {
     opts = opts || {}; // Init. options
-    opts.onChange = opts.onChange || fnVoid; // fired on load event
-    opts.onReset = opts.onReset || fnVoid; // fired on reset event
+    const fnChange = opts.onChange || globalThis.fnVoid; // fired on load event
+    const fnReset = opts.onReset || globalThis.fnVoid; // fired on reset event
 
-    const PF = {}; // Primefaces config
-    PF.emptyOption = opts.emptyOption;
-    PF.onChange = item => { input.value = item.value; opts.onChange(item); } // fired on load event
-    PF.onReset = () => { input.value = ""; opts.onReset(); }; // fired on reset event
-
-    input = form.getInput(input);
-    return form.setDatalist(select, PF);
+    input = form.getInput(input); // get input element
+    opts.onChange = item => { input.value = item.value; fnChange(item); } // fired on load event
+    opts.onReset = () => { input.value = ""; fnReset(); }; // fired on reset event
+    return form.setDatalist(select, opts);
 }
 
 function multiNameInput(form, main, inputs) {

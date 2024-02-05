@@ -1,9 +1,8 @@
 
-import collection from "./Collection.js";
+import coll from "./Collection.js";
 import i18n from "../i18n/langs.js";
 
 const EMPTY = [];
-const fnVoid = () => {};
 const fnTrue = () => true;
 
 export default function(table, opts) {
@@ -18,10 +17,10 @@ export default function(table, opts) {
     opts.msgConfirmRemove = opts.msgConfirmRemove || "remove";
     opts.msgConfirmReset = opts.msgConfirmReset || "removeAll";
 
-    opts.beforeRender = opts.beforeRender || fnVoid;
-    opts.onRender = opts.onRender || fnVoid;
-    opts.onFooter = opts.onFooter || fnVoid;
-    opts.afterRender = opts.afterRender || fnVoid;
+    opts.beforeRender = opts.beforeRender || globalThis.fnVoid;
+    opts.onRender = opts.onRender || globalThis.fnVoid;
+    opts.onFooter = opts.onFooter || globalThis.fnVoid;
+    opts.afterRender = opts.afterRender || globalThis.fnVoid;
     opts.onRemove = opts.onRemove || fnTrue;
     opts.onReset = opts.onReset || fnTrue;
 
@@ -30,7 +29,7 @@ export default function(table, opts) {
     const tplBody = tBody.innerHTML; //body template
     const tplEmpty = opts.msgEmptyTable ? '<tr><td class="no-data" colspan="99">' + i18n.get(opts.msgEmptyTable) + '</td></tr>' : "";
     const tplFoot = table.tFoot.innerHTML; //Footer template
-    const RESUME = { columns: collection.size(tBody.rows[0]?.cells) }; //Table parameters
+    const RESUME = { columns: coll.size(tBody.rows[0]?.cells) }; //Table parameters
     const FOOTER = { columns: RESUME.columns }; //Footer output formated
 
     let _rows = EMPTY; // default = empty array
@@ -66,8 +65,8 @@ export default function(table, opts) {
         FOOTER.size = RESUME.size = _rows.length;
 
         opts.beforeRender(RESUME); // Fired init. event
-        tBody.innerHTML = RESUME.size ? collection.render(tplBody, _rows, opts.onRender, RESUME) : tplEmpty; // body
-        table.tFoot.innerHTML = collection.format(tplFoot, opts.onFooter(RESUME, FOOTER) || FOOTER); // render formatted footer
+        tBody.innerHTML = RESUME.size ? coll.render(tplBody, _rows, opts.onRender, RESUME) : tplEmpty; // body
+        table.tFoot.innerHTML = coll.format(tplFoot, opts.onFooter(RESUME, FOOTER) || FOOTER); // render formatted footer
         opts.afterRender(RESUME); // After body and footer is rendered
 
         tBody.show().classList.add(opts.showClass);
@@ -77,7 +76,7 @@ export default function(table, opts) {
         tBody.rows.forEach((tr, i) => {
             tr.onchange = ev => {
                 _index = i; // current item
-                const fnChange = opts["change-" + ev.target.name] || fnVoid;
+                const fnChange = opts["change-" + ev.target.name] || globalThis.fnVoid;
                 fnChange(ev.target, self);
             };
             tr.getElementsByClassName(opts.rowActionClass).forEach(link => {
@@ -123,7 +122,7 @@ export default function(table, opts) {
 
     table.tFoot.onchange = ev => {
         const input = ev.target; // element changed
-        const fnChange = opts["change-" + input.name] || fnVoid;
+        const fnChange = opts["change-" + input.name] || globalThis.fnVoid;
         fnChange(input, self);
     }
 

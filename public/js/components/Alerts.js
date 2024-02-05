@@ -1,5 +1,5 @@
 
-import collection from "./Collection.js";
+import coll from "./Collection.js";
 import i18n from "../i18n/langs.js";
 
 HTMLElement.prototype.eachPrev = function(fn) {
@@ -118,7 +118,7 @@ function Alerts() {
     // Global singleton instance
     window.loading = self.loading;
     window.working = self.working;
-    window.showAlerts = (xhr, status, args) => self.showAlerts(collection.parse(args?.msgs)); // Hack PF (only for CV-UAE)
+    window.showAlerts = (xhr, status, args) => self.showAlerts(coll.parse(args?.msgs)); // Hack PF (only for CV-UAE)
 }
 
 export default new Alerts();

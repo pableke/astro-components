@@ -5,6 +5,7 @@
     --accent-gradient: linear-gradient(45deg, rgb(var(--accent)), rgb(var(--accent-light)) 30%, white 60%);
 }
 
+* { margin: 0; padding: 0; }
 html { color-scheme: dark light; font-family: system-ui, sans-serif; color: #13151A; background: rgb(249 250 251); }
 html.dark { color: rgb(249 250 251)/* gray-50 */; background: #13151A; }
 
@@ -116,17 +117,17 @@ tfoot { font-weight: bold; border-top: 1px dashed black; }
 }
 /* Small devices (landscape phones, 576px and up) */
 @media screen and (min-width: 576px) and (max-width: 767.98px) {
-	.hide-sm, .hide-md, .hide-lg { display: none; }
+	.hide-sm, .hide-md, .hide-lg, .show-xs { display: none; }
 }
 /* Medium devices (tablets, 768px and up) */
 @media screen and (min-width: 768px) and (max-width: 991.98px) {
-	.hide-md, .hide-lg { display: none; }
+	.hide-md, .hide-lg, .show-xs, .show-sm { display: none; }
 }
 /* Large devices (desktops, 992px and up) */
 @media screen and (min-width: 992px) and (max-width: 1199.98px) {
-	.hide-lg { display: none; }
+	.hide-lg, .show-xs, .show-sm, .show-md { display: none; }
 }
 /* Extra large devices (large desktops, 1200px and up) */
 @media screen and (min-width: 1200px) {
-	.hide-xl { display: none; }
+	.hide-xl, .show-xs, .show-sm, .show-md, .show-lg { display: none; }
 }

@@ -1,0 +1,70 @@
+
+nav { display: flex; gap: 4px; padding: 4px; }
+nav button {
+    display: flex; align-items: center; margin: 0 2px; padding: 4px 8px;
+    font-size: 20px; border-radius: 8px; border-width: 0; background-color: white; cursor: pointer;
+}
+nav button:hover { background-color: gainsboro; }
+nav .separator { flex-grow: 1; }
+
+/* Menu dropdown UL > LI */
+.menu { display: flex; padding: 5px; }
+.menu .sub-menu {
+    display: none; position: absolute; left: 0;
+    border-left: 2px solid; box-shadow: 0 1px 3px 0 rgb(0 0 0);
+}
+
+.menu li { position: relative; list-style: none; }
+.menu i { margin: 0 6px; font-size: 20px; transition: .5s; }
+.menu .link-menu { display: flex; align-items: center; padding: .4rem .6rem; white-space: nowrap; text-decoration: none; }
+.menu li:hover > .link-menu > .fa-caret-right { transform: rotate(90deg); }
+/* Display the next dropdown */
+.menu li:hover > .sub-menu { display: block; }
+/* Displays third level dropdowns to the right of the second level dropdown */
+.menu .sub-menu-3 { top: 1%; left: 99%; }
+/* Menu dropdown UL > LI */
+
+/* Dropdown */
+.dropdown { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.dropdown .fa-chevron-down { transition: .5s; }
+.dropdown:hover .fa-chevron-down { rotate: 180deg; }
+
+.dropdown > div {
+	min-width: max-content; display: none; padding: 8px 4px;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0); border-radius: 8px; border-width: 1px;
+}
+:is(.dark .dropdown > div) { background-color: rgb(75, 80, 87); border-color: rgb(107 114 128); }
+.dropdown:hover > div, .dropdown.active > div { position: absolute; top:calc(100%); display: block; }
+
+.dropdown img { display: inline-block; width: 24px; height: auto; margin-right: 6px; }
+.dropdown a {
+    display: flex; padding: 4px 8px;
+    @apply text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 text-sm
+}
+.dropdown a:hover { background-color: gainsboro; }
+/* Dropdown */
+
+/* Breadcrumb pagination */
+ul.breadcrumb { padding: 10px 16px; list-style: none; background-color: #eee; }
+ul.breadcrumb li { display: inline; font-size: 12px; }
+ul.breadcrumb li+li:before { padding: 8px; color: black; content: "\002F"; }
+ul.breadcrumb li a { color: #0275d8; text-decoration: none; }
+ul.breadcrumb li a:hover { color: #01447e; text-decoration: underline; }
+/* Breadcrumb pagination */
+
+/* Extra small devices (portrait phones, less than 576px) */
+@media screen and (max-width: 575.98px) {
+    .menu-main { flex-direction: column; }
+}
+/* Small devices (landscape phones, 576px and up) */
+@media screen and (min-width: 576px) and (max-width: 767.98px) {
+}
+/* Medium devices (tablets, 768px and up) */
+@media screen and (min-width: 768px) and (max-width: 991.98px) {
+}
+/* Large devices (desktops, 992px and up) */
+@media screen and (min-width: 992px) and (max-width: 1199.98px) {
+}
+/* Extra large devices (large desktops, 1200px and up) */
+@media screen and (min-width: 1200px) {
+}

@@ -1,13 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Page Title</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Tests Page</title>
     <link rel="stylesheet" type="text/css" media="screen" href="../css/styles-min.css">
+	<script src="https://kit.fontawesome.com/76f12cea70.js" crossorigin="anonymous"></script>
+    <script type="module" src="../js/xeco/tests.js"></script>
 </head>
 <body>
-    <h1>Hello World!</h1>
+	<header></header>
+    <nav class="show-xs">
+        <button id="menu-toggle">
+            <i class="fas fa-arrow-left hide"></i>
+            <i class="fas fa-bars"></i>
+        </button>
+        <div>Phone-Menu 2</div>
+        <div>Phone-Menu 3</div>
+    </nav>
+    <nav class="hide-xs menu-main">
+        <div><ul class="menu"></ul></div>
+        <div class="separator"></div>
+        <div class="menu">
+            <div id="languages" class="dropdown">
+                <button>
+                    <img src="../img/flags/spain.png">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div>
+                    <a href="?lang=es"><img src="../img/flags/spain.png"> ES</a>
+                    <a href="?lang=en"><img src="../img/flags/great_britain.png"> EN</a>
+                </div>
+            </div>
+            <button id="theme-toggle">
+                <i class="fas fa-moon hide"></i>
+                <i class="fas fa-sun hide"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main>
+        <h1>Hello World!</h1>
+    </main>
+
+    <footer></footer>
 </body>
 </html>

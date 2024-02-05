@@ -14,13 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /*** FORMULARIO PARA EL DC 030 DE LAS GCR ***/
     const form030 = new Form("xeco-030");
-    const acOrg030 = form030.setAutocomplete("#acOrg030", {
-        minLength: 4,
-        source: () => form030.click("#find-org-030"),
-        render: item => item.label,
-        select: item => item.value,
-        afterSelect: item => form030.setval("#idEco030", item.imp)
-    });
+    const acOrg030 = form030.setAcItems("#acOrg030", //selector
+                                        () => form030.click("#find-org-030"), //source
+                                        item => form030.setval("#idEco030", item.imp)); //select
     form030.setClick("#save-030", ev => {
         partida.setData(lineas.getCurrentItem());
         if (form030.isValid(partida.validate030)) {
@@ -61,29 +57,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     //****** partida a decrementar ******//
-    const acOrgDec = formPresto.setAutocomplete("#acOrgDec", {
-        minLength: 4,
-        source: () => formPresto.click("#find-organica-dec"),
-        render: item => item.label,
-        select: item => item.value,
-        afterSelect: item => {
-            alerts.loading();
-            presto.isAutoLoadInc() && lineas.render(); //autoload => clear table
-            formPresto.setval("#faDec", item.int & 1).click("#find-economicas-dec");
-        },
-        onReset: () => {
-            presto.isAutoLoadInc() && lineas.render(); //autoload => clear table
-            formPresto.setval("#faDec").click("#find-economicas-dec");
-        }
-    });
-    const acOrgInc = formPresto.setAutocomplete("#acOrgInc", {
-        minLength: 4,
-        source: () => formPresto.click("#find-organica-inc"),
-        render: item => item.label,
-        select: item => item.value,
-        afterSelect: item => { alerts.loading(); formPresto.setval("#faInc", item.int & 1).click("#find-economicas-inc"); },
-        onReset: () => formPresto.setval("#faInc").setval("#impInc").click("#find-economicas-inc")
-    });
+    const fnSelectOrgDec = item => {
+        presto.isAutoLoadInc() && lineas.render(); //autoload => clear table
+        formPresto.loading().setval("#faDec", item.int & 1).click("#find-economicas-dec");
+    }
+    const fnResetOrgDec = () => {
+        presto.isAutoLoadInc() && lineas.render(); //autoload => clear table
+        formPresto.setval("#faDec").click("#find-economicas-dec");
+    }
+    const acOrgDec = formPresto.setAcItems("#acOrgDec", //selector
+                                        () => formPresto.click("#find-organica-dec"), //source
+                                        fnSelectOrgDec, //select
+                                        fnResetOrgDec); //reset
+    const acOrgInc = formPresto.setAcItems("#acOrgInc", //selector
+                                        () => formPresto.click("#find-organica-inc"), //source
+                                        item => formPresto.loading().setval("#faInc", item.int & 1).click("#find-economicas-inc"), //select
+                                        () => formPresto.setval("#faInc").setval("#impInc").click("#find-economicas-inc")); //reset
+
     formPresto.onChangeInput("#idEcoDec", ev => {
         if (presto.isL83()) //L83 => busco su AIP
             formPresto.click("#autoload-l83");

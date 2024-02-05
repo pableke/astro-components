@@ -2,9 +2,11 @@
 const RE_VAR = /@(\w+);/g;
 const HIDE_CLASS = "hide";
 
+const fnVoid = () => {}
 const fnSize = data => data ? data.length : 0; //string o array
 const fnParse = data => data && JSON.parse(data); //JSON parse
 const isset = val => ((typeof(val) !== "undefined") && (val !== null));
+const isstr = val => (typeof(val) === "string") || (val instanceof String);
 const format = (tpl, data) => tpl.replace(RE_VAR, (m, k) => data[k] ?? "");
 
 const fnHide = el => el.classList.add(HIDE_CLASS);
@@ -36,15 +38,9 @@ function Collection() {
 		return self;
 	}
 
-    this.eachPrev = function(data, fn) {
-        for (let i = fnSize(data) - 1; i > -1; i--)
-            fn(data[i], i);
-        return self;
-    }
-
     this.render = (tpl, data, fnRender, resume) => {
         const status = {};
-        resume = resume || {};
+        resume = resume || status;
         fnRender = fnRender || fnVoid;
 
         let output = ""; // Initialize result
@@ -88,50 +84,69 @@ function Collection() {
     Object.clone = self.clone;
     Object.clear = self.clear;
     Object.merge = self.merge;
-
-    // Extends Array prototype
-    function fnEachPrev(fn) { self.eachPrev(this, fn); }
-    Array.prototype.eachPrev = fnEachPrev;
-    Array.prototype.item = function(i) { return this[i % this.length]; }
-    Array.prototype.last = function() { return this.at(-1); }
-
-    // Extends HTMLCollection prototype
-    function fnSetText(el, text) { el.innerHTML = text; }
-    HTMLCollection.prototype.eachPrev = fnEachPrev;
-    HTMLCollection.prototype.find = Array.prototype.find;
-    HTMLCollection.prototype.filter = Array.prototype.filter;
-    HTMLCollection.prototype.forEach = Array.prototype.forEach;
-    HTMLCollection.prototype.findIndex = Array.prototype.findIndex;
-    HTMLCollection.prototype.hide = function() { this.forEach(fnHide); }
-    HTMLCollection.prototype.show = function() { this.forEach(fnShow); }
-    HTMLCollection.prototype.toggle = function(force) { this.forEach(force ? fnShow : fnHide); }
-    HTMLCollection.prototype.text = function(text) { this.forEach(el => fnSetText(el, text)); }
-    //HTMLCollection.prototype.render = function(data) { this.forEach(el => el.render(data)); }
-    //HTMLCollection.prototype.mask = function(flags) { this.forEach((el, i) => el.toggle((flags >> i) & 1)); }
-
-    // Extends NodeList prototype
-    NodeList.prototype.eachPrev = fnEachPrev;
-    NodeList.prototype.find = Array.prototype.find;
-    NodeList.prototype.filter = Array.prototype.filter;
-    NodeList.prototype.hide = function() { this.forEach(fnHide); }
-    NodeList.prototype.show = function() { this.forEach(fnShow); }
-    NodeList.prototype.toggle = function(force) { this.forEach(force ? fnShow : fnHide); }
-    NodeList.prototype.text = function(text) { this.forEach(el => fnSetText(el, text)); }
-    //NodeList.prototype.render = function(data) { this.forEach(el => el.render(data)); }
-    //NodeList.prototype.mask = function(flags) { this.forEach((el, i) => el.toggle((flags >> i) & 1)); }
 }
 
 // Client / Server global functions
+globalThis.fnVoid = fnVoid;
 globalThis.isset = isset;
+globalThis.isstr = isstr;
 
 // Mute JSON
 JSON.size = fnSize;
 JSON.read = fnParse;
 
+// Extends String prototype
+String.prototype.format = function(fn) { return this.replace(RE_VAR, fn); }
+String.prototype.render = function(data) { return format(this, data); }
+String.isstr = isstr;
+
+// Extends Array prototype
+Array.prototype.item = function(i) { return this[i % this.length]; }
+Array.prototype.last = function() { return this.at(-1); }
+Array.prototype.eachPrev = function(fn) {
+    for (let i = this.length - 1; i > -1; i--)
+        fn(this[i], i, this);
+}
+
+// Extends HTMLCollection prototype
+function fnSetText(el, text) { el.innerHTML = text; }
+HTMLCollection.prototype.find = Array.prototype.find;
+HTMLCollection.prototype.filter = Array.prototype.filter;
+HTMLCollection.prototype.forEach = Array.prototype.forEach;
+HTMLCollection.prototype.eachPrev = Array.prototype.eachPrev;
+HTMLCollection.prototype.findIndex = Array.prototype.findIndex;
+HTMLCollection.prototype.matches = function(selector) { return this.find(el => el.matches(selector)); }
+HTMLCollection.prototype.query = function(selector) { return this.filter(el => el.matches(selector)); }
+HTMLCollection.prototype.text = function(text) { this.forEach(el => fnSetText(el, text)); }
+HTMLCollection.prototype.hide = function() { this.forEach(fnHide); }
+HTMLCollection.prototype.show = function() { this.forEach(fnShow); }
+HTMLCollection.prototype.toggle = function(name, force) {
+    name = name || HIDE_CLASS;
+    this.forEach(el => el.classList.toggle(name, force));
+}
+//HTMLCollection.prototype.render = function(data) { this.forEach(el => el.render(data)); }
+//HTMLCollection.prototype.mask = function(flags) { this.forEach((el, i) => el.toggle((flags >> i) & 1)); }
+
+// Extends NodeList prototype
+NodeList.prototype.find = Array.prototype.find;
+NodeList.prototype.filter = Array.prototype.filter;
+NodeList.prototype.eachPrev = Array.prototype.eachPrev;
+NodeList.prototype.matches = function(selector) { return this.find(el => el.matches(selector)); }
+NodeList.prototype.query = function(selector) { return this.filter(el => el.matches(selector)); }
+NodeList.prototype.text = function(text) { this.forEach(el => fnSetText(el, text)); }
+NodeList.prototype.hide = function() { this.forEach(fnHide); }
+NodeList.prototype.show = function() { this.forEach(fnShow); }
+NodeList.prototype.toggle = function(name, force) {
+    name = name || HIDE_CLASS;
+    this.forEach(el => el.classList.toggle(name, force));
+}
+//NodeList.prototype.render = function(data) { this.forEach(el => el.render(data)); }
+//NodeList.prototype.mask = function(flags) { this.forEach((el, i) => el.toggle((flags >> i) & 1)); }
+
 // Extends HTMLElement prototype
 HTMLElement.prototype.show = function() { fnShow(this); return this }
 HTMLElement.prototype.hide = function() { fnHide(this); return this }
-HTMLElement.prototype.toggle = function(force) { return force ? this.show() : this.hide(); }
+//HTMLElement.prototype.toggle = function(force) { return force ? this.show() : this.hide(); }
 HTMLElement.prototype.isHidden = function() { return this.classList.contains(HIDE_CLASS); } // has class hide
 HTMLElement.prototype.isVisible = function(selector) {
     return fnVisible(this) && (selector ? this.matches(selector) : true);
@@ -153,9 +168,5 @@ HTMLElement.prototype.setReadonly = function(force) { // Update attribute and st
     this.classList.toggle("readonly", this.toggleAttribute("readonly", force));
     return this;
 }
-
-// Extends String prototype
-String.prototype.format = function(fn) { return this.replace(RE_VAR, fn); }
-String.prototype.render = function(data) { return format(this, data); }
 
 export default new Collection();

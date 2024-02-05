@@ -6,9 +6,6 @@ import Autocomplete from "./Autocomplete.js";
 import i18n from "../i18n/langs.js";
 
 const divNull = document.createElement("div");
-const isstr = val => (typeof(val) === "string") || (val instanceof String);
-
-String.isstr = isstr;
 
 export default function(form, opts) {
 	form = isstr(form) ? document.forms.find(el => (el.name == form)) : form; // Find by name
@@ -37,11 +34,12 @@ export default function(form, opts) {
 	this.focus = el => { el && el.focus(); return self; }
 	this.setFocus = selector => self.focus(self.getInput(selector));
 	this.autofocus = () => self.focus(form.elements.find(el => el.isVisible(FOCUSABLED)));
-	this.getInput = selector => form.elements.find(el => el.matches(selector)); // find an element
-	this.getInputs = selector => form.elements.filter(el => el.matches(selector)); // filter elements
+	this.getInput = selector => form.elements.matches(selector); // find an element
+	this.getInputs = selector => form.elements.query(selector); // filter elements
 	this.querySelector = selector => form.querySelector(selector);
 
 	// Alerts helpers
+	this.loading = () => { alerts.loading(); return self; } // Encapsule loading frame
 	this.showOk = msg => { alerts.showOk(msg); return self; } // Encapsule showOk message
 	this.showInfo = msg => { alerts.showInfo(msg); return self; } // Encapsule showInfo message
 	this.showWarn = msg => { alerts.showWarn(msg); return self; } // Encapsule showWarn message
@@ -137,10 +135,21 @@ export default function(form, opts) {
 
 	// Inputs helpers
 	this.setTable = (selector, opts) => new Table(form.querySelector(selector), opts); // table
-	this.setDatalist = (selector, opts) => new Datalist(form.querySelector(selector), opts); // select / optgroup
-	this.setAutocomplete = (selector, opts) => new Autocomplete(self.getInput(selector), opts); // Input type text / search
 	this.stringify = (selector, data) => self.setval(selector, JSON.stringify(data));
 	this.saveTable = (selector, table) => self.stringify(selector, table.getData());
+	this.setDatalist = (selector, opts) => new Datalist(form.querySelector(selector), opts); // select / optgroup
+	this.setAutocomplete = (selector, opts) => new Autocomplete(self.getInput(selector), opts); // Input type text / search
+	this.setAcItems = (selector, fnSource, fnSelect, fnReset) => {
+		return self.setAutocomplete(selector, {
+			minLength: 4,
+			source: fnSource,
+			render: item => item.label,
+			select: item => item.value,
+			afterSelect: fnSelect,
+			onReset: fnReset
+		});
+	}
+
 	this.setDateRange = (f1, f2) => {
 		f1 = isstr(f1) ? self.getInput(f1) : f1;
 		f2 = isstr(f2) ? self.getInput(f2) : f2;

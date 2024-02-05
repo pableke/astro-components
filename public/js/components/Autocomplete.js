@@ -6,7 +6,6 @@ const EMPTY = [];
 const TR1 = "àáâãäåāăąÀÁÂÃÄÅĀĂĄÆßèéêëēĕėęěÈÉĒĔĖĘĚìíîïìĩīĭÌÍÎÏÌĨĪĬòóôõöōŏőøÒÓÔÕÖŌŎŐØùúûüũūŭůÙÚÛÜŨŪŬŮçÇñÑþÐŔŕÿÝ";
 const TR2 = "aaaaaaaaaAAAAAAAAAABeeeeeeeeeEEEEEEEiiiiiiiiIIIIIIIIoooooooooOOOOOOOOOuuuuuuuuUUUUUUUUcCnNdDRryY";
 
-const fnVoid = () => {}
 const fnEmpty = () => EMPTY;
 const fnParam = param => param;
 const inRange = (num, min, max) => (min <= num) && (num <= max);
@@ -15,7 +14,7 @@ const replaceAt = (str1, str2, i) => str1.substring(0, i) + str2 + str1.substrin
 
 String.iIndexOf = (str1, str2) => tr(str1).toLowerCase().indexOf(tr(str2).toLowerCase()); // Mute String class with insensitive index
 String.ilike = (str1, str2) => (String.iIndexOf(str1, str2) > -1); // Mute String class with an insensitive search
-window.loadItems = fnVoid; // Hack PF (only for CV-UAE)
+window.loadItems = globalThis.fnVoid; // Hack PF (only for CV-UAE)
 
 function tr(str) {
     var output = str || "";
@@ -46,8 +45,8 @@ export default function(autocomplete, opts) {
     opts.source = opts.source || fnEmpty; //empty source by default
     opts.render = opts.render || fnParam; //render label on autocomplete
     opts.select = opts.select || fnParam; //set value in id input
-    opts.afterSelect = opts.afterSelect || fnVoid; //fired after an item is selected
-    opts.onReset = opts.onReset || fnVoid; //fired when no value selected
+    opts.afterSelect = opts.afterSelect || globalThis.fnVoid; //fired after an item is selected
+    opts.onReset = opts.onReset || globalThis.fnVoid; //fired when no value selected
 
 	const self = this; //self instance
     const block = autocomplete.closest(opts.blockSelector);
@@ -99,7 +98,7 @@ export default function(autocomplete, opts) {
         _searching = true; // Avoid new searchs
         alerts.loading(); // Show loading indicator
         window.loadItems = (xhr, status, args) => { // Only PF
-            window.loadItems = fnVoid; // Avoid extra loads
+            window.loadItems = globalThis.fnVoid; // Avoid extra loads
             self.render(collection.parse(args?.data)); // specific for PF
         }
         opts.source(autocomplete.value, self); // Fire source

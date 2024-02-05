@@ -54,21 +54,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		source: () => formFact.click("#find-tercero"),
 		render: item => item.label,
 		select: item => item.value,
-		afterSelect: item => { formFact.click("#find-delegaciones"); updateView(); },
+		afterSelect: item => { formFact.loading().click("#find-delegaciones"); updateView(); },
 		onReset: delegaciones.reset
 	});
-	const acOrganica = formFact.setAutocomplete("#acOrganica", {
-		minLength: 4,
-		source: () => formFact.click("#find-organica"),
-		render: item => item.label,
-		select: item => item.value
-	});
-	const acRecibo = formFact.setAutocomplete("#acRecibo", {
-		minLength: 4,
-		source: () => formFact.click("#find-recibo"),
-		render: item => item.label,
-		select: item => item.value
-	});
+	const acOrganica = formFact.setAcItems("#acOrganica", () => formFact.click("#find-organica"));
+	const acRecibo = formFact.setAcItems("#acRecibo", () => formFact.click("#find-recibo"));
 	formFact.onChangeInput("#subtipo", ev => updateView(+ev.target.value))
 			.onChangeInput("#sujeto", ev => updateSujeto(+ev.target.value))
 			.onChangeInput("#face", ev => updateFace(+ev.target.value));
@@ -104,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return false; // Server error
 		const data = JSON.read(args.fact);
         factura.setData(data); // Load data-model before view
-		delegaciones.setItems(JSON.read(args.delegaciones)); // cargo las delegaciones
 		formFact.setData(data).readonly(factura.isDisabled())
 				.toggle(".insert-only", factura.isEditable()).toggle(".update-only", factura.isDisabled())
 				.toggle(".firmable-only", factura.isFirmable()).toggle(".rechazable-only", factura.isRechazable())
@@ -112,6 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				.toggle(".show-factura-uae", uxxiec.isUae() && factura.isFactura()).toggle(".show-uae", uxxiec.isUae())
 				.toggle(".show-gestor", factura.isFace() || factura.isPlataforma()).toggle(".show-face", factura.isFace())
 				.toggle(".firma-gaca", factura.isFirmaGaca());
+		delegaciones.setItems(JSON.read(args.delegaciones)); // cargo las delegaciones
 		lineas.render(JSON.read(args.data)); // Load conceptos and iva input
 		formFact.readonly(!factura.isEditableUae(), ".editable-uae"); // disable iva input
 		acTercero.setValue(data.idTer, data.nif + " - " + data.tercero);
