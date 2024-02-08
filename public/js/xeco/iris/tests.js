@@ -8,6 +8,7 @@ const OPTIONS = {
     types: [ "geocode", "establishment" ],
     strictBounds: false
 };
+var loaded = false;
 
 window.initMap = function() {
     const salida = new Place(); // Place model instance
@@ -17,8 +18,9 @@ window.initMap = function() {
     const divDieta = document.querySelector(".dieta");
 
     inputOrigen.addEventListener("change", ev => {
-        divAddress.toggle(inputOrigen.value);
-        divDieta.toggle(inputOrigen.value);
+        const ok = origen.getPlace() && inputOrigen.value;
+        divAddress.setVisible(ok);
+        divDieta.setVisible(ok);
     });
 
     origen.addListener("place_changed", function() {
@@ -34,8 +36,20 @@ window.initMap = function() {
     });
 }
 
-// Create the script tag, set the appropriate attributes
-const script = document.createElement("script");
-script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBIlqxZkVg9GyjzyNzC0rrZiuY6iPLzTZI&libraries=places&callback=initMap";
-script.async = true; // Solicita al navegador que descargue y ejecute la secuencia de comandos de manera asíncrona, despues llamará a initMap
-document.head.appendChild(script); // Append the "script" element to "head"
+function initScript() {
+    if (loaded) // is API loaded
+        return window.initMap();
+    // Create the script tag, set the appropriate attributes
+    const script = document.createElement("script");
+    script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBIlqxZkVg9GyjzyNzC0rrZiuY6iPLzTZI&libraries=places&callback=initMap";
+    script.async = true; // Solicita al navegador que descargue y ejecute la secuencia de comandos de manera asíncrona, despues llamará a initMap
+    script.defer = true; // Will execute the script after the document has been parsed
+    document.head.appendChild(script); // Append the "script" element to "head"
+    loaded = true; // API loaded
+}
+
+if (window.location.pathname.endsWith("maps.html"))
+    document.addEventListener("DOMContentLoaded", initScript);
+document.addEventListener("vt:maps", initScript);
+
+export default initScript;

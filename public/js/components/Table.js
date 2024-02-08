@@ -17,10 +17,10 @@ export default function(table, opts) {
     opts.msgConfirmRemove = opts.msgConfirmRemove || "remove";
     opts.msgConfirmReset = opts.msgConfirmReset || "removeAll";
 
-    opts.beforeRender = opts.beforeRender || globalThis.fnVoid;
-    opts.onRender = opts.onRender || globalThis.fnVoid;
-    opts.onFooter = opts.onFooter || globalThis.fnVoid;
-    opts.afterRender = opts.afterRender || globalThis.fnVoid;
+    opts.beforeRender = opts.beforeRender || globalThis.void;
+    opts.onRender = opts.onRender || globalThis.void;
+    opts.onFooter = opts.onFooter || globalThis.void;
+    opts.afterRender = opts.afterRender || globalThis.void;
     opts.onRemove = opts.onRemove || fnTrue;
     opts.onReset = opts.onReset || fnTrue;
 
@@ -76,7 +76,7 @@ export default function(table, opts) {
         tBody.rows.forEach((tr, i) => {
             tr.onchange = ev => {
                 _index = i; // current item
-                const fnChange = opts["change-" + ev.target.name] || globalThis.fnVoid;
+                const fnChange = opts["change-" + ev.target.name] || globalThis.void;
                 fnChange(ev.target, self);
             };
             tr.getElementsByClassName(opts.rowActionClass).forEach(link => {
@@ -122,7 +122,7 @@ export default function(table, opts) {
 
     table.tFoot.onchange = ev => {
         const input = ev.target; // element changed
-        const fnChange = opts["change-" + input.name] || globalThis.fnVoid;
+        const fnChange = opts["change-" + input.name] || globalThis.void;
         fnChange(input, self);
     }
 

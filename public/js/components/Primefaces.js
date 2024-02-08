@@ -12,8 +12,8 @@ function send(name, data) { // p:remoteCommand tag
 
 function datalist(form, select, input, opts) {
     opts = opts || {}; // Init. options
-    const fnChange = opts.onChange || globalThis.fnVoid; // fired on load event
-    const fnReset = opts.onReset || globalThis.fnVoid; // fired on reset event
+    const fnChange = opts.onChange || globalThis.void; // fired on load event
+    const fnReset = opts.onReset || globalThis.void; // fired on reset event
 
     input = form.getInput(input); // get input element
     opts.onChange = item => { input.value = item.value; fnChange(item); } // fired on load event

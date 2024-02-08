@@ -1,27 +1,38 @@
 
-nav { display: flex; gap: 4px; padding: 4px; }
-nav button {
-    display: flex; align-items: center; margin: 0 2px; padding: 4px 8px;
-    font-size: 20px; border-radius: 8px; border-width: 0; background-color: white; cursor: pointer;
+nav {
+    position: relative; display: flex; gap: 4px; padding: 4px;
+    background-color: #333; opacity: .9;
 }
-nav button:hover { background-color: gainsboro; }
+nav button {
+    display: flex; align-items: center; justify-content: center; 
+    margin: 0 2px; padding: 4px 8px; min-width: 33px; min-height: 33px;
+    border-radius: 8px; border-width: 0; cursor: pointer; color: white; background-color: #333;
+}
+nav button:hover { color: #333; background-color: gainsboro; }
 nav .separator { flex-grow: 1; }
 
 /* Menu dropdown UL > LI */
-.menu { display: flex; padding: 5px; }
-.menu .sub-menu {
-    display: none; position: absolute; left: 0;
-    border-left: 2px solid; box-shadow: 0 1px 3px 0 rgb(0 0 0);
-}
-
+.menu { display: flex; padding: 4px; }
+.menu-group { display: flex; padding: 4px; }
 .menu li { position: relative; list-style: none; }
-.menu i { margin: 0 6px; font-size: 20px; transition: .5s; }
-.menu .link-menu { display: flex; align-items: center; padding: .4rem .6rem; white-space: nowrap; text-decoration: none; }
-.menu li:hover > .link-menu > .fa-caret-right { transform: rotate(90deg); }
+.menu .icon-left { margin-right: 8px; }
+.menu .icon-right { margin: 0 8px; transition: .5s; }
+.menu .link-menu {
+    display: flex; align-items: center; padding: 6px 9px;
+    white-space: nowrap; text-decoration: none; color: white;
+}
+.menu li:hover > .link-menu { color: #333; background-color: gainsboro; }
+.menu li:hover > .link-menu > .icon-right { transform: rotate(90deg); }
+
+.menu .sub-menu {
+    display: none; position: absolute; left: 0; padding: 0;
+    border-left: 2px solid #ccc; box-shadow: 1px 2px 1px 0 #ccc;
+    background-color: #333;
+}
 /* Display the next dropdown */
 .menu li:hover > .sub-menu { display: block; }
 /* Displays third level dropdowns to the right of the second level dropdown */
-.menu .sub-menu-3 { top: 1%; left: 99%; }
+.menu .sub-menu.level-3 { top: 1%; left: 99%; }
 /* Menu dropdown UL > LI */
 
 /* Dropdown */
@@ -30,18 +41,15 @@ nav .separator { flex-grow: 1; }
 .dropdown:hover .fa-chevron-down { rotate: 180deg; }
 
 .dropdown > div {
-	min-width: max-content; display: none; padding: 8px 4px;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0); border-radius: 8px; border-width: 1px;
+    position: absolute; top: calc(100%); display: none; padding: 8px 4px;
+    box-shadow: 1px 2px 1px 0 #ccc; border-radius: 8px; background-color: #333;
 }
-:is(.dark .dropdown > div) { background-color: rgb(75, 80, 87); border-color: rgb(107 114 128); }
-.dropdown:hover > div, .dropdown.active > div { position: absolute; top:calc(100%); display: block; }
+:is(.dark .dropdown > div) { background-color: rgb(75, 80, 87); border-color: #ccc; }
+.dropdown:hover > div, .dropdown.active > div { display: block; }
 
 .dropdown img { display: inline-block; width: 24px; height: auto; margin-right: 6px; }
-.dropdown a {
-    display: flex; padding: 4px 8px;
-    @apply text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 text-sm
-}
-.dropdown a:hover { background-color: gainsboro; }
+.dropdown a { display: flex; padding: 4px 8px; color: #ccc; text-decoration: none; }
+.dropdown a:hover { color: #333; background-color: gainsboro; }
 /* Dropdown */
 
 /* Breadcrumb pagination */
@@ -54,7 +62,25 @@ ul.breadcrumb li a:hover { color: #01447e; text-decoration: underline; }
 
 /* Extra small devices (portrait phones, less than 576px) */
 @media screen and (max-width: 575.98px) {
-    .menu-main { flex-direction: column; }
+    /* Menu dropdown UL > LI */
+    .menu-main {
+        position: absolute; left: -92%; width: 92%; padding: 1px;
+		flex-direction: column; transition: all 500ms linear;
+		height: calc(100vh - 43px); /* phone nav height  (menu-group outher height = 43px) */
+	}
+    .menu-main.active { left: 0; }
+    .menu { flex-direction: column; }
+    .menu .label-menu { flex-grow: 1; }
+    .menu .sub-menu { position: relative; border: 1px solid #ccc; box-shadow: none; }
+    .menu .sub-menu.level-3 { top: 0; left: 0; }
+    /* Menu dropdown UL > LI */
+
+    /* Dropdown */
+    nav .dropdown > div {
+        top: auto; bottom: calc(100%); left: max(1px, .1%);
+        box-shadow: -1px -2px 1px 0 #ccc;
+    }
+    /* Dropdown */
 }
 /* Small devices (landscape phones, 576px and up) */
 @media screen and (min-width: 576px) and (max-width: 767.98px) {

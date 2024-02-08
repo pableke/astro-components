@@ -1,22 +1,16 @@
-:root {
-    --accent: 136, 58, 234;
-    --accent-light: 224, 204, 250;
-    --accent-dark: 49, 10, 101;
-    --accent-gradient: linear-gradient(45deg, rgb(var(--accent)), rgb(var(--accent-light)) 30%, white 60%);
-}
 
-* { margin: 0; padding: 0; }
+* { margin: 0; }
 html { color-scheme: dark light; font-family: system-ui, sans-serif; color: #13151A; background: rgb(249 250 251); }
 html.dark { color: rgb(249 250 251)/* gray-50 */; background: #13151A; }
 
 main {
     margin: auto; padding: 1rem;
     width: 800px; max-width: calc(100% - 2rem);
-    font-size: 20px; line-height: 1.6;
 }
 
-hr { margin: 15px 0; border-top: 1px solid; border-color: rgb(147 197 253); }
-:is(.dark hr) { border-color: rgb(209 213 219)/* gray-300 */; }
+hr { margin: 15px 0; border-top: 1px solid skyblue; }
+hr.slim { margin: 1px; border-top: 1px solid #ccc; }
+/*:is(.dark hr) { border-color: rgb(209 213 219); }*/
 
 /* TABLES */
 table { margin: 10px auto; width: 100%; border-collapse: collapse; opacity: .9; }
@@ -89,26 +83,6 @@ tfoot { font-weight: bold; border-top: 1px dashed black; }
 .link:hover { text-decoration-line: none; }
 :is(.dark .link) { color: rgb(147 197 253); }
 /* Specific styles */
-
-/* Animations */
-.fadeIn { animation: fadeIn 1s forwards; }
-.fadeOut { animation: fadeOut .6s forwards; }
-@keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
-@keyframes fadeOut { 0% { opacity: 1; } 100% { opacity: 0; display: none; } }
-
-.slideIn { animation: slideIn 1s forwards; }
-.slideOut { animation: slideOut 1s forwards; }
-@keyframes slideIn { 0% { transform: translateX(-100%); } 100% { transform: translateX(0%); } }
-@keyframes slideOut { 0% { transform: translateX(0%); } 100% { transform: translateX(-100%); display: none; } }
-
-.slideRtl { animation: slideRtl 1s forwards; }
-.slideLtr { animation: slideLtr 1s forwards; }
-@keyframes slideRtl { 0% { transform: translateX(100%); } 100% { transform: translateX(0%); } }
-@keyframes slideLtr { 0% { transform: translateX(0%); } 100% { transform: translateX(100%); display: none; } }
-
-/*@keyframes resizeText { from {} to { font-size: 18px; } }*/
-@keyframes resize { 0% { transform: scale(.9); } 100% { transform: scale(1.2); } }
-/* Animations */
 
 /* Extra small devices (portrait phones, less than 576px) */
 @media screen and (max-width: 575.98px) {

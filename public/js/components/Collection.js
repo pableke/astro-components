@@ -1,6 +1,10 @@
 
 const RE_VAR = /@(\w+);/g;
 const HIDE_CLASS = "hide";
+const FADE_IN = "fadeIn";
+const FADE_OUT = "fadeOut";
+const SLIDE_IN = "slideIn";
+const SLIDE_OUT = "slideOut";
 
 const fnVoid = () => {}
 const fnSize = data => data ? data.length : 0; //string o array
@@ -87,7 +91,7 @@ function Collection() {
 }
 
 // Client / Server global functions
-globalThis.fnVoid = fnVoid;
+globalThis.void = fnVoid;
 globalThis.isset = isset;
 globalThis.isstr = isstr;
 
@@ -109,7 +113,6 @@ Array.prototype.eachPrev = function(fn) {
 }
 
 // Extends HTMLCollection prototype
-function fnSetText(el, text) { el.innerHTML = text; }
 HTMLCollection.prototype.find = Array.prototype.find;
 HTMLCollection.prototype.filter = Array.prototype.filter;
 HTMLCollection.prototype.forEach = Array.prototype.forEach;
@@ -117,7 +120,7 @@ HTMLCollection.prototype.eachPrev = Array.prototype.eachPrev;
 HTMLCollection.prototype.findIndex = Array.prototype.findIndex;
 HTMLCollection.prototype.matches = function(selector) { return this.find(el => el.matches(selector)); }
 HTMLCollection.prototype.query = function(selector) { return this.filter(el => el.matches(selector)); }
-HTMLCollection.prototype.text = function(text) { this.forEach(el => fnSetText(el, text)); }
+HTMLCollection.prototype.text = function(text) { this.forEach(el => { el.innerHTML = text; }); }
 HTMLCollection.prototype.hide = function() { this.forEach(fnHide); }
 HTMLCollection.prototype.show = function() { this.forEach(fnShow); }
 HTMLCollection.prototype.toggle = function(name, force) {
@@ -126,6 +129,7 @@ HTMLCollection.prototype.toggle = function(name, force) {
 }
 //HTMLCollection.prototype.render = function(data) { this.forEach(el => el.render(data)); }
 //HTMLCollection.prototype.mask = function(flags) { this.forEach((el, i) => el.toggle((flags >> i) & 1)); }
+//HTMLCollection.prototype.click = function(fn) { this.forEach(el => el.addEventListener("click", fn)); }
 
 // Extends NodeList prototype
 NodeList.prototype.find = Array.prototype.find;
@@ -133,7 +137,7 @@ NodeList.prototype.filter = Array.prototype.filter;
 NodeList.prototype.eachPrev = Array.prototype.eachPrev;
 NodeList.prototype.matches = function(selector) { return this.find(el => el.matches(selector)); }
 NodeList.prototype.query = function(selector) { return this.filter(el => el.matches(selector)); }
-NodeList.prototype.text = function(text) { this.forEach(el => fnSetText(el, text)); }
+NodeList.prototype.text = HTMLCollection.prototype.text;
 NodeList.prototype.hide = function() { this.forEach(fnHide); }
 NodeList.prototype.show = function() { this.forEach(fnShow); }
 NodeList.prototype.toggle = function(name, force) {
@@ -142,11 +146,13 @@ NodeList.prototype.toggle = function(name, force) {
 }
 //NodeList.prototype.render = function(data) { this.forEach(el => el.render(data)); }
 //NodeList.prototype.mask = function(flags) { this.forEach((el, i) => el.toggle((flags >> i) & 1)); }
+//NodeList.prototype.click = function(fn) { this.forEach(el => el.addEventListener("click", fn)); }
 
 // Extends HTMLElement prototype
 HTMLElement.prototype.show = function() { fnShow(this); return this }
 HTMLElement.prototype.hide = function() { fnHide(this); return this }
-//HTMLElement.prototype.toggle = function(force) { return force ? this.show() : this.hide(); }
+HTMLElement.prototype.toggle = function(name, force) { this.classList.toggle(name || HIDE_CLASS, force); }
+HTMLElement.prototype.setVisible = function(force) { return force ? this.show() : this.hide(); }
 HTMLElement.prototype.isHidden = function() { return this.classList.contains(HIDE_CLASS); } // has class hide
 HTMLElement.prototype.isVisible = function(selector) {
     return fnVisible(this) && (selector ? this.matches(selector) : true);
@@ -168,5 +174,14 @@ HTMLElement.prototype.setReadonly = function(force) { // Update attribute and st
     this.classList.toggle("readonly", this.toggleAttribute("readonly", force));
     return this;
 }
+
+function fnAnimate(el, addName, removeName) {
+    el.classList.remove(HIDE_CLASS, removeName);
+    el.classList.add(addName);
+}
+HTMLElement.prototype.fadeIn = function() { fnAnimate(this, FADE_IN, FADE_OUT); }
+HTMLElement.prototype.fadeOut = function() { fnVisible(this) && fnAnimate(this, FADE_OUT, FADE_IN) }
+HTMLElement.prototype.slideIn = function() { fnAnimate(this, SLIDE_IN, SLIDE_OUT); }
+HTMLElement.prototype.slideOut = function() { fnVisible(this) && fnAnimate(this, SLIDE_OUT, SLIDE_IN); }
 
 export default new Collection();

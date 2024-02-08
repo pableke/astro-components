@@ -6,20 +6,20 @@ const fnTrue = () => true; // always true
 const mask = (val, i) => ((val >> i) & 1); // check bit at i position
 const FOCUSABLED = "[tabindex]:not([type=hidden],[readonly],[disabled])";
 
-const opts = { // Configuration
-    tabClass: "tab-content",
-    activeClass: "active",
-    tabActionClass: "tab-action",
-    progressBarClass: "progress-bar",
-};
+// Classes Configuration
+const TAB_CLASS = "tab-content";
+const ACTIVE_CLASS = "active";
+const ACTION_CLASS = "tab-action";
+const PROGRESS_BAR = "progress-bar";
 
 function Tabs() {
 	const self = this; //self instance
-	const tabs = document.getElementsByClassName(opts.tabClass);
-	const progressbar = document.getElementsByClassName(opts.progressBarClass);
+    const EVENTS = {}; //events tab container
+	const tabs = document.getElementsByClassName(TAB_CLASS);
+	const progressbar = document.getElementsByClassName(PROGRESS_BAR);
 
-    const fnSet = (name, fn) => { opts[name] = fn; return self; }
-    const fnActive = el => el.classList.contains(opts.activeClass);
+    const fnSet = (name, fn) => { EVENTS[name] = fn; return self; }
+    const fnActive = el => el.classList.contains(ACTIVE_CLASS);
     const fnFindIndex = id => tabs.findIndex(tab => (tab.id == ("tab-" + id))); //find index tab by id
     const fnCurrentIndex = () => tabs.findIndex(fnActive); //current index tab
     const autofocus = tab => {
@@ -28,7 +28,7 @@ function Tabs() {
         return self;
     }
     const fnSetTab = (tab, index) => {
-        tab.classList.add(opts.activeClass);
+        tab.classList.add(ACTIVE_CLASS);
         _tabIndex = index ?? fnCurrentIndex();
         return autofocus(tab);
     }
@@ -49,7 +49,7 @@ function Tabs() {
 
     // Set events on tabs actions
     const fnCallEvent = (name, tab) => {
-        const fn = opts[name + "-" + tab.id] || fnTrue;
+        const fn = EVENTS[name + "-" + tab.id] || fnTrue;
         return fn(tab, self);
     }
 
@@ -77,14 +77,14 @@ function Tabs() {
             alerts.closeAlerts(); // Close all previous messages
             const step = "step-" + i; //go to a specific step on progressbar
             progressbar.forEach(bar => { // progressbar is optional
-                bar.children.forEach(child => child.classList.toggle(opts.activeClass, child.id <= step));
+                bar.children.forEach(child => child.classList.toggle(ACTIVE_CLASS, child.id <= step));
             });
             tab.dataset.back = updateBack ? _tabIndex : tab.dataset.back; // Save source tab index
-            tabs.forEach(tab => tab.classList.remove(opts.activeClass)); // update tabs style
+            tabs.forEach(tab => tab.classList.remove(ACTIVE_CLASS)); // update tabs style
             fnSetTab(tab, i); // set current tab
             fnCallEvent("view", tab); // Fire when show tab
         }
-        delete opts["init-" + tab.id];
+        delete EVENTS["init-" + tab.id];
         alerts.working().top(); // go up
         return self;
     }
@@ -99,7 +99,7 @@ function Tabs() {
     }
 
     this.setActions = el => {
-        el.getElementsByClassName(opts.tabActionClass).forEach(link => {
+        el.getElementsByClassName(ACTION_CLASS).forEach(link => {
             link.addEventListener("click", ev => { // Handle click event
                 ev.preventDefault(); // avoid navigation
                 const href = link.getAttribute("href");
@@ -111,16 +111,6 @@ function Tabs() {
                     return self.showTab(+href.match(/\d+$/).pop());
                 if (href == "#last-tab")
                     return self.lastTab();
-                /*if (href == "#toggle-tab") { // replaced by details / summary
-                    const hide = link.dataset.hide || "hide"; // Hide class
-                    const targets = document.querySelectorAll(link.dataset.target || (".info-" + link.id));
-                    targets.forEach(el => el.classList.toggle(hide));
-
-                    const icon = link.querySelector(".icon-" + link.id);
-                    if (icon && link.dataset.toggle) // change link icon class?
-                        link.dataset.toggle.split(/\s+/).forEach(name => icon.classList.toggle(name));
-                    autofocus(targets[0]); // set focus on input
-                }*/
             });
         });
         return self;
