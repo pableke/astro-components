@@ -1,7 +1,7 @@
 
 * { margin: 0; }
-html { color-scheme: dark light; font-family: system-ui, sans-serif; color: #13151A; background: rgb(249 250 251); }
-html.dark { color: rgb(249 250 251)/* gray-50 */; background: #13151A; }
+html { color-scheme: dark light; font-family: system-ui, sans-serif; color: #13151A; background-color: rgb(249 250 251); }
+html.dark { color: rgb(249 250 251)/* gray-50 */; background-color: #13151A; }
 
 main {
     margin: auto; padding: 1rem;
@@ -10,7 +10,7 @@ main {
 
 hr { margin: 15px 0; border-top: 1px solid skyblue; }
 hr.slim { margin: 1px; border-top: 1px solid #ccc; }
-/*:is(.dark hr) { border-color: rgb(209 213 219); }*/
+:is(.dark hr) { border-color: #ccc; }
 
 /* TABLES */
 table { margin: 10px auto; width: 100%; border-collapse: collapse; opacity: .9; }

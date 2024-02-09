@@ -22,8 +22,10 @@ gulp.task("modules", done => {
 gulp.task("minify-css", done => {
 	const CSS_DEST = "dist/css";
 	fs.rmSync(CSS_DEST, { recursive: true, force: true }); // Remove previous unused files
-	gulp.src(CSS_FILES).pipe(cssnano()).pipe(gulp.dest(CSS_DEST)).on("end", () => {
-		gulp.src("dist/css/**/*.css").pipe(concat("styles-min.css")).pipe(gulp.dest(CSS_DEST)).on("end", done);
+	gulp.src(CSS_FILES).pipe(cssnano()).pipe(gulp.dest(CSS_DEST)).on("end", () => { // Minify singles files
+		// Important! concat all minifies files in a single file with css priority for animations
+		const PRIORITY = [ "dist/css/main.css", "dist/css/tabs.css", "dist/css/menu.css", "dist/css/messages.css", "dist/css/form.css", "dist/css/animations.css" ];
+		gulp.src(PRIORITY).pipe(concat("styles-min.css")).pipe(gulp.dest(CSS_DEST)).on("end", done);
 	});
 });
 

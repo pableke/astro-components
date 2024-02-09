@@ -17,6 +17,7 @@ window.initMap = function() {
     const divAddress = document.querySelector(".address-components");
     const divDieta = document.querySelector(".dieta");
 
+    inputOrigen.focus();
     inputOrigen.addEventListener("change", ev => {
         const ok = origen.getPlace() && inputOrigen.value;
         divAddress.setVisible(ok);

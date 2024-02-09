@@ -1,7 +1,6 @@
 
 /* Tabs classes */
 .tab-content { display: none; width: 100%; /*min-height: 70vh; max-height: 90vh;*/ padding: 2px; }
-.tab-content.active { display: inherit; animation: fadeIn 1s forwards; }
 /* Tabs classes */
 
 /* Accordion */

@@ -1,5 +1,6 @@
 
-import coll from "../components/Collection.js";
+import alerts from "../components/Alerts.js";
+import tabs from "../components/Tabs.js";
 import maps from "./iris/tests.js";
 import menus from "../data/menu.js";
 import i18n from "../i18n/langs.js";
@@ -74,19 +75,22 @@ themeToggleBtn.addEventListener("click", function() {
 
 // Check to see if API is supported
 if (document.startViewTransition) {
-    const main = document.querySelector("main");
+    const main = document.body.children.matches("main");
 
     // cargamos la pagina de destino con fetch
     const fetchMain = async url => {
         const res = await fetch(url.pathname);
-        const text = await res.text();
+        if (!res.ok) // response ok? => 400, 500...
+            return alerts.showError(res.statusText);
+        const text = await res.text(); // Get full page
         // extraigo el contenido de la etiqueta main
         const data = text.match(/<main[^>]*>([\s\S]*)<\/main>/im)[1];
         // utilizamos la api de View Transitions
         document.startViewTransition(() => {
             main.innerHTML = data; // update contents
-            document.documentElement.scrollTop = 0;
-            const name = url.searchParams.get("ev") || "after-swap"; // Specific event aname
+            tabs.setActions(main); // reload tabs events
+            document.documentElement.scrollTop = 0; // scroll to top
+            const name = url.searchParams.get("vt") || "after-swap"; // Specific event aname
             document.dispatchEvent(new Event("vt:" + name)); // Dispatch vt:after-swap event
             //console.log("Event name =", "vt:" + name); // specific name event
         });
@@ -95,7 +99,9 @@ if (document.startViewTransition) {
     // capture navigation event links
     window.navigation.addEventListener("navigate", ev => {
         const url = new URL(ev.destination.url);
-        // si es una pagina externa => ignoramos el evento
+        if (location.pathname == url.pathname)
+            return ev.preventDefault(); // Current destination
+        // Si es una pagina externa => ignoramos el evento
         if (location.origin == url.origin) {
             // Navegación en el mismo dominio (origin)
             const handler = () => fetchMain(url);

@@ -1,7 +1,7 @@
 
 nav {
     position: relative; display: flex; gap: 4px; padding: 4px;
-    background-color: #333; opacity: .9;
+    background-color: #333; opacity: .9; z-index: 1;
 }
 nav button {
     display: flex; align-items: center; justify-content: center; 
@@ -26,7 +26,7 @@ nav .separator { flex-grow: 1; }
 
 .menu .sub-menu {
     display: none; position: absolute; left: 0; padding: 0;
-    border-left: 2px solid #ccc; box-shadow: 1px 2px 1px 0 #ccc;
+    border-left: 2px solid #ccc; box-shadow: 0 0 2px 0 #ccc;
     background-color: #333;
 }
 /* Display the next dropdown */
@@ -42,7 +42,7 @@ nav .separator { flex-grow: 1; }
 
 .dropdown > div {
     position: absolute; top: calc(100%); display: none; padding: 8px 4px;
-    box-shadow: 1px 2px 1px 0 #ccc; border-radius: 8px; background-color: #333;
+    box-shadow: 0 0 2px 1px #ccc; border-radius: 8px; background-color: #333; z-index: 1;
 }
 :is(.dark .dropdown > div) { background-color: rgb(75, 80, 87); border-color: #ccc; }
 .dropdown:hover > div, .dropdown.active > div { display: block; }

@@ -1,6 +1,6 @@
 
 import alerts from "./Alerts.js";
-import collection from "./Collection.js";
+import coll from "./Collection.js";
 
 const fnTrue = () => true; // always true
 const mask = (val, i) => ((val >> i) & 1); // check bit at i position
@@ -111,6 +111,11 @@ function Tabs() {
                     return self.showTab(+href.match(/\d+$/).pop());
                 if (href == "#last-tab")
                     return self.lastTab();
+                if (href == "#toggle") {
+                    const icon = link.querySelector(link.dataset.icon || "i"); // icon indicator
+                    self.getCurrent().querySelectorAll(link.dataset.target).toggle(); // toggle info
+                    coll.split(link.dataset.toggle, " ").forEach(name => icon.toggle(name));
+                }
             });
         });
         return self;
@@ -123,7 +128,7 @@ function Tabs() {
             return !alerts.showError("Error 500: Internal server error.");
         if (!args) // Has server response?
             return self.showTab(tab); // Show tab and return true
-        const msgs = collection.parse(args.msgs); // Parse server messages
+        const msgs = coll.parse(args.msgs); // Parse server messages
         const ok = !msgs?.msgError; // is ok?
         if (ok && globalThis.isset(tab))
             self.showTab(tab); // Show tab if NO error

@@ -12,6 +12,7 @@
 </head>
 <body>
 	<header></header>
+    <!-- Menu component -->
     <nav class="show-xs">
         <button id="menu-toggle">
             <i class="fas fa-arrow-left hide"></i>
@@ -49,12 +50,103 @@
             </button>
         </div>
     </nav>
+    <!-- Menu component -->
+
+    <!-- Alerts component -->
+    <div class="alerts">
+		<div class="hide alert alert-success">
+			<div class="alert-icon"><i class="fas fa-check-circle fa-3x"></i></div>
+			<div class="alert-text"></div>
+			<div class="alert-close"><i class="fas fa-times"></i></div>
+		</div>
+		<div class="hide alert alert-info">
+			<div class="alert-icon"><i class="fas fa-info fa-3x"></i></div>
+			<div class="alert-text"></div>
+			<div class="alert-close"><i class="fas fa-times"></i></div>
+		</div>
+		<div class="hide alert alert-warn">
+			<div class="alert-icon"><i class="fas fa-exclamation-triangle fa-3x"></i></div>
+			<div class="alert-text"></div>
+			<div class="alert-close"><i class="fas fa-times"></i></div>
+		</div>
+		<div class="hide alert alert-error">
+			<div class="alert-icon"><i class="fas fa-exclamation fa-2x"></i></div>
+			<div class="alert-text"></div>
+			<div class="alert-close"><i class="fas fa-times"></i></div>
+		</div>
+	</div>
+	<div class="loading hide">
+		<b class="fas fa-circle-notch fa-3x fa-spin loading-content"></b>
+	</div>
+	<a id="back-to-top" href="#top" class="hide back-to-top">
+		<i class="fas fa-arrow-up"></i>
+	</a>
+    <!-- Alerts component -->
 
     <main>
-        <h1>Hello World!</h1>
-        <a href="./maps.html?ev=maps">Go maps</a>
+        <div id="tab-0" class="tab-content active">
+            <h2>Alerts</h2>
+            <div class="alert alert-info">
+                <div class="alert-icon"><i class="fas fa-bullhorn"></i></div>
+                <div class="alert-text"><b>Info:</b> <span>Area de pruebas</span></div>
+            </div>
+            <div class="alert alert-note">
+                <div class="alert-icon"><i class="fas fa-bell"></i></div>
+                <div class="alert-text"><b>Note:</b> <span>Area de pruebas</span></div>
+            </div>
+            <div class="alert alert-ok">
+                <div class="alert-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="alert-text"><b>OK:</b> <span>Area de pruebas</span></div>
+            </div>
+            <div class="alert alert-success">
+                <div class="alert-icon"><i class="far fa-thumbs-up"></i></div>
+                <div class="alert-text"><b>Saccessfully:</b> <span>Area de pruebas</span></div>
+            </div>
+            <div class="alert alert-warn">
+                <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="alert-text">
+                    <b>Warn:</b> <span>Area de pruebas</span>
+                    <p><b>Extra info:</b> añkjfdsaldñlka fjasñlkadjf asñlk adñlkajf asñlkdsfdjk aslsñlkadfkjk asñsdñlkafjlk asñldkfdjk aksldjf alskfdj asñlkdsfdjk aslsñlkadfkjk asñsdñlkafjlk asñldkfdjk aksldjf alskfdj</p>
+                </div>
+            </div>
+            <div class="alert alert-error">
+                <div class="alert-icon"><i class="fas fa-exclamation-circle"></i></div>
+                <div class="alert-text"><b>Error:</b> <span>Area de pruebas</span></div>
+            </div>
+            <div class="alert alert-danger">
+                <div class="alert-icon"><i class="fas fa-radiation-alt"></i></div>
+                <div class="alert-text"><b>Danger:</b> <span>Area de pruebas</span></div>
+            </div>
+            <div class="alert alert-dark">
+                <div class="alert-icon"><i class="fas fa-skull-crossbones"></i></div>
+                <div class="alert-text"><b>Dark:</b> <span>Area de pruebas</span></div>
+            </div>
+            <div class="alert alert-info">
+                <div class="alert-text">
+                    <span>Lorem ipsum dolor sit amet consectetur adipisicing elit. A, dolorum, veritatis tenetur ea dolor quo consequuntur ullam molestias fugit quam.</span>
+                    <a href="#toggle" class="link tab-action" data-toggle="fa-angle-double-down fa-angle-double-up" data-target=".info-test">
+                        Más Info <i class="fas fa-angle-double-down"></i>
+                    </a>
+                    <div class="info-test hide"><hr/>Lorem ipsum dolor, sit amet consectetur adipisicing, elit. Corrupti rem aut, minus asperiores, sunt eligendi hic ipsum maiores itaque numquam sequi eius voluptates consequuntur debitis impedit quae dolore ad, enim?</div>
+                </div>
+            </div>
+
+            <div class="navbar">
+                <a href="#next-tab" class="btn btn-primary tab-action">Sig. <i class="fas fa-angle-double-right"></i></a>
+                <a href="#tab-2" class="btn btn-primary tab-action"><i class="fas fa-angle-double-right"></i></a>
+                <a href="./maps.html?vt=maps" class="btn btn-green">Go maps <i class="fas fa-share"></i></a>
+            </div>
+        </div>
+
+        <div id="tab-1" class="tab-content">
+            <h2>Tab 2</h2>
+
+            <div class="navbar">
+                <a href="#tab-0" class="btn btn-primary tab-action"><i class="fas fa-angle-double-left"></i></a>
+            </div>
+        </div>
     </main>
 
-    <footer></footer>
+    <footer>Page Footer</footer>
 </body>
 </html>

@@ -5,6 +5,9 @@
 @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
 @keyframes fadeOut { 0% { opacity: 1; } 100% { opacity: 0; display: none; } }
 
+.active, .activeIn { display: unset; animation: fadeIn 1s forwards; }
+.activeOut { display: unset; animation: fadeOut .6s forwards; }
+
 .fadeInUp { animation: fadeInUp 1s forwards; }
 .fadeOutUp { animation: fadeOutUp .6s forwards; }
 @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }

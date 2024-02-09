@@ -28,7 +28,7 @@ function Collection() {
 	this.empty = arr => (fnSize(arr) < 1);
 	this.indexOf = (arr, value) => arr ? arr.indexOf(value) : -1;
 	this.shuffle = arr => arr.sort(() => (0.5 - Math.random()));
-	this.slice = arr => arr ? arr.slice() : [];
+	this.split = (str, sep) => str ? str.split(sep || ",") : [];
 	this.multisort = function(arr, fnSorts, dirs) {
 		dirs = dirs || []; // directions
 		arr.sort((a, b) => {
@@ -178,10 +178,11 @@ HTMLElement.prototype.setReadonly = function(force) { // Update attribute and st
 function fnAnimate(el, addName, removeName) {
     el.classList.remove(HIDE_CLASS, removeName);
     el.classList.add(addName);
+    return el;
 }
-HTMLElement.prototype.fadeIn = function() { fnAnimate(this, FADE_IN, FADE_OUT); }
-HTMLElement.prototype.fadeOut = function() { fnVisible(this) && fnAnimate(this, FADE_OUT, FADE_IN) }
-HTMLElement.prototype.slideIn = function() { fnAnimate(this, SLIDE_IN, SLIDE_OUT); }
-HTMLElement.prototype.slideOut = function() { fnVisible(this) && fnAnimate(this, SLIDE_OUT, SLIDE_IN); }
+HTMLElement.prototype.fadeIn = function() { return fnAnimate(this, FADE_IN, FADE_OUT); }
+HTMLElement.prototype.fadeOut = function() { return fnVisible(this) ? fnAnimate(this, FADE_OUT, FADE_IN) : this; }
+HTMLElement.prototype.slideIn = function() { return fnAnimate(this, SLIDE_IN, SLIDE_OUT); }
+HTMLElement.prototype.slideOut = function() { return fnVisible(this) ? fnAnimate(this, SLIDE_OUT, SLIDE_IN) : this; }
 
 export default new Collection();
