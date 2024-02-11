@@ -1,12 +1,9 @@
 
 /* resource = https://animation.ibelick.com/ */
-.fadeIn { animation: fadeIn 1s forwards; }
+.fadeIn, .active { animation: fadeIn 1s forwards; }
 .fadeOut { animation: fadeOut .6s forwards; }
 @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
 @keyframes fadeOut { 0% { opacity: 1; } 100% { opacity: 0; display: none; } }
-
-.active, .activeIn { display: unset; animation: fadeIn 1s forwards; }
-.activeOut { display: unset; animation: fadeOut .6s forwards; }
 
 .fadeInUp { animation: fadeInUp 1s forwards; }
 .fadeOutUp { animation: fadeOutUp .6s forwards; }
@@ -28,7 +25,7 @@
 @keyframes slideInRight { 0% { transform: translateX(100%); } 100% { transform: translateX(0%); } }
 @keyframes slideOutRight { 0% { transform: translateX(0%); } 100% { transform: translateX(100%); display: none; } }
 
-/*@keyframes resizeText { from {} to { font-size: 18px; } }*/
+.resize:hover { animation: resize .5s forwards; }
 @keyframes resize { 0% { transform: scale(.9); } 100% { transform: scale(1.2); } }
 
 .flipHorizontal { animation: flipHorizontal 1s ease-in-out; }

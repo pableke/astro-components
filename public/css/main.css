@@ -5,7 +5,7 @@ html.dark { color: rgb(249 250 251)/* gray-50 */; background-color: #13151A; }
 
 main {
     margin: auto; padding: 1rem;
-    width: 800px; max-width: calc(100% - 2rem);
+    width: 80%; max-width: calc(100% - 2rem);
 }
 
 hr { margin: 15px 0; border-top: 1px solid skyblue; }
@@ -39,45 +39,31 @@ tfoot { font-weight: bold; border-top: 1px dashed black; }
 /* TABLES */
 
 /* Actions */
-.action { display: inline-block; width: 26px; margin-left: 4px; font-size: x-large; }
-.action:hover { animation: resize .5s forwards; }
+.action { display: inline-block; margin-right: 6px; }
+.text-xl { font-size: x-large; font-weight: bold; text-transform: uppercase; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
 
-.action-blue { color: rgb(59 130 246); fill: rgb(59 130 246)/*blue-500*/; }
-.action-blue:hover { color: rgb(30 64 175); fill: rgb(30 64 175)/*blue-800*/; }
-:is(.dark .action-blue:hover) { color: rgb(147 197 253); fill: rgb(147 197 253)/*blue-300*/; }
+.blue { color: rgb(59 130 246); fill: rgb(59 130 246)/*blue-500*/; }
+.blue:hover { color: rgb(30 64 175); fill: rgb(30 64 175)/*blue-800*/; }
+:is(.dark .blue:hover) { color: rgb(147 197 253); fill: rgb(147 197 253)/*blue-300*/; }
 
-.action-green { color: rgb(34 197 94)/*green-500*/; }
-.action-green:hover { color: rgb(22 101 52)/*green-800*/; }
-:is(.dark .action-green:hover) { color: rgb(187 247 208)/*green-300*/; }
+.green { color: rgb(34 197 94)/*green-500*/; }
+.green:hover { color: rgb(22 101 52)/*green-800*/; }
+:is(.dark .green:hover) { color: rgb(187 247 208)/*green-300*/; }
 
-.action-warn { color: rgb(234 179 8)/*yellow-500*/; }
-.action-warn:hover { color: rgb(133 77 14)/*yellow-800*/; }
-:is(.dark .action-warn:hover) { color: rgb(253 224 71)/*yellow-300*/; }
+.warn { color: rgb(234 179 8)/*yellow-500*/; }
+.warn:hover { color: rgb(133 77 14)/*yellow-800*/; }
+:is(.dark .warn:hover) { color: rgb(253 224 71)/*yellow-300*/; }
 
-.action-red { color: rgb(239 68 68); fill: rgb(239 68 68)/*red-500*/; }
-.action-red:hover { color: rgb(153 27 27); fill: rgb(153 27 27)/*red-800*/; }
-:is(.dark .action-red:hover) { color: rgb(248 113 113); fill: rgb(248 113 113)/*red-400*/; }
+.red { color: rgb(239 68 68); fill: rgb(239 68 68)/*red-500*/; }
+.red:hover { color: rgb(153 27 27); fill: rgb(153 27 27)/*red-800*/; }
+:is(.dark .red:hover) { color: rgb(248 113 113); fill: rgb(248 113 113)/*red-400*/; }
 /* Actions */
-
-/* Icons */
-.icon { margin: 0 3px; }
-.icon-blue, .icon-info { color: rgb(59 130 246)/* blue-500 */; }
-.icon-green, .icon-success { color: green; }
-.icon-yellow, .icon-warn { color: rgb(234 179 8)/* yellow-500 */; }
-.icon-red, .icon-error { color: red; }
-/* Icons */
 
 /* Specific styles */
 .hide { display: none !important; } /* force display none */
 .navbar { margin: 4px 0; padding: 4px; display: inline-block; width: 100%; clear: both; }
-
-.text-blue, .text-info { color: rgb(59 130 246)/* blue-500 */; }
-.text-green, .text-success { color: green; }
-.text-yellow, .text-warn { color: rgb(250 204 21)/* yellow-400 */; }
-.text-red, .text-error { color: red; }
-.text-center { text-align: center; }
-.text-right { text-align: right; }
-.text-xl { font-size: x-large; font-weight: bold; text-transform: uppercase; }
 
 .link { color: rgb(37 99 235); text-decoration-line: underline; }
 .link:hover { text-decoration-line: none; }

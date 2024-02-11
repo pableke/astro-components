@@ -184,5 +184,7 @@ HTMLElement.prototype.fadeIn = function() { return fnAnimate(this, FADE_IN, FADE
 HTMLElement.prototype.fadeOut = function() { return fnVisible(this) ? fnAnimate(this, FADE_OUT, FADE_IN) : this; }
 HTMLElement.prototype.slideIn = function() { return fnAnimate(this, SLIDE_IN, SLIDE_OUT); }
 HTMLElement.prototype.slideOut = function() { return fnVisible(this) ? fnAnimate(this, SLIDE_OUT, SLIDE_IN) : this; }
+//HTMLElement.prototype.slideInRight = function() { return fnAnimate(this, SLIDE_IN_RIGHT, SLIDE_OUT_RIGHT); }
+//HTMLElement.prototype.slideOutRight = function() { return fnVisible(this) ? fnAnimate(this, SLIDE_OUT_RIGHT, SLIDE_IN_RIGHT) : this; }
 
 export default new Collection();
