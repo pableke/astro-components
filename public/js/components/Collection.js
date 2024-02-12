@@ -118,7 +118,7 @@ HTMLCollection.prototype.filter = Array.prototype.filter;
 HTMLCollection.prototype.forEach = Array.prototype.forEach;
 HTMLCollection.prototype.eachPrev = Array.prototype.eachPrev;
 HTMLCollection.prototype.findIndex = Array.prototype.findIndex;
-HTMLCollection.prototype.matches = function(selector) { return this.find(el => el.matches(selector)); }
+HTMLCollection.prototype.findOne = function(selector) { return this.find(el => el.matches(selector)); }
 HTMLCollection.prototype.query = function(selector) { return this.filter(el => el.matches(selector)); }
 HTMLCollection.prototype.text = function(text) { this.forEach(el => { el.innerHTML = text; }); }
 HTMLCollection.prototype.hide = function() { this.forEach(fnHide); }
@@ -135,7 +135,7 @@ HTMLCollection.prototype.toggle = function(name, force) {
 NodeList.prototype.find = Array.prototype.find;
 NodeList.prototype.filter = Array.prototype.filter;
 NodeList.prototype.eachPrev = Array.prototype.eachPrev;
-NodeList.prototype.matches = function(selector) { return this.find(el => el.matches(selector)); }
+NodeList.prototype.findOne = function(selector) { return this.find(el => el.matches(selector)); }
 NodeList.prototype.query = function(selector) { return this.filter(el => el.matches(selector)); }
 NodeList.prototype.text = HTMLCollection.prototype.text;
 NodeList.prototype.hide = function() { this.forEach(fnHide); }
@@ -152,6 +152,7 @@ NodeList.prototype.toggle = function(name, force) {
 HTMLElement.prototype.show = function() { fnShow(this); return this }
 HTMLElement.prototype.hide = function() { fnHide(this); return this }
 HTMLElement.prototype.toggle = function(name, force) { this.classList.toggle(name || HIDE_CLASS, force); }
+//HTMLElement.prototype.trigger = function(name, detail) { this.dispatchEvent(detail ? new CustomEvent(name, { detail }) : new Event(name)); } //ev.detail
 HTMLElement.prototype.setVisible = function(force) { return force ? this.show() : this.hide(); }
 HTMLElement.prototype.isHidden = function() { return this.classList.contains(HIDE_CLASS); } // has class hide
 HTMLElement.prototype.isVisible = function(selector) {

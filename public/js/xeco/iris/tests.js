@@ -37,7 +37,7 @@ window.initMap = function() {
     });
 }
 
-function initScript() {
+export default function() {
     if (loaded) // is API loaded
         return window.initMap();
     // Create the script tag, set the appropriate attributes
@@ -48,9 +48,3 @@ function initScript() {
     document.head.appendChild(script); // Append the "script" element to "head"
     loaded = true; // API loaded
 }
-
-if (window.location.pathname.endsWith("maps.html"))
-    document.addEventListener("DOMContentLoaded", initScript);
-document.addEventListener("vt:maps", initScript);
-
-export default initScript;

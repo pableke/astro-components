@@ -7,19 +7,90 @@
 
     <title>Maps API Tests</title>
     <link rel="stylesheet" type="text/css" media="screen" href="../css/styles-min.css">
-    <script type="module" src="../js/xeco/iris/tests.js"></script>
+	<script src="https://kit.fontawesome.com/76f12cea70.js" crossorigin="anonymous"></script>
+    <script type="module" src="../js/xeco/tests.js"></script>
 </head>
 <body>
 	<header></header>
-	<nav></nav>
+    <!-- Menu component -->
+    <nav class="show-xs">
+        <button id="menu-toggle">
+            <i class="fas fa-arrow-left hide"></i>
+            <i class="fas fa-bars"></i>
+        </button>
+        <button>Phone-Menu 2</button>
+        <button>Phone-Menu 3</button>
+    </nav>
+    <nav class="menu-main">
+        <div><ul class="menu hide"></ul></div>
+        <div class="separator"></div>
+        <div class="menu-group">
+            <div id="user" class="dropdown">
+                <button><i class="fas fa-user"></i></button>
+                <div>
+                    <a href="mailto:#">email@google.com</a>
+                    <a href="/">Home</a>
+                    <hr class="slim"/>
+                    <a href="#">Login</a>
+                </div>
+            </div>
+            <div id="languages" class="dropdown">
+                <button>
+                    <img src="../img/flags/spain.png">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div>
+                    <a href="?lang=es"><img src="../img/flags/spain.png"> ES</a>
+                    <a href="?lang=en"><img src="../img/flags/great_britain.png"> EN</a>
+                </div>
+            </div>
+            <button id="theme-toggle">
+                <i class="fas fa-moon hide"></i>
+                <i class="fas fa-sun hide"></i>
+            </button>
+        </div>
+    </nav>
+    <!-- Menu component -->
+
+    <!-- Alerts component -->
+    <div class="alerts">
+		<div class="hide alert alert-success">
+			<div class="alert-icon"><i class="fas fa-check-circle fa-3x"></i></div>
+			<div class="alert-text"></div>
+			<div class="alert-close"><i class="fas fa-times"></i></div>
+		</div>
+		<div class="hide alert alert-info">
+			<div class="alert-icon"><i class="fas fa-info fa-3x"></i></div>
+			<div class="alert-text"></div>
+			<div class="alert-close"><i class="fas fa-times"></i></div>
+		</div>
+		<div class="hide alert alert-warn">
+			<div class="alert-icon"><i class="fas fa-exclamation-triangle fa-3x"></i></div>
+			<div class="alert-text"></div>
+			<div class="alert-close"><i class="fas fa-times"></i></div>
+		</div>
+		<div class="hide alert alert-error">
+			<div class="alert-icon"><i class="fas fa-exclamation fa-2x"></i></div>
+			<div class="alert-text"></div>
+			<div class="alert-close"><i class="fas fa-times"></i></div>
+		</div>
+	</div>
+	<div class="loading hide">
+		<b class="fas fa-circle-notch fa-3x fa-spin loading-content"></b>
+	</div>
+	<a id="back-to-top" href="#top" class="hide back-to-top">
+		<i class="fas fa-arrow-up"></i>
+	</a>
+    <!-- Alerts component -->
 
     <main>
         <div id="tab-0" class="tab-content active">
             <h2>GOOGLE MAPS API</h2>
 
             <div class="ui-blocks">
-                <label class="ui-block-xl">
+                <label class="ui-block-xl ui-icon-block">
                     <div class="label required">Origen de la ruta:</div>
+                    <i class="fas fa-map-marker-alt ui-icon-left"></i>
                     <input type="search" id="origen" name="origen" class="ui-input ui-text ui-ruta" 
                         tabindex="1" autocomplete="off" placeholder="Search a place" />
                     <div class="ui-errtip"></div>

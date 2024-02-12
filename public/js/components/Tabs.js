@@ -15,8 +15,9 @@ const PROGRESS_BAR = "progress-bar";
 function Tabs() {
 	const self = this; //self instance
     const EVENTS = {}; //events tab container
-	const tabs = document.getElementsByClassName(TAB_CLASS);
-	const progressbar = document.getElementsByClassName(PROGRESS_BAR);
+
+	let tabs, progressbar;
+    let _tabIndex, _tabSize, _tabMask;
 
     const fnSet = (name, fn) => { EVENTS[name] = fn; return self; }
     const fnActive = el => el.classList.contains(ACTIVE_CLASS);
@@ -32,10 +33,6 @@ function Tabs() {
         _tabIndex = index ?? fnCurrentIndex();
         return autofocus(tab);
     }
-
-    let _tabIndex = fnCurrentIndex(); // current index tab
-    let _tabSize = tabs.length - 1; // max tabs size
-    let _tabMask = ~0; // all 11111....
 
     this.getCurrent = () => tabs[_tabIndex]; // current tab
     this.getTab = id => tabs.find(tab => (tab.id == ("tab-" + id))); // Find by id selector
@@ -120,9 +117,16 @@ function Tabs() {
         });
         return self;
     }
+    this.load = el => {
+        tabs = el.getElementsByClassName(TAB_CLASS);
+        progressbar = el.getElementsByClassName(PROGRESS_BAR);
+        _tabIndex = fnCurrentIndex(); // current index tab
+        _tabSize = tabs.length - 1; // max tabs size
+        return self.setMask(~0).setActions(el); // all 11111... + actions
+    }
 
     // Init. view and PF navigation (only for CV-UAE)
-    self.setActions(document);
+    self.load(document);
     window.showTab = (xhr, status, args, tab) => {
         if (!xhr || (status != "success"))
             return !alerts.showError("Error 500: Internal server error.");

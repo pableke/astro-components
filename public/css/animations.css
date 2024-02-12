@@ -38,6 +38,13 @@
     100% { transform: scale(1); }
 }
 
+.jiggle { animation: jiggle .5s ease-in-out; }
+@keyframes jiggle {
+    0% { transform: rotate(-4deg); }
+    50% { transform: rotate(4deg); }
+    100% { transform: rotate(-4deg); }
+}
+
 .shake { animation: shake 1s ease-in-out; }
 @keyframes shake {
     0% { transform: translateX(0); }

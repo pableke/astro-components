@@ -7,7 +7,7 @@ import buzon from "../model/Buzon.js";
 document.addEventListener("DOMContentLoaded", () => { // on load view
 	var justPagoRequired = false;
 
-	const formBuzon = new Form("xeco-buzon");
+	const formBuzon = new Form("#xeco-buzon");
 	const elTipo = formBuzon.getInput("#tipo");
 
 	function updateBuzonOrganica() {
@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => { // on load view
 		formBuzon.toggle("#justPago", justPagoRequired).hide("#check-jp");
 	}
 
-	const formOrganicas = new Form("xeco-organicas");
+	const formOrganicas = new Form("#xeco-organicas");
 	const table = formOrganicas.setTable("#organcias");
 
 	const fnSend = action => {

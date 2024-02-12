@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const perfil = iris.getPerfil();
 
 	/*** FORMULARIO PRINCIPAL ***/
-    const formIris = new Form("xeco-iris");
+    const formIris = new Form("#xeco-iris");
     window.fnSavePerfil = () => formIris.isValid(perfil.validate); // validate perfil paso=0
     window.fnSave = () => tabs.isValid(); // call tab validator paso=n
 

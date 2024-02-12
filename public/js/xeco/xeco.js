@@ -6,7 +6,7 @@ import uxxiec from "../model/Uxxiec.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     /*** Filtro + listado de solicitudes ***/
-    const formFilter = new Form("xeco-filter");
+    const formFilter = new Form("#xeco-filter");
     const OPTS_FILTER = { msgEmptyTable: "No se han encontrado solicitudes para a la búsqueda seleccionada" };
     let solicitudes = formFilter.setTable("#solicitudes", OPTS_FILTER);
     window.onVinc = () => { alerts.loading(); formFilter.setData({ fEstado: "1" }); }
@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /*** Filtro + listado de solicitudes ***/
 
     /*** FORMULARIO PARA EL RECHAZO/CANCELACIÓN DE SOLICITUDES ***/
-    const formReject = new Form("xeco-reject");
+    const formReject = new Form("#xeco-reject");
     window.showRechazo = (xhr, status, args) => window.showTab(xhr, status, args, 11) && tabs.render(".load-data", JSON.read(args?.data));
     window.fnRechazar = () => formReject.isValid(uxxiec.validateReject) && confirm("¿Confirma que desea rechazar esta solicitud?");
     /*** FORMULARIO PARA EL RECHAZO/CANCELACIÓN DE SOLICITUDES ***/
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /*** FORMULARIO PARA LA CREACIÓN DEL EXPEDIENTE CON UXXI-EC ***/
     const tabUxxi = tabs.getTab(15);
     uxxiec.setData(tabUxxi.dataset);
-    const formUxxi = new Form("xeco-uxxi");
+    const formUxxi = new Form("#xeco-uxxi");
 	const tableUxxi = formUxxi.setTable("#docs-uxxi", {
         msgEmptyTable: "No se han encontrado documentos de UXXI-EC asociadas a la solicitud",
         onRender: uxxiec.render

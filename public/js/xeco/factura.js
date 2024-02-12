@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	/*** FORMULARIO PRINCIPAL ***/
-    const formFact = new Form("xeco-fact");
+    const formFact = new Form("#xeco-fact");
 	const delegaciones = pf.datalist(formFact, "#delegacion", "#idDelegacion", { emptyOption: "Seleccione una delegación" });
 	const acTercero = formFact.setAutocomplete("#acTercero", {
 		delay: 500, //milliseconds between keystroke occurs and when a search is performed

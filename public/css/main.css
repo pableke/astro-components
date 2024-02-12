@@ -44,21 +44,21 @@ tfoot { font-weight: bold; border-top: 1px dashed black; }
 .text-center { text-align: center; }
 .text-right { text-align: right; }
 
-.blue { color: rgb(59 130 246); fill: rgb(59 130 246)/*blue-500*/; }
-.blue:hover { color: rgb(30 64 175); fill: rgb(30 64 175)/*blue-800*/; }
-:is(.dark .blue:hover) { color: rgb(147 197 253); fill: rgb(147 197 253)/*blue-300*/; }
+.text-blue { color: rgb(59 130 246); fill: rgb(59 130 246)/*blue-500*/; }
+.text-blue:hover { color: rgb(30 64 175); fill: rgb(30 64 175)/*blue-800*/; }
+:is(.dark .text-blue:hover) { color: rgb(147 197 253); fill: rgb(147 197 253)/*blue-300*/; }
 
-.green { color: rgb(34 197 94)/*green-500*/; }
-.green:hover { color: rgb(22 101 52)/*green-800*/; }
-:is(.dark .green:hover) { color: rgb(187 247 208)/*green-300*/; }
+.text-green { color: rgb(34 197 94)/*green-500*/; }
+.text-green:hover { color: rgb(22 101 52)/*green-800*/; }
+:is(.dark .text-green:hover) { color: rgb(187 247 208)/*green-300*/; }
 
-.warn { color: rgb(234 179 8)/*yellow-500*/; }
-.warn:hover { color: rgb(133 77 14)/*yellow-800*/; }
-:is(.dark .warn:hover) { color: rgb(253 224 71)/*yellow-300*/; }
+.text-warn { color: rgb(234 179 8)/*yellow-500*/; }
+.text-warn:hover { color: rgb(133 77 14)/*yellow-800*/; }
+:is(.dark .text-warn:hover) { color: rgb(253 224 71)/*yellow-300*/; }
 
-.red { color: rgb(239 68 68); fill: rgb(239 68 68)/*red-500*/; }
-.red:hover { color: rgb(153 27 27); fill: rgb(153 27 27)/*red-800*/; }
-:is(.dark .red:hover) { color: rgb(248 113 113); fill: rgb(248 113 113)/*red-400*/; }
+.text-red { color: rgb(239 68 68); fill: rgb(239 68 68)/*red-500*/; }
+.text-red:hover { color: rgb(153 27 27); fill: rgb(153 27 27)/*red-800*/; }
+:is(.dark .text-red:hover) { color: rgb(248 113 113); fill: rgb(248 113 113)/*red-400*/; }
 /* Actions */
 
 /* Specific styles */

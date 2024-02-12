@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     tabs.setActive(uxxiec.isUxxiec() ? 0 : 2);
 
     /*** FORMULARIO PARA EL DC 030 DE LAS GCR ***/
-    const form030 = new Form("xeco-030");
+    const form030 = new Form("#xeco-030");
     const acOrg030 = form030.setAcItems("#acOrg030", //selector
                                         () => form030.click("#find-org-030"), //source
                                         item => form030.setval("#idEco030", item.imp)); //select
@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /*** FORMULARIO PARA EL DC 030 DE LAS GCR ***/
 
     /*** FORMULARIO PRINCIPAL ***/
-    const formPresto = new Form("xeco-presto");
+    const formPresto = new Form("#xeco-presto");
     const emptyOption = "Seleccione una económica";
 	const ecoDec = pf.datalist(formPresto, "#idEcoDec", "#idEcoDecPF", {
         emptyOption,
