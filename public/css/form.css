@@ -102,7 +102,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { margin-left
 :is(.dark .autocomplete ul) { color: white; background-color: rgb(55 65 81)/* gray-700 */; }
 .autocomplete li { padding: 3px; list-style: none; cursor: pointer; }
 .autocomplete li:hover, .autocomplete  li.active {
-    color: rgb(55 65 81)/* gray-700 */; background-color: white;
+    color: rgb(55 65 81)/* gray-700 */; background-color: white; animation: none;
 }
 /* Autocomplete */
 

@@ -144,6 +144,36 @@
 
         <div id="tab-1" class="tab-content">
             <h2>Actions</h2>
+
+            <form id="form-pokemon" action="#">
+            <div class="ui-blocks">
+                <label class="ui-block-xl autocomplete">
+                    <div class="label required">Pokemon finder:</div>
+                    <i class="fas fa-search ui-icon-left"></i>
+                    <input type="search" id="pokemon" name="pokemon" class="ui-input ui-text ui-autocomplete" 
+                        tabindex="1" autocomplete="off" placeholder="Search a pokemon" />
+                    <input type="hidden" name="id"/>
+                    <ul class="results"></ul>
+                    <div class="ui-errtip"></div>
+                </label>
+            </div>
+            </form>
+
+            <div id="info-pokemon" class="hide" style="display: flex; align-items: start; gap: 2rem;">
+                <div>
+                <h3>Pokemon @name;</h3>
+                <ul>
+                    <li><b>Nombre:</b> @name;</li>
+                    <li><b>Tipo:</b> @type;</li>
+                    <li><b>Especie:</b> @species;</li>
+                    <li><b>HP:</b> @hp;</li>
+                    <li><b>Ataque:</b> @attack;</li>
+                    <li><b>Defensa:</b> @defense;</li>
+                </ul>
+                </div>
+                <img src="@img;" alt="@name;">
+            </div>
+
             <div class="navbar">
                 <a href="#" class="action text-green resize">Green</a>
                 <a href="#" class="action text-blue resize">Blue</a>

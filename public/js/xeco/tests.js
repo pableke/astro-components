@@ -1,4 +1,6 @@
 
+import api from "../components/Api.js";
+import Form from "../components/Form.js";
 import nav from "../components/Navigation.js";
 import maps from "./iris/tests.js";
 import menus from "../data/menu.js";
@@ -72,4 +74,34 @@ themeToggleBtn.addEventListener("click", function() {
     }
 });
 
-nav.addListener("/dist/views/maps.html", maps);
+function index() {
+    const info = document.getElementById("info-pokemon");
+    const fnSelect = data => {
+        info.render({
+            name: data.name,
+            type: data.types[0].type.name,
+            hp: data.stats[0].base_stat,
+            species: data.species.name,
+            attack: data.stats[1].base_stat,
+            defense: data.stats[3].base_stat,
+            img: data.sprites.front_default
+        }).show();
+        console.log(data);
+    }
+
+    const formPokemon = new Form("#form-pokemon");
+    formPokemon.setAutocomplete("#pokemon", {
+        source: (term, acPokemon) => {
+            const fnFilter = pokemon => String.ilike(pokemon.name, term);
+            api.json("https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0")
+                .then(data => acPokemon.render(data.results.filter(fnFilter)));
+        },
+		render: item => item.name,
+		select: item => item.name,
+		afterSelect: item => api.json(`https://pokeapi.co/api/v2/pokemon/${item.name}`).then(fnSelect),
+		onReset: () => info.hide()
+    });
+}
+
+nav.addListener("/dist/views/maps.html", maps)
+    .addListener("/dist/views/index.html", index).addListener("/dist/views/", index);

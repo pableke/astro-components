@@ -1,4 +1,5 @@
 
+import api from "./Api.js";
 import alerts from "./Alerts.js";
 import Table from "./Table.js";
 import Datalist from "./Datalist.js";
@@ -244,24 +245,14 @@ export default function(form, opts) {
 		const data = self.closeAlerts().getData(selector);
 		return fnValidate(data) ? data : !self.setErrors(i18n.getMsgs(), selector);
 	}
-	this.validate = async (fnValidate, selector) => {
-		const data = self.isValid(fnValidate, selector);
-		if (data) { // Is valid data?
-			const insertar = (opts.insert && !data[opts.pkName]); // insert or update
-			const fnUpdate = (data, info) => self.setOk(info); // Default acction
-			const fnSave = (insertar ? opts.insert : opts.update) || fnUpdate; // action
-			const info = await self.send(opts); // get server response
-			return info && fnSave(data, info);
-		}
-		return false; // Validation error
-	}
 
 	// Form actions
-	this.send = async opts => {
-		alerts.loading(); //show loading... div
-		const fd = new FormData(form); // Data container
-
+	this.send = opts => {
 		opts = opts || {}; // Settings
+		const data = self.isValid(opts.validate, opts.inputs);
+		if (!data) // Is valid data?
+			return  Promise.reject(i18n.getMsgs()); // Validation error
+		const fd = new FormData(form); // Data container
 		opts.headers = opts.headers || {};
 		opts.headers["x-requested-with"] = "XMLHttpRequest";
 		opts.action = opts.action || form.action; //action-override
@@ -271,24 +262,26 @@ export default function(form, opts) {
 		else
 			opts.body = (form.enctype == "multipart/form-data") ? fd : new URLSearchParams(fd);
 		//opts.headers = { "Content-Type": form.enctype || "application/x-www-form-urlencoded" };
-
-		const res = await globalThis.fetch(opts.action, opts);
-		const type = res.headers.get("content-type") || EMPTY;
-		const data = await (type.includes("application/json") ? res.json() : res.text());
-		alerts.working(); // always force to hide loadin div
-		return res.ok ? data : !self.setErrors(data);
+		const insertar = (opts.insert && !data[opts.pkName || "id"]); // insert or update
+		const fnSave = (insertar ? opts.insert : opts.update) || globalThis.void; // action
+		return api.send(opts.action, opts)
+					.then(info => { self.setOk(info); fnSave(data); })
+					.catch(info => { self.setErrors(info); });
 	}
-	this.setRequest = (selector, fn) => {
-		return fnEach(selector, link => {
-			link.onclick = async ev => {
-				const msg = link.dataset.confirm;
-				if (!msg || confirm(i18n.get(msg))) { // has confirmation?
-					const data = await self.send({ action: link.href, method: link.dataset.method });
-					data && fn(data, link); // callbak if no errors
-				}
-				ev.preventDefault();
-			};
-		});
+	this.setRequest = (link, fnValidate, fnThen) => {
+		link = isstr(link) ? form.querySelector(link) : link;
+		link.onclick = ev => {
+			const opts = { action: link.href };
+			opts.update = fnThen;
+			opts.validate = fnValidate;
+			opts.method = link.dataset.method;
+			opts.inputs = link.dataset.inputs;
+			const msg = link.dataset.confirm;
+			if (!msg || confirm(i18n.get(msg))) // confirm?
+				self.send(opts); // send ajax form
+			ev.preventDefault();
+		};
+		return self;
 	}
 	this.clone = msg => {
 		fnValue(self.getInput("[name='" + opts.pkName + "']")); // PK=""

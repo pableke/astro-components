@@ -1,5 +1,5 @@
 
-import alerts from "./Alerts.js";
+import api from "./Api.js";
 import tabs from "./Tabs.js";
 
 function Navigation() {
@@ -8,19 +8,17 @@ function Navigation() {
 
     // cargamos la pagina de destino con fetch
     const fetchMain = async url => {
-        const res = await fetch(url.pathname);
-        if (!res.ok) // response ok? => 400, 500...
-            return alerts.showError(res.statusText);
-        const text = await res.text(); // Get full page
-        // extraigo el contenido de la etiqueta main
-        const data = text.match(/<main[^>]*>([\s\S]*)<\/main>/im)[1];
-        // utilizamos la api de View Transitions
-        document.startViewTransition(() => {
-            main.innerHTML = data; // update contents
-            tabs.load(main); // reload tabs events
-            document.documentElement.scrollTop = 0; // scroll to top
-            document.dispatchEvent(new Event("vt:" + url.pathname)); // Dispatch vt event
-            //console.log("Event name =", "vt:" + url.pathname); // specific name event
+        api.text(url.pathname).then(text => {
+            // extraigo el contenido de la etiqueta main
+            const data = text.match(/<main[^>]*>([\s\S]*)<\/main>/im)[1];
+            // utilizamos la api de View Transitions
+            document.startViewTransition(() => {
+                main.innerHTML = data; // update contents
+                tabs.load(main); // reload tabs events
+                document.documentElement.scrollTop = 0; // scroll to top
+                document.dispatchEvent(new Event("vt:" + url.pathname)); // Dispatch vt event
+                //console.log("Event name =", "vt:" + url.pathname); // specific name event
+            });
         });
     }
 

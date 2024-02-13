@@ -17,12 +17,14 @@ window.initMap = function() {
     const divAddress = document.querySelector(".address-components");
     const divDieta = document.querySelector(".dieta");
 
-    inputOrigen.focus();
-    inputOrigen.addEventListener("change", ev => {
+    const fnVisible = () => {
         const ok = origen.getPlace() && inputOrigen.value;
         divAddress.setVisible(ok);
         divDieta.setVisible(ok);
-    });
+    }
+    inputOrigen.focus();
+    inputOrigen.addEventListener("search", fnVisible);
+    inputOrigen.addEventListener("change", fnVisible);
 
     origen.addListener("place_changed", function() {
         const place = origen.getPlace();

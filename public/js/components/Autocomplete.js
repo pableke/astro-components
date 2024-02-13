@@ -1,6 +1,6 @@
 
 import alerts from "./Alerts.js";
-import collection from "./Collection.js";
+import coll from "./Collection.js";
 
 const EMPTY = [];
 const TR1 = "àáâãäåāăąÀÁÂÃÄÅĀĂĄÆßèéêëēĕėęěÈÉĒĔĖĘĚìíîïìĩīĭÌÍÎÏÌĨĪĬòóôõöōŏőøÒÓÔÕÖŌŎŐØùúûüũūŭůÙÚÛÜŨŪŬŮçÇñÑþÐŔŕÿÝ";
@@ -8,7 +8,6 @@ const TR2 = "aaaaaaaaaAAAAAAAAAABeeeeeeeeeEEEEEEEiiiiiiiiIIIIIIIIoooooooooOOOOOO
 
 const fnEmpty = () => EMPTY;
 const fnParam = param => param;
-const inRange = (num, min, max) => (min <= num) && (num <= max);
 const insertAt = (str1, str2, i) => str1.substring(0, i) + str2 + str1.substring(i)
 const replaceAt = (str1, str2, i) => str1.substring(0, i) + str2 + str1.substring(i + str2.length);
 
@@ -18,7 +17,7 @@ window.loadItems = globalThis.void; // Hack PF (only for CV-UAE)
 
 function tr(str) {
     var output = str || "";
-    const size = collection.size(str);
+    const size = coll.size(str);
     for (let i = 0; i < size; i++) {
         let j = TR1.indexOf(str.charAt(i)); // is char remplazable
         output = (j < 0) ? output : replaceAt(output, TR2.charAt(j), i);
@@ -35,7 +34,7 @@ export default function(autocomplete, opts) {
     opts = opts || {};
 	opts.delay = opts.delay || 400; //milliseconds between keystroke occurs and when a search is performed
 	opts.minLength = opts.minLength || 3; //length to start
-	opts.maxLength = opts.maxLength || 15; //max length for searching
+	opts.maxLength = opts.maxLength || 16; //max length for searching
 	opts.maxResults = opts.maxResults || 10; //max showed rows (default = 10)
     opts.optionClass = opts.optionClass || "option"; // child name class
     opts.activeClass = opts.activeClass || "active"; // active option class
@@ -77,7 +76,7 @@ export default function(autocomplete, opts) {
         return self;
     }
 
-    const isChildren = i => inRange(i, 0, collection.size(resultsHTML.children) - 1);
+    const isChildren = i => ((0 <= i) && (i < coll.size(resultsHTML.children)));
     const unselect = () => { _index = -1; inputValue.value = ""; return self; }
     const removeList = () => { resultsHTML.innerHTML = ""; return self; }
     const fnClear = () => { unselect(); return removeList(); }
@@ -99,7 +98,7 @@ export default function(autocomplete, opts) {
         alerts.loading(); // Show loading indicator
         window.loadItems = (xhr, status, args) => { // Only PF
             window.loadItems = globalThis.void; // Avoid extra loads
-            self.render(collection.parse(args?.data)); // specific for PF
+            self.render(coll.parse(args?.data)); // specific for PF
         }
         opts.source(autocomplete.value, self); // Fire source
         _searching = false; // restore sarches
@@ -143,18 +142,19 @@ export default function(autocomplete, opts) {
         if ((ev.keyCode == TAB) || (ev.keyCode == ENTER))
             selectItem(self.getCurrentOption(), _index);
     }
-    // Event fired after char is writen in text
-    autocomplete.onkeyup = ev => {
-        const size = collection.size(autocomplete.value);
+    // Event fired when value changes, ignore ctrl, alt...
+    autocomplete.oninput = ev => {
+        const size = coll.size(autocomplete.value);
         if (size < opts.minLength)
             return fnClear(); // Min legnth required
-        if (size < opts.maxLength) { // Reduce server calls, only for backspace or alfanum
-            const search = (ev.keyCode == 8) || inRange(ev.keyCode, 46, 111) || inRange(ev.keyCode, 160, 223);
-            if (search && !_searching) {
-                clearTimeout(_time); // Clear previous searches
-                _time = setTimeout(fnSearch, opts.delay);
-            }
+        if ((size < opts.maxLength) && !_searching) { // Reduce server calls
+            clearTimeout(_time); // Clear previous searches
+            _time = setTimeout(fnSearch, opts.delay);
         }
+    }
+    //event occurs when a user presses the "ENTER" key or clicks the "x" button in an <input> element with type="search"
+    autocomplete.onsearch = ev => {
+        autocomplete.value || self.reset();
     }
     // Event fired before onblur only when text changes
     autocomplete.onchange = ev => {
