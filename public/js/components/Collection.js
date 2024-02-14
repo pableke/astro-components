@@ -46,16 +46,13 @@ function Collection() {
         const status = {};
         resume = resume || status;
         fnRender = fnRender || fnVoid;
-
-        let output = ""; // Initialize result
         status.size = resume.size = data.length;
-        data.forEach((item, i) => { // render each item
+        return data.map((item, i) => { // render each item
             status.index = i;
             status.count = i + 1;
             fnRender(item, status, resume, data);
-            output += format(tpl, status);
-        });
-        return output;
+            return format(tpl, status);
+        }).join("");
     }
 
     this.copy = function(output, data, keys) {

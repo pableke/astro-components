@@ -7,7 +7,7 @@ function Navigation() {
     const main = document.body.children.findOne("main");
 
     // cargamos la pagina de destino con fetch
-    const fetchMain = async url => {
+    const fetchMain = url => {
         api.text(url.pathname).then(text => {
             // extraigo el contenido de la etiqueta main
             const data = text.match(/<main[^>]*>([\s\S]*)<\/main>/im)[1];

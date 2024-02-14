@@ -12,7 +12,6 @@ export default function(form, opts) {
 	form = isstr(form) ? document.forms.findOne(form) : form; // Find by name
 	opts = opts || {}; // default options
 
-	opts.pkName = opts.pkName || "id"; // primary key name
 	opts.defaultMsgOk = opts.defaultMsgOk || "saveOk"; // default key for message ok
 	opts.defaultMsgError = opts.defaultMsgError || "errForm"; // default key error
 
@@ -37,7 +36,7 @@ export default function(form, opts) {
 	this.autofocus = () => self.focus(form.elements.find(el => el.isVisible(FOCUSABLED)));
 	this.getInput = selector => form.elements.findOne(selector); // find an element
 	this.getInputs = selector => form.elements.query(selector); // filter elements
-	this.querySelector = selector => form.querySelector(selector);
+	this.querySelector = selector => form.querySelector(selector); // Child element
 
 	// Alerts helpers
 	this.loading = () => { alerts.loading(); return self; } // Encapsule loading frame
@@ -182,7 +181,7 @@ export default function(form, opts) {
 	this.beforeReset = fn => fnEvent(form, "reset", fn);
 	this.afterReset = fn => fnEvent(form, "reset", ev => setTimeout(() => fn(ev), 1));
 	this.setClick = (selector, fn) => fnEach(selector, el => el.addEventListener("click", fn))
-	this.click = selector => { form.querySelector(selector).click(); return self; } // Fire event
+	this.click = selector => { form.querySelector(selector).click(); return self; } // Fire event only for PF
 
 	this.onChangeInput = (selector, fn) => {
 		return fnEvent(self.getInput(selector), "change", fn);
@@ -246,70 +245,50 @@ export default function(form, opts) {
 		return fnValidate(data) ? data : !self.setErrors(i18n.getMsgs(), selector);
 	}
 
-	// Form actions
-	this.send = opts => {
+	this.send = (url, opts) => {
 		opts = opts || {}; // Settings
+		const msg = i18n.get(opts.confirm);
+		if (msg && !confirm(msg)) // confirm?
+			return  Promise.reject(msg); // Confirm NO
 		const data = self.isValid(opts.validate, opts.inputs);
 		if (!data) // Is valid data?
 			return  Promise.reject(i18n.getMsgs()); // Validation error
 		const fd = new FormData(form); // Data container
-		opts.headers = opts.headers || {};
-		opts.headers["x-requested-with"] = "XMLHttpRequest";
-		opts.action = opts.action || form.action; //action-override
+		opts.headers = opts.headers || {}; // Headers container
+		opts.headers["x-requested-with"] = "XMLHttpRequest"; // AJAX
+		//opts.headers["user-agent"] = "Form component API AJAX"; // user description
+		opts.headers["content-type"] = form.enctype || "application/x-www-form-urlencoded";
 		opts.method = opts.method || form.method; //method-override
-		if (opts.method == "get") // Form get => prams in url
-			opts.action += "?" + (new URLSearchParams(fd)).toString();
-		else
-			opts.body = (form.enctype == "multipart/form-data") ? fd : new URLSearchParams(fd);
-		//opts.headers = { "Content-Type": form.enctype || "application/x-www-form-urlencoded" };
-		const insertar = (opts.insert && !data[opts.pkName || "id"]); // insert or update
+		//if (opts.method == "get") // Form get => prams in url
+			//url += "?" + (new URLSearchParams(fd)).toString();
+		//else
+		opts.body = (form.enctype == "multipart/form-data") ? fd : new URLSearchParams(fd);
+		const insertar = opts.insert && !data[opts.pkName || "id"]; // insert or update
 		const fnSave = (insertar ? opts.insert : opts.update) || globalThis.void; // action
-		return api.send(opts.action, opts)
-					.then(info => { self.setOk(info); fnSave(data); })
+		return api.send(url || form.action, opts)
+					.then(info => { self.setOk(info); fnSave(data, info); })
 					.catch(info => { self.setErrors(info); });
-	}
-	this.setRequest = (link, fnValidate, fnThen) => {
-		link = isstr(link) ? form.querySelector(link) : link;
-		link.onclick = ev => {
-			const opts = { action: link.href };
-			opts.update = fnThen;
-			opts.validate = fnValidate;
-			opts.method = link.dataset.method;
-			opts.inputs = link.dataset.inputs;
-			const msg = link.dataset.confirm;
-			if (!msg || confirm(i18n.get(msg))) // confirm?
-				self.send(opts); // send ajax form
-			ev.preventDefault();
-		};
-		return self;
-	}
-	this.clone = msg => {
-		fnValue(self.getInput("[name='" + opts.pkName + "']")); // PK=""
-		alerts.showOk(msg || opts.defaultMsgOk); // show message
-		return self.setInsertMode() // inserting mode
-	}
-	this.setActions = () => {
-		return fnFor(form.elements, el => {
-			if (fnContains(el, opts.floatFormatClass)) {
-				el.addEventListener("change", ev => fnNumber(el, i18n.fmtFloat(el.value)));
-				return fnNumber(el, el.value && i18n.isoFloat(+el.value)); // iso format float
-			}
-			if (fnContains(el, opts.integerFormatClass)) {
-				el.addEventListener("change", ev => fnNumber(el, i18n.fmtInt(el.value)));
-				return fnNumber(el, el.value && i18n.isoInt(+el.value)); // iso format integer
-			}
-			if (fnContains(el, opts.boolClass))
-				el.value = i18n.boolval(el.value); // Hack PF type
-			else if (fnContains(el, opts.dateClass))
-				el.type = "date"; // Hack PF type
-			else if (fnContains(el, opts.checkAllClass))
-				el.addEventListener("click", ev => {
-					const fnCheck = input => (input.type == "checkbox") && (input.name == el.id);
-					form.elements.forEach(input => { if (fnCheck(input)) input.checked = el.checked; });
-				});
-		});
 	}
 
 	// Form initialization
-	self.setActions().autofocus().beforeReset(ev => self.closeAlerts().autofocus());
+	form.elements.forEach(el => {
+		if (fnContains(el, opts.floatFormatClass)) {
+			el.addEventListener("change", ev => fnNumber(el, i18n.fmtFloat(el.value)));
+			return fnNumber(el, el.value && i18n.isoFloat(+el.value)); // iso format float
+		}
+		if (fnContains(el, opts.integerFormatClass)) {
+			el.addEventListener("change", ev => fnNumber(el, i18n.fmtInt(el.value)));
+			return fnNumber(el, el.value && i18n.isoInt(+el.value)); // iso format integer
+		}
+		if (fnContains(el, opts.boolClass))
+			el.value = i18n.boolval(el.value); // Hack PF type
+		else if (fnContains(el, opts.dateClass))
+			el.type = "date"; // Hack PF type
+		else if (fnContains(el, opts.checkAllClass))
+			el.addEventListener("click", ev => {
+				const fnCheck = input => (input.type == "checkbox") && (input.name == el.id);
+				form.elements.forEach(input => { if (fnCheck(input)) input.checked = el.checked; });
+			});
+	});
+	self.autofocus().beforeReset(ev => self.closeAlerts().autofocus());
 }

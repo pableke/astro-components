@@ -2,8 +2,6 @@
 import alerts from "./Alerts.js";
 
 function Api() {
-	const self = this; //self instance
-
     this.json = async (url, opts) => {
         alerts.loading(); // show loading indicator
         const res = await globalThis.fetch(url, opts); // send api call

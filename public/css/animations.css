@@ -34,7 +34,9 @@
 .pulse { animation: pulse 1s ease-in-out; }
 @keyframes pulse {
     0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
+    25% { transform: scale(.9); }
+    50% { transform: scale(1); }
+    75% { transform: scale(1.1); }
     100% { transform: scale(1); }
 }
 

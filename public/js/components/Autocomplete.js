@@ -95,7 +95,7 @@ export default function(autocomplete, opts) {
     }
     function fnSearch() {
         _searching = true; // Avoid new searchs
-        alerts.loading(); // Show loading indicator
+        alerts.loading(); // Show loading frame
         window.loadItems = (xhr, status, args) => { // Only PF
             window.loadItems = globalThis.void; // Avoid extra loads
             self.render(coll.parse(args?.data)); // specific for PF
@@ -124,7 +124,7 @@ export default function(autocomplete, opts) {
         resultsHTML.children.forEach((li, i) => {
             li.addEventListener("click", ev => selectItem(li, i));
         });
-        alerts.working(); // fadeOut loading indicator
+        alerts.working(); // Hide loading frame
         return self;
     }
 

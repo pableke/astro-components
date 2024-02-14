@@ -55,9 +55,9 @@ function Alerts() {
     const close = alerts.getElementsByClassName(ALERT_CLOSE);
 
 	// Handle loading div
-    const _loading = alerts.nextElementSibling;
-	this.loading = () => { _loading.fadeIn(); return self.closeAlerts(); }
-	this.working = () => { _loading.fadeOut(); return self; }
+    const _loading = alerts.nextElementSibling; // loading animation = none
+	this.loading = () => { _loading.classList.remove("hide", "fadeOut"); return self.closeAlerts(); }
+	this.working = () => { _loading.fadeOut(); return self; } // working animation = fadeOut
 
     // Scroll body to top on click and toggle back-to-top arrow
 	const _top = _loading.nextElementSibling;
