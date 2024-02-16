@@ -56,9 +56,9 @@ tfoot { font-weight: bold; border-top: 1px dashed black; }
 .text-warn:hover { color: rgb(133 77 14)/*yellow-800*/; }
 :is(.dark .text-warn:hover) { color: rgb(253 224 71)/*yellow-300*/; }
 
-.text-red { color: rgb(239 68 68); fill: rgb(239 68 68)/*red-500*/; }
-.text-red:hover { color: rgb(153 27 27); fill: rgb(153 27 27)/*red-800*/; }
-:is(.dark .text-red:hover) { color: rgb(248 113 113); fill: rgb(248 113 113)/*red-400*/; }
+.text-red { color: rgb(239 68 68)/*red-500*/; }
+.text-red:hover { color: rgb(153 27 27)/*red-800*/; }
+:is(.dark .text-red:hover) { color: rgb(248 113 113)/*red-400*/; }
 /* Actions */
 
 /* Specific styles */

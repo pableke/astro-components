@@ -247,12 +247,12 @@ export default function(form, opts) {
 
 	this.send = (url, opts) => {
 		opts = opts || {}; // Settings
-		const msg = i18n.get(opts.confirm);
+		/*const msg = i18n.get(opts.confirm);
 		if (msg && !confirm(msg)) // confirm?
 			return  Promise.reject(msg); // Confirm NO
 		const data = self.isValid(opts.validate, opts.inputs);
 		if (!data) // Is valid data?
-			return  Promise.reject(i18n.getMsgs()); // Validation error
+			return  Promise.reject(i18n.getMsgs()); // Validation error*/
 		const fd = new FormData(form); // Data container
 		opts.headers = opts.headers || {}; // Headers container
 		opts.headers["x-requested-with"] = "XMLHttpRequest"; // AJAX
@@ -263,10 +263,10 @@ export default function(form, opts) {
 			//url += "?" + (new URLSearchParams(fd)).toString();
 		//else
 		opts.body = (form.enctype == "multipart/form-data") ? fd : new URLSearchParams(fd);
-		const insertar = opts.insert && !data[opts.pkName || "id"]; // insert or update
-		const fnSave = (insertar ? opts.insert : opts.update) || globalThis.void; // action
+		//const insertar = opts.insert && !data[opts.pkName || "id"]; // insert or update
+		//const fnSave = (insertar ? opts.insert : opts.update) || globalThis.void; // action
 		return api.send(url || form.action, opts)
-					.then(info => { self.setOk(info); fnSave(data, info); })
+					//.then(info => { self.setOk(info); fnSave(data, info); })
 					.catch(info => { self.setErrors(info); });
 	}
 
